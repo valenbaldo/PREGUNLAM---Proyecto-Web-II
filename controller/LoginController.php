@@ -65,35 +65,35 @@ class LoginController
     }
 
     public function confirmacionDeUsuario($mailUser, $token){
-        //Create an instance; passing `true` enables exceptions
+
         $mail = new PHPMailer(true);
 
         try {
-            //Server settings
-            $mail->SMTPDebug = 2;                      //Enable verbose debug output
-            $mail->isSMTP();                                            //Send using SMTP
-            $mail->Host       = 'smtp.gmail.com';                     //Set the SMTP server to send through
-            $mail->SMTPAuth   = true;                                   //Enable SMTP authentication
-            $mail->Username   = 'giancroci5@gmail.com';                     //SMTP username
-            $mail->Password   = 'srqn bvvy uers apwr';                               //SMTP password
-            $mail->SMTPSecure = 'ssl';            //Enable implicit TLS encryption
-            $mail->Port       = 465;                                    //TCP port to connect to; use 587 if you have set `SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS`
+
+            $mail->SMTPDebug = 2; // Desactívarlo para producción
+            $mail->isSMTP();
+            $mail->Host       = $_ENV['SMTP_HOST'];                     // <-- CAMBIO
+            $mail->SMTPAuth   = true;
+            $mail->Username   = $_ENV['SMTP_USER'];                     // <-- CAMBIO
+            $mail->Password   = $_ENV['SMTP_PASS'];                     // <-- CAMBIO
+            $mail->SMTPSecure = $_ENV['SMTP_SECURE'];                   // <-- CAMBIO
+            $mail->Port       = $_ENV['SMTP_PORT'];                     // <-- CAMBIO
 
             //Recipients
-            $mail->setFrom('giancroci5@gmail.com', 'Pregunlam');
+            $mail->setFrom($_ENV['SMTP_USER'], $_ENV['SMTP_FROM_NAME']); // <-- CAMBIO
             $mail->addAddress($mailUser);     //Add a recipient
 
             $enlace = 'http://localhost/login/verificarMail?token=' . $token;
 
             //Content
-            $mail->isHTML(true);                                  //Set email format to HTML
+            $mail->isHTML(true);
             $mail->Subject = 'TestMailPregunlam';
             $mail->Body    = '<a href="' . $enlace . '">Confirmar mi cuenta</a>';
 
             $mail->send();
-            echo 'Message has been sent';
+            echo 'El mensaje fue enviado correctamente.';
         } catch (Exception $e) {
-            echo "Message could not be sent. Mailer Error: {$mail->ErrorInfo}";
+            echo "El mensaje no se pudo enviar. Error: {$mail->ErrorInfo}";
         }
     }
 
