@@ -1,0 +1,31 @@
+<div class="w3-container w3-center w3-margin">
+    <form method="POST" action="/login/nuevoUsuario" class="w3-card w3-padding w3-light-grey w3-display-inline-block" style="min-width:300px">
+        {{#error}}
+            <div class='w3-panel w3-red'>{{error}}</div>
+        {{/error}}
+        <p><input class="w3-input w3-border" type="text" name="nombre" placeholder="Nombre"></p>
+        <p><input class="w3-input w3-border" type="text" name="apellido" placeholder="Apellido"></p>
+        <p><input class="w3-input w3-border" type="text" name="usuario" placeholder="Nombre de usuario"></p>
+        <p><input class="w3-input w3-border" type="date" name="nacimiento" placeholder="Fecha de Nacimiento"></p>
+        <p><select name="sexo" class="w3-input w3-border">
+            <option value="">Seleccione una opción</option>
+            <option value="masculino">Masculino</option>
+            <option value="femenino">Femenino</option>
+            <option value="noEspecifica">Prefiero no cargarlo</option>
+        </select></p>
+        <p><input class="w3-input w3-border" type="email" name="mail" placeholder="Mail"></p>
+        <hr>
+        <label>Selecciona tu ubicación:</label>
+        <div id="mapa"
+             class="w3-block w3-border w3-round-large"
+             style="height:400px; margin-top:10px;">
+
+        </div>
+        <input type="hidden" id="latitud" name="latitud">
+        <input type="hidden" id="longitud" name="longitud">
+        <hr>
+        <p><input class="w3-input w3-border" type="password" name="contraseña" placeholder="Contraseña"></p>
+        <p><input class="w3-input w3-border" type="password" name="repetirContraseña" placeholder="Repetir Contraseña"></p>
+        <p><input class="w3-button w3-blue" type="submit" value="Registrarse"></p>
+    </form>
+</div>
