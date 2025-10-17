@@ -1,8 +1,2 @@
 # Ignorar la carpeta de dependencias de Composer
 /vendor/
-
-# Ignorar la carpeta de configuración (contraseñas)
-/config/
-
-# Opcional: Ignorar el dump de la BBDD si tiene datos sensibles
-database.sql
