@@ -9,7 +9,8 @@ include_once ("helper/MustacheRenderer.php");
 include_once ('vendor/autoload.php');
 
 // Cargar las variables de .env
-$dotenv = Dotenv\Dotenv::createImmutable(__DIR__);
+$projectRoot = dirname(__DIR__);
+$dotenv = Dotenv\Dotenv::createImmutable($projectRoot);
 $dotenv->load();
 
 
