@@ -4,9 +4,8 @@ include_once("helper/IncludeFileRenderer.php");
 include_once("helper/NewRouter.php");
 include_once("controller/LoginController.php");
 include_once("model/LoginModel.php");
-include_once('vendor/mustache/src/Mustache/Autoloader.php');
 include_once ("helper/MustacheRenderer.php");
-include_once ('vendor/autoload.php');
+include_once ("vendor/autoload.php");
 
 // Cargar las variables de .env
 $projectRoot = dirname(__DIR__);
