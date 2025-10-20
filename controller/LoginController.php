@@ -37,12 +37,22 @@ class LoginController
         $token = bin2hex(random_bytes(16));
         $contraseñaPlana = $_POST["contraseña"];
         $hash = password_hash($contraseñaPlana, PASSWORD_DEFAULT);
-        $this->model->nuevo($_POST["nombre"], $_POST["apellido"], $_POST["mail"], $ubicacion["address"]["country"], $ubicacion["address"]["state_district"], $hash, $token);
+        $rutaImagen = dirname(__DIR__) . "/imagenes/" . $_POST['usuario'] . ".png";
+        move_uploaded_file($_FILES["imagen"]["tmp_name"], $rutaImagen);
+        $imagen = "/imagenes/" . $_POST['usuario'] . ".png";
+        if ($_POST["contraseña"]===$_POST["confirmarContraseña"]){
+            $this->model->nuevo($_POST["nombre"], $_POST["apellido"], $_POST["usuario"], $_POST["nacimiento"], $imagen, $_POST["sexo"], $_POST["mail"], $ubicacion["address"]["country"], $ubicacion["address"]["state_district"], $hash, $token);
 
-        $this->confirmacionDeUsuario($_POST["mail"], $token);
+            $this->confirmacionDeUsuario($_POST["mail"], $token);
 
-        $this->redirectToIndex();
+            $this->redirectToIndex();
+        }else{
+            die("Las contraseñas no coinciden");
+        }
+
+
     }
+
 
     public function geoLocalizacion($latitud, $longitud){
         $url = "https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=$latitud&lon=$longitud&addressdetails=1&accept-language=es";
@@ -122,7 +132,9 @@ class LoginController
         $usuarioEncontrado = $this->model->obtenerUsuario($mail);
 
         if ($usuarioEncontrado && password_verify($contraseñaIntentada, $usuarioEncontrado[0]["contraseña"]) && $usuarioEncontrado[0]["verificado"] == 1) {
-            $this->renderer->render("pregunlam");
+            $usuario = $this->model->obtenerUsuario($mail);
+            $data["usuario"]= $usuario[0];
+            $this->renderer->render("pregunlam", $data);
         }elseif ($usuarioEncontrado && password_verify($contraseñaIntentada, $usuarioEncontrado[0]["contraseña"]) && $usuarioEncontrado[0]["verificado"] == 0){
             $data["error"] = "Mail no verificado";
             $this->renderer->render("login", $data);

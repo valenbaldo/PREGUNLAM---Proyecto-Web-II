@@ -1,8 +1,5 @@
 <div class="w3-container w3-center w3-margin">
-    <form method="POST" action="/login/nuevoUsuario" class="w3-card w3-padding w3-light-grey w3-display-inline-block" style="min-width:300px">
-        {{#error}}
-            <div class='w3-panel w3-red'>{{error}}</div>
-        {{/error}}
+    <form method="POST" action="/login/nuevoUsuario" id="registroForm" enctype="multipart/form-data" class="w3-card w3-padding w3-light-grey w3-display-inline-block" style="min-width:300px">
         <p><input class="w3-input w3-border" type="text" name="nombre" placeholder="Nombre"></p>
         <p><input class="w3-input w3-border" type="text" name="apellido" placeholder="Apellido"></p>
         <p><input class="w3-input w3-border" type="text" name="usuario" placeholder="Nombre de usuario"></p>
@@ -24,8 +21,12 @@
         <input type="hidden" id="latitud" name="latitud">
         <input type="hidden" id="longitud" name="longitud">
         <hr>
-        <p><input class="w3-input w3-border" type="password" name="contraseña" placeholder="Contraseña"></p>
-        <p><input class="w3-input w3-border" type="password" name="repetirContraseña" placeholder="Repetir Contraseña"></p>
+        <p class="w3-input w3-border">
+            <input class="form-control" type="file" id="formFile" name="imagen">
+        </p>
+        <p><input class="w3-input w3-border" type="password" name="contraseña" id="contraseña" placeholder="Contraseña"></p>
+        <p><input class="w3-input w3-border" type="password" name="confirmarContraseña" id="confirmarContraseña" placeholder="Repetir Contraseña"></p>
+        <p id="mensajeError" style="color: red; font-weight: bold;"></p>
         <p><input class="w3-button w3-blue" type="submit" value="Registrarse"></p>
     </form>
 </div>
