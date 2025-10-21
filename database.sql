@@ -36,4 +36,26 @@ CREATE TABLE sexo (
                                ON DELETE CASCADE
 );
 
+CREATE TABLE preguntas (
+                      id_pregunta    INT AUTO_INCREMENT PRIMARY KEY,
+                      pregunta       VARCHAR(150) NOT NULL,
+                      id_usuario INT         NOT NULL UNIQUE,
+                      FOREIGN KEY (id_usuario)
+                          REFERENCES usuarios (id_usuario)
+                          ON DELETE CASCADE
+);
+
+CREATE TABLE respuestas (
+                      id_respuesta    INT AUTO_INCREMENT PRIMARY KEY,
+                      a VARCHAR(150) NOT NULL,
+                      b VARCHAR(150) NOT NULL,
+                      c VARCHAR(150) NOT NULL,
+                      d VARCHAR(150) NOT NULL,
+                      es_correcta CHAR(1) NOT NULL,
+                      id_pregunta INT NOT NULL UNIQUE,
+                      FOREIGN KEY (id_pregunta)
+                          REFERENCES preguntas (id_pregunta)
+                          ON DELETE CASCADE
+);
+
 
