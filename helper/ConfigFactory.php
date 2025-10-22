@@ -3,7 +3,9 @@ include_once("helper/MyConexion.php");
 include_once("helper/IncludeFileRenderer.php");
 include_once("helper/NewRouter.php");
 include_once("controller/LoginController.php");
+include_once("controller/HomeController.php");
 include_once("model/LoginModel.php");
+include_once("model/HomeModel.php");
 include_once ("helper/MustacheRenderer.php");
 include_once ("vendor/autoload.php");
 
@@ -37,6 +39,8 @@ class ConfigFactory
         $this->objetos["router"] = new NewRouter($this, "LoginController", "base");
 
         $this->objetos["LoginController"] = new LoginController(new LoginModel($this->conexion), $this->renderer);
+
+        $this->objetos["HomeController"] = new HomeController(new HomeModel($this->conexion), $this->renderer);
 
     }
 

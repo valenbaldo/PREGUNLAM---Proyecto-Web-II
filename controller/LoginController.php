@@ -45,7 +45,7 @@ class LoginController
 
             $this->confirmacionDeUsuario($_POST["mail"], $token);
 
-            $this->redirectToIndex();
+            $this->renderer->render("registroExitoso");
         }else{
             die("Las contraseñas no coinciden");
         }
@@ -132,9 +132,10 @@ class LoginController
         $usuarioEncontrado = $this->model->obtenerUsuario($mail);
 
         if ($usuarioEncontrado && password_verify($contraseñaIntentada, $usuarioEncontrado[0]["contraseña"]) && $usuarioEncontrado[0]["verificado"] == 1) {
-            $usuario = $this->model->obtenerUsuario($mail);
-            $data["usuario"]= $usuario[0];
-            $this->renderer->render("pregunlam", $data);
+            $_SESSION['nombreUsuario'] = $usuarioEncontrado[0]["usuario"];
+            $_SESSION['imagen'] = $usuarioEncontrado[0]["imagen"];
+            header("Location: /home");
+            exit;
         }elseif ($usuarioEncontrado && password_verify($contraseñaIntentada, $usuarioEncontrado[0]["contraseña"]) && $usuarioEncontrado[0]["verificado"] == 0){
             $data["error"] = "Mail no verificado";
             $this->renderer->render("login", $data);
