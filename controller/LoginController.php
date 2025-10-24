@@ -80,7 +80,7 @@ class LoginController
 
         try {
 
-            $mail->SMTPDebug = 2; // Desactívarlo para producción
+            $mail->SMTPDebug = 0; // Desactívarlo para producción
             $mail->isSMTP();
             $mail->Host       = $_ENV['SMTP_HOST'];                     // <-- CAMBIO
             $mail->SMTPAuth   = true;
