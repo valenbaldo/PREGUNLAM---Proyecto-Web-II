@@ -3,6 +3,8 @@ include_once("helper/MyConexion.php");
 include_once("helper/IncludeFileRenderer.php");
 include_once("helper/NewRouter.php");
 include_once("controller/LoginController.php");
+include_once("controller/JuegoController.php");
+include_once("controller/UsuarioController.php");
 include_once("controller/HomeController.php");
 include_once("model/LoginModel.php");
 include_once("model/HomeModel.php");
@@ -41,6 +43,10 @@ class ConfigFactory
         $this->objetos["LoginController"] = new LoginController(new LoginModel($this->conexion), $this->renderer);
 
         $this->objetos["HomeController"] = new HomeController(new HomeModel($this->conexion), $this->renderer);
+
+        $this->objetos["JuegoController"] = new JuegoController(new JuegoModel($this->conexion), $this->renderer);
+
+        $this->objetos["UsuarioController"] = new UsuarioController(new usuarioModel($this->conexion), $this->renderer);
 
     }
 
