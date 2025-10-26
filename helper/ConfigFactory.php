@@ -1,17 +1,26 @@
 <?php
+
+// Helpers
 include_once("helper/MyConexion.php");
 include_once("helper/IncludeFileRenderer.php");
 include_once("helper/NewRouter.php");
+include_once ("helper/MustacheRenderer.php");
+
+// Controllers
 include_once("controller/LoginController.php");
 include_once("controller/JuegoController.php");
 include_once("controller/UsuarioController.php");
 include_once("controller/HomeController.php");
+
+// Models
 include_once("model/LoginModel.php");
 include_once("model/HomeModel.php");
-include_once ("helper/MustacheRenderer.php");
+include_once("model/UsuarioModel.php");
+include_once("model/JuegoModel.php");
+
+
 include_once ("vendor/autoload.php");
 
-// Cargar las variables de .env
 $projectRoot = dirname(__DIR__);
 $dotenv = Dotenv\Dotenv::createImmutable($projectRoot);
 $dotenv->load();
@@ -46,7 +55,7 @@ class ConfigFactory
 
         $this->objetos["JuegoController"] = new JuegoController(new JuegoModel($this->conexion), $this->renderer);
 
-        $this->objetos["UsuarioController"] = new UsuarioController(new usuarioModel($this->conexion), $this->renderer);
+        $this->objetos["UsuarioController"] = new UsuarioController(new UsuarioModel($this->conexion), $this->renderer);
 
     }
 
