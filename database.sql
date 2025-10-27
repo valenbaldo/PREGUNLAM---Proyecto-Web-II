@@ -52,7 +52,7 @@ CREATE TABLE preguntas (
                       id_pregunta    INT AUTO_INCREMENT PRIMARY KEY,
                       pregunta       VARCHAR(150) NOT NULL,
                       id_usuario INT         NOT NULL ,
-                        id_categoria INT NOT NULL,
+                      id_categoria INT NOT NULL,
                       FOREIGN KEY (id_usuario)
                           REFERENCES usuarios (id_usuario)
                           ON DELETE CASCADE

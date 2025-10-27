@@ -10,18 +10,37 @@ class JuegoModel
     }
 
 
-    public function iniciarJuego()
+    public function iniciarJuego($id_usuario)
     {
-        if (!isset($_SESSION['id_usuario']))
-            return false;
+        if (!$id_usuario) {
+            return null;}
 
-        $idUsuario = $_SESSION['id_usuario'];
 
-        $this->conexion->query("INSERT INTO juegos (id_usuario, puntaje, estado, iniciado_en) VALUES ($idUsuario, 0, 'activo', NOW())");
-        $result = $this->conexion->query("SELECT LAST_INSERT_ID() AS id_juego");
-        $_SESSION['id_juego'] = $result[0]['id_juego'];
-        $_SESSION['puntaje'] = 0;
+        $this->conexion->query("INSERT INTO juegos (id_usuario, puntaje, estado, iniciado_en) VALUES ($id_usuario, 0, 'activo', NOW())");
+        $result = $this->conexion->query(
+            "SELECT j.id_juego
+             FROM juegos j
+             JOIN usuarios u ON j.id_usuario = u.id_usuario
+             ORDER BY j.iniciado_en DESC
+             LIMIT 1;");
+        $id_juego = $result[0]['id_juego'];
+
+
+
+
+        //$_SESSION['id_juego'] = $result[0]['id_juego'];
+        //$_SESSION['puntaje'] = 0;
         $_SESSION['preguntas_respondidas'] = [];
+        return $id_juego;
+    }
+
+    public function obtenerJuego($id_juego){
+        $sql = "SELECT * FROM juegos WHERE id_juego = '$id_juego'";
+        $juego = $this->conexion->query($sql);
+        if ($juego) {
+            return $juego;
+        }
+        return null;
     }
 
     public function obtenerPreguntaParaMostrar()
@@ -71,14 +90,16 @@ class JuegoModel
         ];
     }
 
-    public function actualizarPuntaje($puntos)
+    public function actualizarPuntaje($puntos, $id_juego)
     {
-        $idJuego = $_SESSION['id_juego'] ?? null;
-        if (!$idJuego)
-            return;
+        if (!$id_juego){
+            return null;
+        }
+        $sql = "SELECT * FROM juegos WHERE id_juego = '$id_juego'";
+        $juego = $this->conexion->query($sql);
+        $puntaje = $juego[0]['puntaje'] + $puntos;
 
-        $_SESSION['puntaje'] += $puntos;
-        $this->conexion->query("UPDATE juegos SET puntaje = {$_SESSION['puntaje']} WHERE id_juego = $idJuego");
+        $this->conexion->query("UPDATE juegos SET puntaje = $puntaje WHERE id_juego = $id_juego");
     }
 
     public function guardarPartida($puntajeFinal)

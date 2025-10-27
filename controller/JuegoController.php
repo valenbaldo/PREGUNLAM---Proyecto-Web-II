@@ -15,22 +15,27 @@ public function base(){
     $this->iniciarJuego();
 }
 
-    public function iniciarJuego()
+    /*public function iniciarJuego()
     {
-        $this->model->iniciarJuego();
-        header("Location: juego/iniciarJuego");
-    }
 
-    public function preguntar(){
-        $idUsuario = $_SESSION['id_usuario'];
-        $datosPregunta = $this->model->obtenerPreguntaParaMostrar($idUsuario);
+        $this->renderer->render("juego");
+        //header("Location: /juego");
+    }*/
+
+    public function iniciarJuego(){
+        $id_usuario = $_SESSION['id_usuario'];
+        if(!$_SESSION['esCorrecta']){
+            $_SESSION['id_juego'] = $this->model->iniciarJuego($id_usuario);
+        }
+        $datosPregunta = $this->model->obtenerPreguntaParaMostrar($id_usuario);
+        $juego = $this->model->obtenerJuego($_SESSION['id_juego']);
 
         if($datosPregunta == null){
             $this->finalizarJuego();
         }
         $data = [
             "pregunta" => $datosPregunta,
-            "puntaje" => $_SESSION['puntaje']
+            "puntaje" => $juego[0]['puntaje']
         ];
         $this->renderer->render("juego", $data);
     }
@@ -41,13 +46,20 @@ public function base(){
     }
     $id_pregunta = $_POST['id_pregunta'];
     $respuestaElegida = $_POST['respuesta_elegida'];
-    $idUsuario = $_SESSION['id_usuario'];
+    $id_usuario = $_SESSION['id_usuario'];
+        $datosPregunta = $this->model->obtenerPreguntaParaMostrar($id_usuario);
+        $juego = $this->model->obtenerJuego($_SESSION['id_juego']);
 
-    $resultado = $this->model->validarRespuesta($id_pregunta, $respuestaElegida,  $idUsuario);
+    $resultado = $this->model->validarRespuesta($id_pregunta, $respuestaElegida,  $id_usuario);
     if($resultado['esCorrecta']){
-    $this->model->actualizarPuntaje($idUsuario, $resultado['puntos_ganados']);
-        header("Location: juego/preguntar");
-        exit;
+    $this->model->actualizarPuntaje($resultado['puntos_ganados'], $_SESSION['id_juego']);
+        $data = [
+            "pregunta" => $datosPregunta,
+            "puntaje" => $juego[0]['puntaje']
+        ];
+        $_SESSION['esCorrecta'] = $resultado['esCorrecta'];
+        header("Location: /juego");
+        //$this->renderer->render("juego", $data);
 
     }else{
         header("Location: juego/finjuego");
@@ -57,13 +69,14 @@ public function base(){
 
     public function finalizarJuego()
     {
+        $juego = $this->model->obtenerJuego($_SESSION['id_juego']);
         $idUsuario = $_SESSION['id_usuario'];
-        $puntajeFinal = $_SESSION['puntaje'];
+        $puntajeFinal = $juego[0]['puntaje'];
         $this->model->guardarPartida($idUsuario, $puntajeFinal);
         $data = [
             "puntaje" => $puntajeFinal
         ];
-        $this->renderer->render("resultado_juego", $data);
+        $this->renderer->render("resultadoJuego", $data);
 
         unset($_SESSION['puntaje']);
         unset($_SESSION['preguntas_respondidas']);

@@ -134,6 +134,8 @@ class LoginController
         if ($usuarioEncontrado && password_verify($contraseñaIntentada, $usuarioEncontrado[0]["contraseña"]) && $usuarioEncontrado[0]["verificado"] == 1) {
             $_SESSION['nombreUsuario'] = $usuarioEncontrado[0]["usuario"];
             $_SESSION['imagen'] = $usuarioEncontrado[0]["imagen"];
+            $_SESSION['id_usuario'] = $usuarioEncontrado[0]["id_usuario"];
+            $_SESSION['esCorrecta'] = false;
             header("Location: /home");
             exit;
         }elseif ($usuarioEncontrado && password_verify($contraseñaIntentada, $usuarioEncontrado[0]["contraseña"]) && $usuarioEncontrado[0]["verificado"] == 0){
