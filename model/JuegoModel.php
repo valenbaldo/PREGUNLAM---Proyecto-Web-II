@@ -92,9 +92,6 @@ class JuegoModel
 
     public function actualizarPuntaje($puntos, $id_juego)
     {
-        if (!$id_juego){
-            return null;
-        }
         $sql = "SELECT * FROM juegos WHERE id_juego = '$id_juego'";
         $juego = $this->conexion->query($sql);
         $puntaje = $juego[0]['puntaje'] + $puntos;
@@ -102,13 +99,9 @@ class JuegoModel
         $this->conexion->query("UPDATE juegos SET puntaje = $puntaje WHERE id_juego = $id_juego");
     }
 
-    public function guardarPartida($puntajeFinal)
+    public function guardarPartida($puntajeFinal, $id_juego)
     {
-        $idJuego = $_SESSION['id_juego'] ?? null;
-        if (!$idJuego)
-            return;
-
-        $this->conexion->query("UPDATE juegos SET puntaje = $puntajeFinal, estado = 'finalizado', finalizado_en = NOW() WHERE id_juego = $idJuego");
+        $this->conexion->query("UPDATE juegos SET puntaje = $puntajeFinal, estado = 'finalizado', finalizado_en = NOW() WHERE id_juego = $id_juego");
     }
     
 }
