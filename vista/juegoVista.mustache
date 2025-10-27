@@ -1,0 +1,59 @@
+{{> header}}
+
+<style>
+    .game-wrap { max-width: 780px; margin: 32px auto; padding: 24px; border: 1px solid #e5e7eb; border-radius: 14px; box-shadow: 0 2px 10px rgba(0,0,0,.06);}
+    .game-head { display:flex; justify-content:space-between; align-items:center; margin-bottom: 18px; }
+    .pill { background:#111; color:#fff; padding:6px 12px; border-radius:999px; font-size:14px; }
+    .q-text { font-size: 20px; font-weight:700; margin: 8px 0 18px; }
+    .opt { display:block; border:1px solid #e5e7eb; border-radius:12px; padding:12px 14px; margin:10px 0; cursor:pointer; }
+    .opt input { margin-right:10px; transform: translateY(1px); }
+    .btn { display:inline-block; margin-top:12px; padding:12px 18px; border:none; border-radius:12px; background:#111; color:#fff; font-weight:700; cursor:pointer; }
+    .btn:disabled { opacity:.5; cursor:not-allowed; }
+</style>
+
+<div class="game-wrap">
+    <div class="game-head">
+        <div class="pill">Puntaje: {{puntaje}}</div>
+        <div>Preguntas respondidas: {{#pregunta}}{{#_count}}{{/_count}}{{/pregunta}}</div>
+    </div>
+
+    <div class="q-text">
+        {{pregunta.pregunta}}
+    </div>
+
+    <form method="POST" action="?controller=juego&method=responder" id="form-responder">
+        <input type="hidden" name="id_pregunta" value="{{pregunta.id_pregunta}}" />
+
+        <label class="opt">
+            <input type="radio" name="respuesta_elegida" value="A" required />
+            A) {{pregunta.opciones.A}}
+        </label>
+
+        <label class="opt">
+            <input type="radio" name="respuesta_elegida" value="B" required />
+            B) {{pregunta.opciones.B}}
+        </label>
+
+        <label class="opt">
+            <input type="radio" name="respuesta_elegida" value="C" required />
+            C) {{pregunta.opciones.C}}
+        </label>
+
+        <label class="opt">
+            <input type="radio" name="respuesta_elegida" value="D" required />
+            D) {{pregunta.opciones.D}}
+        </label>
+
+        <button class="btn" type="submit">Responder</button>
+    </form>
+</div>
+
+<script>
+    // Evita doble submit por ansiosos :)
+    document.getElementById('form-responder')?.addEventListener('submit', function (e) {
+        const btn = this.querySelector('button[type="submit"]');
+        if (btn) { btn.disabled = true; btn.textContent = 'Enviando...'; }
+    });
+</script>
+
+{{> footer}}
