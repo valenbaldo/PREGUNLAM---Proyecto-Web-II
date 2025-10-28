@@ -12,10 +12,7 @@ class UsuarioController
     }
     public function base()
     {
-        if (!isset($_SESSION['id_usuario'])) {
-            header("Location: /login");
-            exit;
-        }
+        $this->estalogeado();
 
         $idUsuario = $_SESSION['id_usuario'];
 
@@ -31,5 +28,12 @@ class UsuarioController
     public function editarPerfil()
     {
         $this->renderer->render("editar_perfil");
+    }
+
+    public function estalogeado(){
+        if (!isset($_SESSION['id_usuario'])) {
+            header("Location: /login");
+            exit;
+        }
     }
 }

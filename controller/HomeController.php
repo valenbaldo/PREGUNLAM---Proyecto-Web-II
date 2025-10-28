@@ -17,6 +17,7 @@ class HomeController
 
     public function home()
     {
+        $this->estalogeado();
         $nombreUsuario = $_SESSION['nombreUsuario'];
         $imagen = $_SESSION['imagen'];
         $data = [
@@ -26,10 +27,11 @@ class HomeController
         $this->renderer->render("home", $data);
     }
 
-    public function redirectToHome()
-    {
-        header("Location: /home");
-        exit;
+    public function estalogeado(){
+        if (!isset($_SESSION['id_usuario'])) {
+            header("Location: /login");
+            exit;
+        }
     }
 
 }
