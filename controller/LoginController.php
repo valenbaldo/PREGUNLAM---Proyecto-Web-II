@@ -121,6 +121,10 @@ class LoginController
 
     public function login()
     {
+        if($_SESSION['nombreUsuario']??null){
+            header('location: /home');
+            exit();
+        }
         $this->renderer->render("login");
     }
 
