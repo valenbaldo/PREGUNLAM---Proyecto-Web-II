@@ -75,13 +75,8 @@ public function base(){
         $_SESSION['puntajeFinal'] = $puntajeFinal;
         $_SESSION['esCorrecta'] = false;
         $this->model->guardarPartida($puntajeFinal, $_SESSION['id_juego']);
-        $data = [
-            "nombreUsuario" => $nombreUsuario,
-            "puntaje" => $puntajeFinal
-        ];
         header('Location: /juego/resultadoJuego');
         exit();
-        //$this->renderer->render("resultadoJuego", $data);
     }
 
     public function resultadoJuego(){

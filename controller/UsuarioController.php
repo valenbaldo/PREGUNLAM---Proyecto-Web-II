@@ -2,12 +2,12 @@
 
 class UsuarioController
 {
-    private $usuarioModel;
+    private $model;
     private $renderer;
 
-    public function __construct($usuarioModel, $renderer)
+    public function __construct($model, $renderer)
     {
-        $this->usuarioModel = $usuarioModel;
+        $this->model = $model;
         $this->renderer = $renderer;
     }
     public function base()
@@ -16,7 +16,7 @@ class UsuarioController
 
         $idUsuario = $_SESSION['id_usuario'];
 
-        $datosPerfil = $this->usuarioModel->obtenerDatosPorId($idUsuario);
+        $datosPerfil = $this->model->obtenerDatosPorId($idUsuario);
 
         $data = [
             'perfil' => $datosPerfil,
@@ -28,6 +28,20 @@ class UsuarioController
     public function editarPerfil()
     {
         $this->renderer->render("editar_perfil");
+    }
+    public function verEstadisticas() {
+        $this->estalogeado();
+        $idUsuario = $_SESSION['id_usuario'];
+
+        $historial = $this->model->obtenerPartidas($idUsuario);
+        $puntajeTotal = $this->model->obtenerPuntajeTotal($idUsuario);
+
+        $data = [
+            'historial' => $historial,
+            'puntaje_total_acumulado' => $puntajeTotal,
+        ];
+
+        $this->renderer->render("estadisticas", $data);
     }
 
     public function estalogeado(){
