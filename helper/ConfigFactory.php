@@ -53,7 +53,7 @@ class ConfigFactory
 
         $this->objetos["HomeController"] = new HomeController(new HomeModel($this->conexion), $this->renderer);
 
-        $this->objetos["JuegoController"] = new JuegoController(new JuegoModel($this->conexion), $this->renderer);
+        $this->objetos["JuegoController"] = new JuegoController(new JuegoModel($this->conexion), new UsuarioModel($this->conexion), $this->renderer);
 
         $this->objetos["UsuarioController"] = new UsuarioController(new UsuarioModel($this->conexion), $this->renderer);
 
