@@ -11,12 +11,14 @@ include_once("controller/LoginController.php");
 include_once("controller/JuegoController.php");
 include_once("controller/UsuarioController.php");
 include_once("controller/HomeController.php");
+include_once("controller/PerfilController.php");
 
 // Models
 include_once("model/LoginModel.php");
 include_once("model/HomeModel.php");
 include_once("model/UsuarioModel.php");
 include_once("model/JuegoModel.php");
+include_once("model/PerfilModel.php");
 
 
 include_once ("vendor/autoload.php");
@@ -56,6 +58,8 @@ class ConfigFactory
         $this->objetos["JuegoController"] = new JuegoController(new JuegoModel($this->conexion), new UsuarioModel($this->conexion), $this->renderer);
 
         $this->objetos["UsuarioController"] = new UsuarioController(new UsuarioModel($this->conexion), $this->renderer);
+
+        $this->objetos["PerfilController"] = new PerfilController(new PerfilModel($this->conexion), $this->renderer);
 
     }
 
