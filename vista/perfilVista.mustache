@@ -1,0 +1,53 @@
+
+<style>
+    .pf-wrap { max-width: 820px; margin: 36px auto; padding: 24px; border:1px solid #e5e7eb; border-radius:16px; background:#fff; }
+    .pf-head { display:flex; gap:18px; align-items:center; }
+    .pf-head img { width:120px; height:120px; border-radius:999px; object-fit:cover; border:2px solid #e5e7eb; }
+    .pf-name { font-size:24px; font-weight:800; margin:4px 0; }
+    .pf-sub { color:#555; }
+    .pf-grid { display:grid; grid-template-columns: repeat(3, 1fr); gap:12px; margin-top:18px; }
+    .pf-card { padding:16px; border:1px solid #e5e7eb; border-radius:12px; text-align:center; }
+    .pf-val { font-size:28px; font-weight:900; }
+    .pf-actions { margin-top:18px; display:flex; gap:10px; }
+    .btn { display:inline-block; padding:10px 14px; border:none; border-radius:12px; background:#111; color:#fff; text-decoration:none; }
+</style>
+
+<div class="pf-wrap">
+    <div class="pf-head">
+        <img src="{{usuario.imagen}}" alt="avatar">
+        <div>
+            <div class="pf-name">
+                {{usuario.nombre}} {{usuario.apellido}}
+                {{^usuario.nombre}}{{usuario.username}}{{/usuario.nombre}}
+            </div>
+            <div class="pf-sub">{{usuario.email}} · Nac.: {{usuario.fecha_nacimiento}}</div>
+
+            <div class="pf-actions">
+                <a class="btn" href="?controller=home&method=base">⬅ Volver</a>
+            </div>
+        </div>
+    </div>
+
+    <div class="pf-grid">
+        <div class="pf-card">
+            <div>Partidas jugadas</div>
+            <div class="pf-val">{{stats.partidas}}</div>
+        </div>
+        <div class="pf-card">
+            <div>Mejor puntaje</div>
+            <div class="pf-val">{{stats.mejor_puntaje}}</div>
+        </div>
+        <div class="pf-card">
+            <div>Último puntaje</div>
+            <div class="pf-val">{{stats.ultimo_puntaje}}</div>
+        </div>
+    </div>
+
+    <div class="pf-grid" style="margin-top:12px;">
+        <div class="pf-card" style="grid-column: span 3;">
+            <div>Promedio de puntaje</div>
+            <div class="pf-val">{{stats.promedio_puntaje}}</div>
+        </div>
+    </div>
+</div>
+
