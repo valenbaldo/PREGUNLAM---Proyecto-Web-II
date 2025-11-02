@@ -105,3 +105,7 @@ CREATE TABLE juego_preguntas (
     FOREIGN KEY (id_respuesta_elegida) REFERENCES respuestas(id_respuesta) ON DELETE SET NULL
 );
 
+ALTER TABLE usuarios
+  ADD COLUMN nivel_actual VARCHAR(20) DEFAULT 'facil',
+  ADD COLUMN correctas_nivel INT DEFAULT 0,
+  ADD COLUMN respondidas_nivel INT DEFAULT 0;
