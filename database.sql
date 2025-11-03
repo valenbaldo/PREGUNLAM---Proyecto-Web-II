@@ -53,9 +53,11 @@ CREATE TABLE preguntas (
                       pregunta       VARCHAR(150) NOT NULL,
                       id_usuario INT         NOT NULL ,
                       id_categoria INT NOT NULL,
+                    veces_respondida INT DEFAULT 0,
+                    veces_acertada INT DEFAULT 0,
                       FOREIGN KEY (id_usuario)
                           REFERENCES usuarios (id_usuario)
-                          ON DELETE CASCADE
+                          ON DELETE CASCADE,
                           FOREIGN KEY (id_categoria)
         REFERENCES categorias(id_categoria)
         ON DELETE RESTRICT
