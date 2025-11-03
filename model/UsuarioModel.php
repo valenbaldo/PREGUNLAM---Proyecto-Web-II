@@ -50,6 +50,24 @@ class UsuarioModel
             return 'intermedia';  //por default entre 30% y 70% son intermedios los usuarios
         }
     }
+    public function obtenerRankingAcumulado($limite)
+    {
+        $sql = "
+        SELECT u.usuario, 
+               u.imagen,
+               SUM(j.puntaje) AS puntaje_total_acumulado,
+               COUNT(j.id_juego) AS partidas_jugadas
+        FROM usuarios u
+        JOIN juegos j ON u.id_usuario = j.id_usuario
+        WHERE j.estado = 'finalizado'
+        GROUP BY u.id_usuario
+        ORDER BY puntaje_total_acumulado DESC
+        LIMIT {$limite}";
+
+        // Suma todos los puntajes finales de las partidas de cada usuario.
+
+        return $this->conexion->query($sql) ?? [];
+    }
 
 
 }

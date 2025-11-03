@@ -43,6 +43,16 @@ class UsuarioController
 
         $this->renderer->render("estadisticas", $data);
     }
+    public function ranking()
+    {
+        $topJugadores = $this->model->obtenerRankingAcumulado(10);
+
+        $data = [
+            'ranking' => $topJugadores,
+            'usuario_actual' => $_SESSION['usuario'] ?? null
+        ];
+        $this->renderer->render("ranking", $data);
+    }
 
     public function estalogeado(){
         if (!isset($_SESSION['id_usuario'])) {
