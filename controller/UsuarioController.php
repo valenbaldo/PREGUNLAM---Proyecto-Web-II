@@ -28,12 +28,12 @@ class UsuarioController
         $stats = $this->model->obtenerStats($idUsuario);
 
         $data = [
-            'usuario' => $usuario,   // 👈 coincide con la vista
-            'stats'   => $stats,     // 👈 coincide con la vista
+            'usuario' => $usuario,
+            'stats'   => $stats,
             'logueado'=> true
         ];
 
-        // tu renderer suele mapear "perfil" -> vista/perfilVista.mustache
+
         $this->renderer->render("perfil", $data);
     }
     public function editarPerfil()
@@ -58,17 +58,17 @@ class UsuarioController
     {
         $topJugadores = $this->model->obtenerRankingAcumulado(10);
 
-        // agrego posición y un fallback de imagen
+
         foreach ($topJugadores as $i => &$row) {
-            $row['pos'] = $i + 1; // 👈 reemplaza al @index_plus_one
+            $row['pos'] = $i + 1;
             if (empty($row['imagen'])) {
                 $row['imagen'] = '/imagenes/default.png';
             }
         }
 
         $data = [
-            'ranking'        => $topJugadores,            // lista simple
-            'has_ranking'    => count($topJugadores) > 0, // 👈 flag para la vista
+            'ranking'        => $topJugadores,
+            'has_ranking'    => count($topJugadores) > 0,
             'usuario_actual' => $_SESSION['usuario'] ?? null,
         ];
 

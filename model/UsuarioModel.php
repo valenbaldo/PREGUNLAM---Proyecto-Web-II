@@ -111,7 +111,7 @@ class UsuarioModel
         ORDER BY puntaje_total_acumulado DESC
         LIMIT {$limite}";
 
-        // Suma todos los puntajes finales de las partidas de cada usuario.
+        // Suma todos los puntajes finales de las partidas de cada usuario
 
         return $this->conexion->query($sql) ?? [];
     }

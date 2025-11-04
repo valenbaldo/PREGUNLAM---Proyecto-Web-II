@@ -25,12 +25,12 @@ class JuegoController
         $id_usuario     = $_SESSION['id_usuario'];
         $nombreUsuario  = $_SESSION['nombreUsuario'];
 
-        // si no vengo de una correcta previa, arranco partida nueva
+
         if (!($_SESSION['esCorrecta'] ?? false)) {
             $_SESSION['id_juego'] = $this->juegoModel->iniciarJuego($id_usuario);
         }
 
-        // Traigo pregunta (o uso la pendiente)
+
         if (!isset($_SESSION['preguntaPendiente'])) {
             $nivelUsuario  = $this->usuarioModel->obtenerNivelUsuario($id_usuario);
             $datosPregunta = $this->juegoModel->obtenerPreguntaPorNivel($id_usuario, $nivelUsuario);
@@ -38,26 +38,25 @@ class JuegoController
             $datosPregunta = $_SESSION['preguntaPendiente'];
         }
 
-        // Si no hay más preguntas, termino
+
         if ($datosPregunta == null) {
             $this->finalizarJuego();
             return;
         }
 
-        // Guardo como pendiente para mostrar
+
         $_SESSION['preguntaPendiente'] = $datosPregunta;
 
-        // Leo puntaje actual del juego
+
         $juego = $this->juegoModel->obtenerJuego($_SESSION['id_juego']);
 
-        // 🧮 Cantidad de preguntas YA respondidas (resto 1 porque el modelo
-        // agrega la pregunta actual al array cuando la elige)
+
         $respondidas = 0;
         if (!empty($_SESSION['preguntas_respondidas'])) {
             $respondidas = max(0, count($_SESSION['preguntas_respondidas']) - 1);
         }
 
-        // Render
+
         $data = [
             "pregunta"      => $datosPregunta,
             "nombreUsuario" => $nombreUsuario,
