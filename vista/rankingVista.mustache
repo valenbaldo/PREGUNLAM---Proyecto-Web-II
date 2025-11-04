@@ -1,0 +1,52 @@
+<style>
+    .rk-wrap { max-width: 920px; margin: 36px auto; padding: 24px; border:1px solid #e5e7eb; border-radius:16px; background:#fff; }
+    .rk-title { font-size: 24px; font-weight: 800; margin-bottom: 16px; }
+    .rk-table { width:100%; border-collapse: collapse; }
+    .rk-table th, .rk-table td { padding:12px; border-bottom:1px solid #e5e7eb; text-align:left; }
+    .rk-table th { background:#f8f9fa; }
+    .rk-pos { font-weight:800; width:60px; }
+    .rk-user { display:flex; align-items:center; gap:10px; }
+    .rk-user img { width:36px; height:36px; border-radius:999px; object-fit:cover; border:1px solid #e5e7eb; }
+    .rk-empty { padding:18px; text-align:center; color:#666; }
+    .btn { display:inline-block; padding:10px 14px; border:none; border-radius:12px; background:#111; color:#fff; text-decoration:none; }
+</style>
+
+<div class="rk-wrap">
+    <div class="rk-title">🏆 Ranking acumulado</div>
+
+    {{#has_ranking}}
+        <table class="rk-table">
+            <thead>
+            <tr>
+                <th>#</th>
+                <th>Usuario</th>
+                <th>Puntaje total</th>
+                <th>Partidas</th>
+            </tr>
+            </thead>
+            <tbody>
+            {{#ranking}}
+                <tr>
+                    <td class="rk-pos">{{pos}}</td>
+                    <td>
+                        <div class="rk-user">
+                            <img src="{{imagen}}" alt="avatar">
+                            <div>{{usuario}}</div>
+                        </div>
+                    </td>
+                    <td>{{puntaje_total_acumulado}}</td>
+                    <td>{{partidas_jugadas}}</td>
+                </tr>
+            {{/ranking}}
+            </tbody>
+        </table>
+    {{/has_ranking}}
+
+    {{^has_ranking}}
+        <div class="rk-empty">Todavía no hay partidas finalizadas para armar el ranking.</div>
+    {{/has_ranking}}
+
+    <div style="margin-top:16px">
+        <a class="btn" href="?controller=home&method=base">⬅ Volver</a>
+    </div>
+</div>

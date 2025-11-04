@@ -19,6 +19,53 @@ class UsuarioModel
         return $this->conexion->query($sql) ?? [];
     }
 
+    public function obtenerDatosPorId(int $id_usuario): ?array
+    {
+        $id = (int)$id_usuario;
+        $sql = "
+        SELECT
+            id_usuario,
+            nombre,
+            apellido,
+            usuario   AS username,
+            mail      AS email,
+            imagen,
+            fecha_nacimiento
+        FROM usuarios
+        WHERE id_usuario = $id
+        LIMIT 1
+    ";
+        $res = $this->conexion->query($sql);
+        return ($res && isset($res[0])) ? $res[0] : null;
+    }
+
+    public function obtenerStats(int $id_usuario): array
+    {
+        $id = (int)$id_usuario;
+
+        $a = $this->conexion->query("
+        SELECT
+            COUNT(*)                AS partidas,
+            COALESCE(MAX(puntaje),0)  AS mejor_puntaje,
+            COALESCE(AVG(puntaje),0)  AS promedio_puntaje
+        FROM juegos
+        WHERE id_usuario = $id AND estado = 'finalizado'
+    ");
+        $stats = $a ? $a[0] : ['partidas'=>0,'mejor_puntaje'=>0,'promedio_puntaje'=>0];
+
+        $b = $this->conexion->query("
+        SELECT COALESCE(puntaje,0) AS ultimo_puntaje
+        FROM juegos
+        WHERE id_usuario = $id AND estado = 'finalizado'
+        ORDER BY finalizado_en DESC
+        LIMIT 1
+    ");
+        $stats['ultimo_puntaje'] = $b ? (int)$b[0]['ultimo_puntaje'] : 0;
+
+        return $stats;
+    }
+
+
     public function obtenerPuntajeTotal($id_usuario)
     {
         $sql = "SELECT SUM(puntaje) as total FROM juegos WHERE id_usuario = $id_usuario";
@@ -49,6 +96,24 @@ class UsuarioModel
         } else {
             return 'intermedia';  //por default entre 30% y 70% son intermedios los usuarios
         }
+    }
+    public function obtenerRankingAcumulado($limite)
+    {
+        $sql = "
+        SELECT u.usuario, 
+               u.imagen,
+               SUM(j.puntaje) AS puntaje_total_acumulado,
+               COUNT(j.id_juego) AS partidas_jugadas
+        FROM usuarios u
+        JOIN juegos j ON u.id_usuario = j.id_usuario
+        WHERE j.estado = 'finalizado'
+        GROUP BY u.id_usuario
+        ORDER BY puntaje_total_acumulado DESC
+        LIMIT {$limite}";
+
+        // Suma todos los puntajes finales de las partidas de cada usuario.
+
+        return $this->conexion->query($sql) ?? [];
     }
 
 
