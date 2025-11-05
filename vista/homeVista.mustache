@@ -1,13 +1,124 @@
-<div class="w3-container w3-center w3-padding-32">
-    <h2>Bienvenido a PregUnLaM, {{nombreUsuario}}!</h2>
-    <img src="{{imagen}}" alt="Imagen de perfil" style="width:150px;height:150px;}">
-    <p>Selecciona una de las siguientes opciones:</p>
-    <!--<div class="w3-bar w3-light-grey w3-round">
-        <a href="/pregunlam/crear" class="w3-bar-item w3-button w3-hover-light-green w3-round">Crear Pregunta</a>
-        <a href="/pregunlam/ver" class="w3-bar-item w3-button w3-hover-light-green w3-round">Ver Preguntas</a>
-        <a href="/pregunlam/misPreguntas" class="w3-bar-item w3-button w3-hover-light-green w3-round">Mis Preguntas</a>
-    </div>-->
-    <a href="/juego/iniciarJuego" class="w3-button w3-green w3-round-large w3-padding-large">
-        🎮 Jugar ahora
-    </a>
+
+<style>
+    :root {
+        --brand-green: #0f9d79;
+        --ink: #0b0b0b;
+        --bg: #f7f7f7;
+        --card: #ffffff;
+        --muted: #6b7280;
+        --ring: rgba(0,0,0,.06);
+    }
+    body { background: var(--bg); }
+    .home-wrap { max-width: 1100px; margin: 36px auto; padding: 0 16px; }
+
+    .hero { display:flex; gap:28px; align-items:center; justify-content:center; flex-wrap:wrap; margin-bottom: 18px; }
+    .avatar { width:120px; height:120px; border-radius:999px; object-fit:cover; box-shadow: 0 8px 20px rgba(0,0,0,.08); border: 3px solid #fff; }
+    .hero-text { text-align:center; }
+    .hero-title { font-size: clamp(22px, 3.2vw, 32px); font-weight: 900; margin: 4px 0 2px; }
+    .hero-sub  { color: var(--muted); }
+
+    .actions { display:flex; gap:12px; justify-content:center; margin: 18px 0 26px; flex-wrap: wrap; }
+    .btn { display:inline-flex; align-items:center; gap:8px; padding:12px 18px; border:none; border-radius:14px; font-weight:800; color:#fff; background: var(--ink); text-decoration:none; box-shadow: 0 6px 14px rgba(0,0,0,.08); transition: transform .08s ease, box-shadow .2s ease; }
+    .btn:hover { transform: translateY(-1px); box-shadow: 0 10px 18px rgba(0,0,0,.12); }
+    .btn-primary { background: #2cb66f; }
+    .btn-outline { background:#111; color:#fff; }
+
+    .grid { display:grid; grid-template-columns: 1fr; gap:18px; }
+    @media (min-width: 960px) { .grid { grid-template-columns: 1fr 1fr; } }
+
+    .card { background: var(--card); border:1px solid #e5e7eb; border-radius:18px; padding:18px; box-shadow: 0 6px 18px var(--ring); }
+    .card-title { display:flex; align-items:center; justify-content:space-between; margin-bottom: 10px; }
+    .card-title h3 { font-size: 18px; font-weight: 900; margin: 0; }
+    .pill { background:#111; color:#fff; padding:6px 10px; border-radius:999px; font-size:12px; font-weight:800; letter-spacing:.02em; }
+
+    .rk-table { width:100%; border-collapse: collapse; }
+    .rk-table th, .rk-table td { padding:12px; border-bottom:1px solid #eef0f2; text-align:left; }
+    .rk-table th { font-size:12px; text-transform:uppercase; letter-spacing:.06em; color: var(--muted); }
+    .rk-user { display:flex; align-items:center; gap:10px; }
+    .rk-user img { width:34px; height:34px; border-radius:999px; object-fit:cover; border:1px solid #e5e7eb; }
+    .rk-pos { font-weight:900; width:40px; }
+    .rk-me  { background: #f2fbf7; }
+    .rk-empty { padding:16px; text-align:center; color: var(--muted); }
+
+    .spacer { height: 8px; }
+</style>
+
+<div class="home-wrap">
+
+    <!-- HERO -->
+    <div class="hero">
+        <div class="hero-text">
+            <div class="hero-title">Bienvenido a <strong>PregUnLaM</strong>, {{nombreUsuario}}!</div>
+            <div class="hero-sub">Seleccioná una de las opciones para empezar</div>
+        </div>
+        <img class="avatar" src="{{imagen}}" alt="Imagen de perfil">
+    </div>
+
+    <!-- ACTIONS -->
+    <div class="actions">
+        <a href="?controller=juego&method=base" class="btn btn-primary">🎮 Jugar ahora</a>
+        <a href="?controller=usuario&method=ranking" class="btn btn-outline">🏆 Ver ranking</a>
+        <a href="?controller=usuario&method=base" class="btn btn-outline">👤 Mi perfil</a>
+        <!-- si usás PerfilController, cambiá por: ?controller=perfil&method=base -->
+    </div>
+
+    <!-- CONTENIDO -->
+    <div class="grid">
+        <!-- Ranking preview -->
+        <div class="card">
+            <div class="card-title">
+                <h3>🏆 Top jugadores</h3>
+                <span class="pill">Live</span>
+            </div>
+
+            {{#ranking}}
+                <table class="rk-table">
+                    <thead>
+                    <tr>
+                        <th>#</th>
+                        <th>Usuario</th>
+                        <th>Puntaje total</th>
+                        <th>Partidas</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    {{#items}}
+                        <tr class="{{#es_actual}}rk-me{{/es_actual}}">
+                            <td class="rk-pos">{{pos}}</td>
+                            <td>
+                                <div class="rk-user">
+                                    <img src="{{imagen}}" alt="avatar">
+                                    <div>{{usuario}}</div>
+                                </div>
+                            </td>
+                            <td>{{puntaje_total_acumulado}}</td>
+                            <td>{{partidas_jugadas}}</td>
+                        </tr>
+                    {{/items}}
+                    </tbody>
+                </table>
+
+                {{^items}}
+                    <div class="rk-empty">Todavía no hay partidas finalizadas para armar el ranking.</div>
+                {{/items}}
+            {{/ranking}}
+
+            <div class="spacer"></div>
+            <a href="?controller=usuario&method=ranking" class="btn btn-outline">🔎 Ver todos</a>
+        </div>
+
+        <!-- Tarjeta lateral -->
+        <div class="card">
+            <div class="card-title">
+                <h3>🎯 Consejos rápidos</h3>
+                <span class="pill">Nuevo</span>
+            </div>
+            <ul style="margin:0; padding:0 0 0 18px; line-height:1.6;">
+                <li>Las preguntas ajustan la dificultad según tu desempeño.</li>
+                <li>Sumá puntos encadenando respuestas correctas.</li>
+                <li>El ranking se actualiza con cada partida: ¡volvé seguido!</li>
+            </ul>
+        </div>
+    </div>
 </div>
+

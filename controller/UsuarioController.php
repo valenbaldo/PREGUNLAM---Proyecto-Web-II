@@ -13,15 +13,26 @@ class UsuarioController
     public function base()
     {
         $this->estalogeado();
+        $idUsuario = (int)$_SESSION['id_usuario'];
 
-        $idUsuario = $_SESSION['id_usuario'];
+        $usuario = $this->model->obtenerDatosPorId($idUsuario) ?? [
+            'id_usuario'       => $idUsuario,
+            'nombre'           => $_SESSION['usuario'] ?? 'Usuario',
+            'apellido'         => '',
+            'username'         => $_SESSION['usuario'] ?? 'usuario',
+            'email'            => $_SESSION['mail'] ?? '',
+            'imagen'           => $_SESSION['imagen'] ?? '/imagenes/default.png',
+            'fecha_nacimiento' => '',
+        ];
 
-        $datosPerfil = $this->model->obtenerDatosPorId($idUsuario);
+        $stats = $this->model->obtenerStats($idUsuario);
 
         $data = [
-            'perfil' => $datosPerfil,
-            'logueado' => true
+            'usuario' => $usuario,
+            'stats'   => $stats,
+            'logueado'=> true
         ];
+
 
         $this->renderer->render("perfil", $data);
     }
@@ -43,6 +54,27 @@ class UsuarioController
 
         $this->renderer->render("estadisticas", $data);
     }
+    public function ranking()
+    {
+        $topJugadores = $this->model->obtenerRankingAcumulado(10);
+
+
+        foreach ($topJugadores as $i => &$row) {
+            $row['pos'] = $i + 1;
+            if (empty($row['imagen'])) {
+                $row['imagen'] = '/imagenes/default.png';
+            }
+        }
+
+        $data = [
+            'ranking'        => $topJugadores,
+            'has_ranking'    => count($topJugadores) > 0,
+            'usuario_actual' => $_SESSION['usuario'] ?? null,
+        ];
+
+        $this->renderer->render("ranking", $data);
+    }
+
 
     public function estalogeado(){
         if (!isset($_SESSION['id_usuario'])) {

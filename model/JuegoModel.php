@@ -112,10 +112,10 @@ class JuegoModel
     }
 
     private function actualizarDificultadPregunta($id_pregunta,$esCorrecta){
-        $campo_acierto = $esCorrecta ? ', veces_acertadas = veces_acertadas + 1' : '';
+        $campo_acierto = $esCorrecta ? ', veces_acertada = veces_acertada + 1' : '';
 
         $sql = "UPDATE preguntas
-            SET veces_respondidas = veces_respondidas + 1
+            SET veces_respondida = veces_respondida + 1
             {$campo_acierto} WHERE id_pregunta = {$id_pregunta}";
 
         $this->conexion->execute($sql);

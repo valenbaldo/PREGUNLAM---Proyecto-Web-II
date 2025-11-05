@@ -2,72 +2,88 @@
 
 class JuegoController
 {
-private $juegoModel;
+    private $juegoModel;
 
-private $usuarioModel;
-private $renderer;
+    private $usuarioModel;
+    private $renderer;
 
-public function __construct($juegoModel, $usuarioModel, $renderer){
-    $this->juegoModel = $juegoModel;
-    $this->usuarioModel = $usuarioModel;
-    $this->renderer = $renderer;
+    public function __construct($juegoModel, $usuarioModel, $renderer){
+        $this->juegoModel = $juegoModel;
+        $this->usuarioModel = $usuarioModel;
+        $this->renderer = $renderer;
 
-}
+    }
 
-public function base(){
-    $this->iniciarJuego();
-}
+    public function base(){
+        $this->iniciarJuego();
+    }
 
 
     public function iniciarJuego(){
-
         $this->estalogeado();
-        $id_usuario = $_SESSION['id_usuario'];
-        $nombreUsuario = $_SESSION['nombreUsuario'];
-        if(!$_SESSION['esCorrecta']){
+
+        $id_usuario     = $_SESSION['id_usuario'];
+        $nombreUsuario  = $_SESSION['nombreUsuario'];
+
+
+        if (!($_SESSION['esCorrecta'] ?? false)) {
             $_SESSION['id_juego'] = $this->juegoModel->iniciarJuego($id_usuario);
         }
-        if (!isset($_SESSION['preguntaPendiente'])){
-            $nivelUsuario = $this->usuarioModel->obtenerNivelUsuario($id_usuario);
+
+
+        if (!isset($_SESSION['preguntaPendiente'])) {
+            $nivelUsuario  = $this->usuarioModel->obtenerNivelUsuario($id_usuario);
             $datosPregunta = $this->juegoModel->obtenerPreguntaPorNivel($id_usuario, $nivelUsuario);
-        }else
-        {
+        } else {
             $datosPregunta = $_SESSION['preguntaPendiente'];
         }
 
-        $juego = $this->juegoModel->obtenerJuego($_SESSION['id_juego']);
 
-        if($datosPregunta == null){
+        if ($datosPregunta == null) {
             $this->finalizarJuego();
-        }else{
-            $_SESSION['preguntaPendiente'] = $datosPregunta;
-            $data = [
-                "pregunta" => $datosPregunta,
-                "nombreUsuario" => $nombreUsuario,
-                "puntaje" => $juego[0]['puntaje']
-            ];
-            $this->renderer->render("juego", $data);
+            return;
         }
 
+
+        $_SESSION['preguntaPendiente'] = $datosPregunta;
+
+
+        $juego = $this->juegoModel->obtenerJuego($_SESSION['id_juego']);
+
+
+        $respondidas = 0;
+        if (!empty($_SESSION['preguntas_respondidas'])) {
+            $respondidas = max(0, count($_SESSION['preguntas_respondidas']) - 1);
+        }
+
+
+        $data = [
+            "pregunta"      => $datosPregunta,
+            "nombreUsuario" => $nombreUsuario,
+            "puntaje"       => $juego[0]['puntaje'],
+            "respondidas"   => $respondidas,  // 👈 acá va el contador
+        ];
+        $this->renderer->render("juego", $data);
     }
+
     public function responder(){
         $this->estalogeado();
-    $id_pregunta = $_POST['id_pregunta'];
-    $respuestaElegida = $_POST['respuesta_elegida'];
-    $id_usuario = $_SESSION['id_usuario'];
-    $juego = $this->juegoModel->obtenerJuego($_SESSION['id_juego']);
+        $id_pregunta = $_POST['id_pregunta'];
+        $respuestaElegida = $_POST['respuesta_elegida'];
+        $id_usuario = $_SESSION['id_usuario'];
+        $juego = $this->juegoModel->obtenerJuego($_SESSION['id_juego']);
 
-    $resultado = $this->juegoModel->validarRespuesta($id_pregunta, $respuestaElegida,  $id_usuario);
-    unset($_SESSION['preguntaPendiente']);
-    $estado = $juego[0]['estado'];
-    if($resultado['esCorrecta'] && $estado == 'activo'){
-        $this->juegoModel->actualizarPuntaje($resultado['puntos_ganados'], $_SESSION['id_juego']);
-        $_SESSION['esCorrecta'] = $resultado['esCorrecta'];
-        header("Location: /juego");
-        exit();
-    }else{
-        $this->finalizarJuego();
-    }
+        $resultado = $this->juegoModel->validarRespuesta($id_pregunta, $respuestaElegida,  $id_usuario);
+        unset($_SESSION['preguntaPendiente']);
+        $estado = $juego[0]['estado'];
+        if($resultado['esCorrecta'] && $estado == 'activo'){
+            $this->juegoModel->actualizarPuntaje($resultado['puntos_ganados'], $_SESSION['id_juego']);
+            $_SESSION['esCorrecta'] = $resultado['esCorrecta'];
+            header("Location: /juego");
+            exit();
+        }else{
+            $this->finalizarJuego();
+        }
     }
 
     public function finalizarJuego()
