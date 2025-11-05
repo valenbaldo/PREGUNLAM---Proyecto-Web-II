@@ -1,4 +1,16 @@
-<style>
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Partida - PregUnLaM</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <style>
+    /* animación simple para "ruleta" */
+    .wheel { width:160px;height:160px;border-radius:9999px;border:8px solid #111;display:flex;align-items:center;justify-content:center;cursor:pointer;box-shadow:0 8px 30px rgba(0,0,0,.12) }
+    .spin { transition: transform 1s cubic-bezier(.2,.8,.2,1); }
     .game-wrap { max-width: 780px; margin: 32px auto; padding: 24px; border: 1px solid #e5e7eb; border-radius: 14px; box-shadow: 0 2px 10px rgba(0,0,0,.06);}
     .game-head { display:flex; justify-content:space-between; align-items:center; margin-bottom: 18px; }
     .pill { background:#111; color:#fff; padding:6px 12px; border-radius:999px; font-size:14px; }
@@ -7,51 +19,122 @@
     .opt input { margin-right:10px; transform: translateY(1px); }
     .btn { display:inline-block; margin-top:12px; padding:12px 18px; border:none; border-radius:12px; background:#111; color:#fff; font-weight:700; cursor:pointer; }
     .btn:disabled { opacity:.5; cursor:not-allowed; }
-</style>
+  </style>
+</head>
+<body class="bg-gray-100 min-h-screen">
+  <div class="max-w-3xl mx-auto p-6">
+    <div class="bg-white rounded-xl shadow p-6">
+      <div class="flex items-center justify-between mb-4" id="gameHeader" data-id="{{id_juego}}">
+        <div>
+          <h2 class="text-xl font-bold">Partida #{{id_juego}}</h2>
+          <div class="text-sm text-gray-600">Tu usuario: {{nombreUsuario}}</div>
+        </div>
+        <div>
+          <div class="text-sm text-gray-600">Puntaje: <span id="puntaje">0</span></div>
+        </div>
+      </div>
 
-<div class="game-wrap">
-    <div class="game-head">
-        <div class="pill">Puntaje: {{puntaje}}</div>
-        <div>Preguntas respondidas: {{respondidas}}</div>
+      <div class="flex items-center gap-6">
+        <div id="wheel" class="wheel bg-green-500 text-white spin" title="Girar ruleta">
+          GIRAR
+        </div>
+        <div class="flex-1">
+          <div id="categoria" class="text-sm text-gray-500 mb-2"></div>
+          <div id="preguntaBox" class="p-4 bg-gray-50 rounded-lg hidden">
+            <div id="preguntaTexto" class="text-lg font-semibold mb-3"></div>
+            <div id="opciones" class="grid grid-cols-1 gap-3"></div>
+          </div>
+          <div id="mensaje" class="mt-3 text-sm"></div>
+        </div>
+      </div>
+
+      <div class="mt-6">
+        <button id="btn-volver" class="px-4 py-2 bg-gray-200 rounded">Volver al lobby</button>
+      </div>
     </div>
-
-
-    <div class="q-text">
-        {{pregunta.pregunta}}
-    </div>
-
-    <form method="POST" action="/juego/responder" id="form-responder">
-        <input type="hidden" name="id_pregunta" value="{{pregunta.id_pregunta}}" />
-
-        <label class="opt">
-            <input type="radio" name="respuesta_elegida" value="A" required />
-            A) {{pregunta.opciones.A}}
-        </label>
-
-        <label class="opt">
-            <input type="radio" name="respuesta_elegida" value="B" required />
-            B) {{pregunta.opciones.B}}
-        </label>
-
-        <label class="opt">
-            <input type="radio" name="respuesta_elegida" value="C" required />
-            C) {{pregunta.opciones.C}}
-        </label>
-
-        <label class="opt">
-            <input type="radio" name="respuesta_elegida" value="D" required />
-            D) {{pregunta.opciones.D}}
-        </label>
-
-        <button class="btn" type="submit">Responder</button>
-    </form>
-</div>
+  </div>
 
 <script>
-    // Evita doble submit por ansiosos :)
-    document.getElementById('form-responder')?.addEventListener('submit', function (e) {
-        const btn = this.querySelector('button[type="submit"]');
-        if (btn) { btn.disabled = true; btn.textContent = 'Enviando...'; }
+(function(){
+  let idJuego = 0;
+  const gameHeader = document.getElementById('gameHeader');
+  if (gameHeader) idJuego = parseInt(gameHeader.getAttribute('data-id')||'0',10) || 0;
+
+  const spinEl = document.getElementById('wheel');
+  const mensajeEl = document.getElementById('mensaje');
+  const preguntaBox = document.getElementById('preguntaBox');
+  const preguntaTexto = document.getElementById('preguntaTexto');
+  const opcionesEl = document.getElementById('opciones');
+  const puntajeEl = document.getElementById('puntaje');
+
+  async function fetchJson(route, body){
+    const res = await fetch(route, {
+      method:'POST',
+      credentials:'same-origin',
+      headers:{'Content-Type':'application/x-www-form-urlencoded','X-Requested-With':'XMLHttpRequest'},
+      body: new URLSearchParams(body).toString()
     });
+    const text = await res.text();
+    try { return JSON.parse(text); } catch(e){ return { success:false, __rawStatus: res.status, __rawBody: text }; }
+  }
+
+  async function obtenerIdJuegoServidor(){
+    const r = await fetchJson('index.php?controller=juego&method=ajaxGetJuego', {});
+    if (r && r.success && r.data && r.data.id_juego) {
+      idJuego = parseInt(r.data.id_juego,10);
+      if (gameHeader) gameHeader.setAttribute('data-id', idJuego);
+      return true;
+    }
+    return false;
+  }
+
+  async function ajaxRuletaCall(){
+    if (!idJuego) {
+      const ok = await obtenerIdJuegoServidor();
+      if (!ok) { mensajeEl.textContent = 'No hay partida activa.'; return null; }
+    }
+    return await fetchJson('index.php?controller=juego&method=ajaxRuleta', { id_juego: idJuego });
+  }
+
+  async function ajaxResponderCall(payload){
+    return await fetchJson('index.php?controller=juego&method=ajaxResponder', payload);
+  }
+
+  spinEl.addEventListener('click', async () => {
+    mensajeEl.textContent = 'Girando...';
+    const res = await ajaxRuletaCall();
+    if (!res || !res.success) { mensajeEl.textContent = res && res.error ? res.error : 'Error al girar'; console.log(res); return; }
+    const p = res.data.pregunta;
+    preguntaTexto.textContent = p.pregunta;
+    opcionesEl.innerHTML = '';
+    ['A','B','C','D'].forEach(k=>{
+      const btn = document.createElement('button');
+      btn.textContent = k + ') ' + (p.opciones[k]||'');
+      btn.dataset.opt = k;
+      btn.addEventListener('click', async (e)=>{
+        Array.from(opcionesEl.children).forEach(b=>b.disabled=true);
+        mensajeEl.textContent = 'Enviando respuesta...';
+        const r2 = await ajaxResponderCall({ id_juego: idJuego, id_pregunta: p.id_pregunta, opcion: e.currentTarget.dataset.opt });
+        console.log('ajaxResponder resp', r2);
+        if (!r2 || !r2.success) { mensajeEl.textContent = r2 && r2.error ? r2.error : 'Error al responder'; Array.from(opcionesEl.children).forEach(b=>b.disabled=false); return; }
+        const result = r2.result || {};
+        if (r2.finalize === true) {
+          // partida finalizada por fallo: redirigir a resultado o mostrar modal
+          window.location.href = r2.redirect || '/juego/resultadoJuego';
+          return;
+        }
+        // respuesta correcta: actualizar puntaje y ocultar pregunta para seguir
+        mensajeEl.textContent = result.correct ? '¡Correcto!' : ('Incorrecto. Correcta: '+(result.correcta||'?'));
+        puntajeEl.textContent = result.puntaje ?? puntajeEl.textContent;
+        preguntaBox.classList.add('hidden');
+      });
+      opcionesEl.appendChild(btn);
+    });
+    preguntaBox.classList.remove('hidden');
+    mensajeEl.textContent = '';
+  });
+})();
 </script>
+</body>
+</html>
 

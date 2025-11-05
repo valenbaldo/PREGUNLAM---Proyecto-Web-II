@@ -1,3 +1,22 @@
+document.addEventListener('DOMContentLoaded', function () {
+  try {
+    if (typeof L === 'undefined') {
+      console.debug('Leaflet (L) no cargado — se omite inicialización del mapa.');
+      return;
+    }
+    const mapEl = document.getElementById('map');
+    if (!mapEl) {
+      console.debug('mapaRegistro: contenedor #map no encontrado — inicialización omitida.');
+      return;
+    }
+    const map = L.map(mapEl).setView([0,0], 2);
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
+    // ...resto de inicialización...
+  } catch (err) {
+    console.error('mapaRegistro: error inicializando mapa', err);
+  }
+});
+
 // 1. Inicializar el mapa (centrado en Buenos Aires)
 const map = L.map('mapa').setView([-34.6699, -58.5635], 14);
 
