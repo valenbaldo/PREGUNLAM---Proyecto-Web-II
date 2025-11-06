@@ -29,7 +29,7 @@ class PerfilModel
                    COALESCE(MAX(puntaje),0)  AS mejor_puntaje,
                    COALESCE(AVG(puntaje),0)  AS promedio_puntaje
             FROM juegos
-            WHERE id_usuario = $idUsuario AND estado = 'finalizado'
+            WHERE id_usuario = $idUsuario AND estado IN ('finalizado', 'perdido')
         ";
         $a = $this->conexion->query($sql);
         $stats = $a ? $a[0] : ['partidas'=>0,'mejor_puntaje'=>0,'promedio_puntaje'=>0];
@@ -38,7 +38,7 @@ class PerfilModel
             SELECT COALESCE(puntaje,0) AS ultimo_puntaje,
                    finalizado_en
             FROM juegos
-            WHERE id_usuario = $idUsuario AND estado = 'finalizado'
+            WHERE id_usuario = $idUsuario AND estado IN ('finalizado', 'perdido')
             ORDER BY finalizado_en DESC
             LIMIT 1
         ";

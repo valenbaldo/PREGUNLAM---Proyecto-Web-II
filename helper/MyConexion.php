@@ -15,18 +15,29 @@ class MyConexion
     {
         $result = $this->conexion->query($sql);
 
+        if ($this->conexion->error) {
+            error_log("Error MySQL en query(): " . $this->conexion->error . " - SQL: " . $sql);
+            return false;
+        }
+
         if (is_object($result)) {
             if ($result->num_rows > 0) {
                 return $result->fetch_all(MYSQLI_ASSOC);
+            } else {
+                return [];
             }
-        }else{
-            return [];
+        } else {
+            // Para INSERT, UPDATE, DELETE que no devuelven resultados
+            return true;
         }
-        return null;
     }
 
     public function execute($sql){
-        $this->conexion->query($sql);
-
+        $result = $this->conexion->query($sql);
+        if ($this->conexion->error) {
+            error_log("Error MySQL en execute(): " . $this->conexion->error . " - SQL: " . $sql);
+            return false;
+        }
+        return true;
     }
 }

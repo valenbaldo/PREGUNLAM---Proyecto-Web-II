@@ -49,14 +49,14 @@ class UsuarioModel
             COALESCE(MAX(puntaje),0)  AS mejor_puntaje,
             COALESCE(AVG(puntaje),0)  AS promedio_puntaje
         FROM juegos
-        WHERE id_usuario = $id AND estado = 'finalizado'
+        WHERE id_usuario = $id AND estado IN ('finalizado', 'perdido')
     ");
         $stats = $a ? $a[0] : ['partidas'=>0,'mejor_puntaje'=>0,'promedio_puntaje'=>0];
 
         $b = $this->conexion->query("
         SELECT COALESCE(puntaje,0) AS ultimo_puntaje
         FROM juegos
-        WHERE id_usuario = $id AND estado = 'finalizado'
+        WHERE id_usuario = $id AND estado IN ('finalizado', 'perdido')
         ORDER BY finalizado_en DESC
         LIMIT 1
     ");
@@ -90,13 +90,59 @@ class UsuarioModel
         $porcentaje_acierto = ($aciertos / $respondidas) * 100;
 
         if ($porcentaje_acierto > 70) {
-            return 'dificil';   // si el usuario acierta mas del 70% quiere decir que es de categoria dificil por el nivel de inteligencia
+            return 'dificil';
         } elseif ($porcentaje_acierto < 30) {
-            return 'facil';     // si el usuario acierta menos del 30% quiere decir que es de categoria facil por el nivel de inteligencia
+            return 'facil';
         } else {
-            return 'intermedia';  //por default entre 30% y 70% son intermedios los usuarios
+            return 'intermedia';
         }
     }
+
+    public function obtenerInfoCompleteNivel($id_usuario)
+    {
+        $sql = "SELECT SUM(es_correcta) AS total_aciertos, COUNT(id_juego_pregunta) AS total_respondidas
+            FROM juego_preguntas
+            WHERE id_usuario = $id_usuario";
+
+        $data = $this->conexion->query($sql);
+
+        if (!$data || $data[0]['total_respondidas'] == 0) {
+            return [
+                'nivel' => 'facil',
+                'porcentaje' => 0,
+                'aciertos' => 0,
+                'total' => 0,
+                'mensaje' => 'Principiante - ¡Empezá a jugar!'
+            ];
+        }
+
+        $aciertos = $data[0]['total_aciertos'];
+        $total = $data[0]['total_respondidas'];
+        $porcentaje = round(($aciertos / $total) * 100, 1);
+
+        $nivel = '';
+        $mensaje = '';
+        
+        if ($porcentaje > 70) {
+            $nivel = 'dificil';
+            $mensaje = 'Experto - Preguntas desafiantes';
+        } elseif ($porcentaje < 30) {
+            $nivel = 'facil';
+            $mensaje = 'Principiante - Seguí practicando';
+        } else {
+            $nivel = 'intermedia';
+            $mensaje = 'Intermedio - ¡Vas bien!';
+        }
+
+        return [
+            'nivel' => $nivel,
+            'porcentaje' => $porcentaje,
+            'aciertos' => $aciertos,
+            'total' => $total,
+            'mensaje' => $mensaje
+        ];
+    }
+
     public function obtenerRankingAcumulado($limite)
     {
         $sql = "
@@ -106,42 +152,11 @@ class UsuarioModel
                COUNT(j.id_juego) AS partidas_jugadas
         FROM usuarios u
         JOIN juegos j ON u.id_usuario = j.id_usuario
-        WHERE j.estado = 'finalizado'
+        WHERE j.estado IN ('finalizado', 'perdido')
         GROUP BY u.id_usuario
         ORDER BY puntaje_total_acumulado DESC
         LIMIT {$limite}";
 
-        // Suma todos los puntajes finales de las partidas de cada usuario
-
         return $this->conexion->query($sql) ?? [];
     }
-
-    public function evaluarCambioDeNivel($id_usuario, $minimoPreguntas = 10) {
-    $sql = "SELECT nivel_actual, correctas_nivel, respondidas_nivel
-            FROM usuarios
-            WHERE id_usuario = $id_usuario";
-    $data = $this->conexion->query($sql);
-    if (!$data || $data[0]['respondidas_nivel'] < $minimoPreguntas) {
-        return $data[0]['nivel_actual'];
-    }
-    $ratio = $data[0]['correctas_nivel'] / $data[0]['respondidas_nivel'];
-    $nivelActual = $data[0]['nivel_actual'];
-    $nuevoNivel = $nivelActual;
-    if ($ratio > 0.7 && $nivelActual != 'dificil') {
-        $nuevoNivel = ($nivelActual == 'facil') ? 'intermedia' : 'dificil';
-    } elseif ($ratio < 0.3 && $nivelActual != 'facil') {
-        $nuevoNivel = ($nivelActual == 'dificil') ? 'intermedia' : 'facil';
-    }
-    $sqlUpdate = "UPDATE usuarios SET nivel_actual = '$nuevoNivel', correctas_nivel = 0, respondidas_nivel = 0 WHERE id_usuario = $id_usuario";
-    $this->conexion->query($sqlUpdate);
-    return $nuevoNivel;
-}
-
-public function obtenerNivelActual($id_usuario) {
-    $sql = "SELECT nivel_actual FROM usuarios WHERE id_usuario = $id_usuario";
-    $data = $this->conexion->query($sql);
-    return $data ? $data[0]['nivel_actual'] : 'facil';
-}
-
-
 }

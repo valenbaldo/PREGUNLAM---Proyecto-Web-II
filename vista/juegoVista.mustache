@@ -8,8 +8,7 @@
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
   <style>
-    /* animación simple para "ruleta" */
-    .wheel { width:160px;height:160px;border-radius:9999px;border:8px solid #111;display:flex;align-items:center;justify-content:center;cursor:pointer;box-shadow:0 8px 30px rgba(0,0,0,.12) }
+  .wheel { width:160px;height:160px;border-radius:9999px;border:8px solid #111;display:flex;align-items:center;justify-content:center;cursor:pointer;box-shadow:0 8px 30px rgba(0,0,0,.12) }
     .spin { transition: transform 1s cubic-bezier(.2,.8,.2,1); }
     .game-wrap { max-width: 780px; margin: 32px auto; padding: 24px; border: 1px solid #e5e7eb; border-radius: 14px; box-shadow: 0 2px 10px rgba(0,0,0,.06);}
     .game-head { display:flex; justify-content:space-between; align-items:center; margin-bottom: 18px; }
@@ -28,9 +27,14 @@
         <div>
           <h2 class="text-xl font-bold">Partida #{{id_juego}}</h2>
           <div class="text-sm text-gray-600">Tu usuario: {{nombreUsuario}}</div>
+          {{#nivel_info}}
+          <div class="text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded-full inline-block mt-1" id="nivelInfo">
+            Nivel: {{nivel}} | {{porcentaje}}% aciertos ({{aciertos}}/{{total}}) | {{mensaje}}
+          </div>
+          {{/nivel_info}}
         </div>
         <div>
-          <div class="text-sm text-gray-600">Puntaje: <span id="puntaje">0</span></div>
+          <div class="text-sm text-gray-600">Puntaje: <span id="puntaje">{{puntaje}}</span></div>
         </div>
       </div>
 
@@ -66,6 +70,23 @@
   const preguntaTexto = document.getElementById('preguntaTexto');
   const opcionesEl = document.getElementById('opciones');
   const puntajeEl = document.getElementById('puntaje');
+  const btnVolver = document.getElementById('btn-volver');
+
+  if (btnVolver) {
+    btnVolver.addEventListener('click', () => {
+      const mensaje = '⚠️ Si vuelves al lobby, perderás la partida actual y tu puntaje.\n\n¿Estás seguro de que quieres abandonar?';
+      if (confirm(mensaje)) {
+        fetch('index.php?controller=juego&method=abandonarPartida', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' }
+        }).then(() => {
+          window.location.href = '/home';
+        }).catch(() => {
+          window.location.href = '/home';
+        });
+      }
+    });
+  }
 
   async function fetchJson(route, body){
     const res = await fetch(route, {
@@ -118,12 +139,25 @@
         console.log('ajaxResponder resp', r2);
         if (!r2 || !r2.success) { mensajeEl.textContent = r2 && r2.error ? r2.error : 'Error al responder'; Array.from(opcionesEl.children).forEach(b=>b.disabled=false); return; }
         const result = r2.result || {};
+        
+        // Actualizar información del nivel si está disponible
+        if (r2.nivel_info) {
+          const nivelEl = document.getElementById('nivelInfo');
+          if (nivelEl) {
+            const info = r2.nivel_info;
+            nivelEl.textContent = `Nivel: ${info.nivel} | ${info.porcentaje}% aciertos (${info.aciertos}/${info.total}) | ${info.mensaje}`;
+            // Cambiar color según nivel
+            nivelEl.className = 'text-xs px-2 py-1 rounded-full inline-block mt-1 ' + 
+              (info.nivel === 'dificil' ? 'bg-red-100 text-red-800' : 
+               info.nivel === 'intermedia' ? 'bg-yellow-100 text-yellow-800' : 
+               'bg-green-100 text-green-800');
+          }
+        }
+        
         if (r2.finalize === true) {
-          // partida finalizada por fallo: redirigir a resultado o mostrar modal
           window.location.href = r2.redirect || '/juego/resultadoJuego';
           return;
         }
-        // respuesta correcta: actualizar puntaje y ocultar pregunta para seguir
         mensajeEl.textContent = result.correct ? '¡Correcto!' : ('Incorrecto. Correcta: '+(result.correcta||'?'));
         puntajeEl.textContent = result.puntaje ?? puntajeEl.textContent;
         preguntaBox.classList.add('hidden');

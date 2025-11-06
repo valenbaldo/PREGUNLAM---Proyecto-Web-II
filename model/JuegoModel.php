@@ -1,84 +1,3 @@
-<script>
-(function(){
-  let idJuego = 0;
-  const gameHeader = document.getElementById('gameHeader');
-  if (gameHeader) idJuego = parseInt(gameHeader.getAttribute('data-id')||'0',10) || 0;
-
-  const spinEl = document.getElementById('wheel');
-  const mensajeEl = document.getElementById('mensaje');
-  const preguntaBox = document.getElementById('preguntaBox');
-  const preguntaTexto = document.getElementById('preguntaTexto');
-  const opcionesEl = document.getElementById('opciones');
-  const puntajeEl = document.getElementById('puntaje');
-
-  async function fetchJson(route, body){
-    const res = await fetch(route, {
-      method:'POST',
-      credentials:'same-origin',
-      headers:{'Content-Type':'application/x-www-form-urlencoded','X-Requested-With':'XMLHttpRequest'},
-      body: new URLSearchParams(body).toString()
-    });
-    const text = await res.text();
-    try { return JSON.parse(text); } catch(e){ return { success:false, __rawStatus: res.status, __rawBody: text }; }
-  }
-
-  async function obtenerIdJuegoServidor(){
-    const r = await fetchJson('index.php?controller=juego&method=ajaxGetJuego', {});
-    if (r && r.success && r.data && r.data.id_juego) {
-      idJuego = parseInt(r.data.id_juego,10);
-      if (gameHeader) gameHeader.setAttribute('data-id', idJuego);
-      return true;
-    }
-    return false;
-  }
-
-  async function ajaxRuletaCall(){
-    if (!idJuego) {
-      const ok = await obtenerIdJuegoServidor();
-      if (!ok) { mensajeEl.textContent = 'No hay partida activa.'; return null; }
-    }
-    return await fetchJson('index.php?controller=juego&method=ajaxRuleta', { id_juego: idJuego });
-  }
-
-  async function ajaxResponderCall(payload){
-    return await fetchJson('index.php?controller=juego&method=ajaxResponder', payload);
-  }
-
-  spinEl.addEventListener('click', async () => {
-    mensajeEl.textContent = 'Girando...';
-    const res = await ajaxRuletaCall();
-    if (!res || !res.success) { mensajeEl.textContent = res && res.error ? res.error : 'Error al girar'; console.log(res); return; }
-    const p = res.data.pregunta;
-    preguntaTexto.textContent = p.pregunta;
-    opcionesEl.innerHTML = '';
-    ['A','B','C','D'].forEach(k=>{
-      const btn = document.createElement('button');
-      btn.textContent = k + ') ' + (p.opciones[k]||'');
-      btn.dataset.opt = k;
-      btn.addEventListener('click', async (e)=>{
-        Array.from(opcionesEl.children).forEach(b=>b.disabled=true);
-        mensajeEl.textContent = 'Enviando respuesta...';
-        const r2 = await ajaxResponderCall({ id_juego: idJuego, id_pregunta: p.id_pregunta, opcion: e.currentTarget.dataset.opt });
-        console.log('ajaxResponder resp', r2);
-        if (!r2 || !r2.success) { mensajeEl.textContent = r2 && r2.error ? r2.error : 'Error al responder'; Array.from(opcionesEl.children).forEach(b=>b.disabled=false); return; }
-        const result = r2.result || {};
-        if (r2.finalize === true) {
-          // partida finalizada por fallo: redirigir a resultado o mostrar modal
-          window.location.href = r2.redirect || '/juego/resultadoJuego';
-          return;
-        }
-        // respuesta correcta: actualizar puntaje y ocultar pregunta para seguir
-        mensajeEl.textContent = result.correct ? '¡Correcto!' : ('Incorrecto. Correcta: '+(result.correcta||'?'));
-        puntajeEl.textContent = result.puntaje ?? puntajeEl.textContent;
-        preguntaBox.classList.add('hidden');
-      });
-      opcionesEl.appendChild(btn);
-    });
-    preguntaBox.classList.remove('hidden');
-    mensajeEl.textContent = '';
-  });
-})();
-
 <?php
 
 class JuegoModel
@@ -90,79 +9,120 @@ class JuegoModel
         $this->conexion = $conexion;
     }
 
-    // INICIO: métodos nuevos para ruleta + respuesta segura
-    /**
-     * Girar la ruleta: el servidor elige una categoría aleatoria y devuelve
-     * una pregunta válida para la partida. Registra la pregunta en juego_preguntas.
-     */
-    public function girarRuleta(int $id_juego, int $id_usuario)
+    public function iniciarJuego($id_usuario)
+    {
+        $id_usuario = intval($id_usuario);
+        $this->conexion->execute("INSERT INTO juegos (id_usuario, puntaje, estado, iniciado_en) VALUES ($id_usuario, 0, 'activo', NOW())");
+        $result = $this->conexion->query("SELECT LAST_INSERT_ID() as id_juego");
+        return $result[0]['id_juego'];
+    }
+
+    public function obtenerPreguntaPorNivel($id_usuario, $nivel_usuario, $id_juego = null)
+    {
+        $id_usuario = intval($id_usuario);
+        
+        if (is_string($nivel_usuario)) {
+            switch($nivel_usuario) {
+                case 'facil': $nivel_usuario = 1; break;
+                case 'intermedia': $nivel_usuario = 4; break;
+                case 'dificil': $nivel_usuario = 7; break;
+                default: $nivel_usuario = 1;
+            }
+        } else {
+            $nivel_usuario = intval($nivel_usuario);
+        }
+        
+        $sql = "SELECT p.id_pregunta, p.pregunta, p.id_categoria, r.a, r.b, r.c, r.d, r.es_correcta, c.nombre as categoria,
+                COALESCE(
+                    (SELECT COUNT(*) FROM juego_preguntas jp2 WHERE jp2.id_pregunta = p.id_pregunta AND jp2.es_correcta = 1), 0
+                ) as aciertos,
+                COALESCE(
+                    (SELECT COUNT(*) FROM juego_preguntas jp3 WHERE jp3.id_pregunta = p.id_pregunta AND jp3.id_respuesta_elegida IS NOT NULL), 0
+                ) as total_respuestas,
+                CASE 
+                    WHEN (SELECT COUNT(*) FROM juego_preguntas jp4 WHERE jp4.id_pregunta = p.id_pregunta AND jp4.id_respuesta_elegida IS NOT NULL) = 0 THEN 0.5
+                    ELSE (SELECT COUNT(*) FROM juego_preguntas jp5 WHERE jp5.id_pregunta = p.id_pregunta AND jp5.es_correcta = 1) / 
+                         (SELECT COUNT(*) FROM juego_preguntas jp6 WHERE jp6.id_pregunta = p.id_pregunta AND jp6.id_respuesta_elegida IS NOT NULL)
+                END as dificultad_ratio
+                FROM preguntas p
+                JOIN respuestas r ON r.id_pregunta = p.id_pregunta
+                JOIN categorias c ON c.id_categoria = p.id_categoria
+                WHERE p.id_pregunta NOT IN (
+                    SELECT DISTINCT jp.id_pregunta 
+                    FROM juego_preguntas jp 
+                    WHERE jp.id_usuario = $id_usuario
+                )
+                HAVING (
+                    (dificultad_ratio >= 0.7 AND $nivel_usuario <= 2) OR
+                    (dificultad_ratio >= 0.4 AND dificultad_ratio < 0.7 AND $nivel_usuario BETWEEN 3 AND 5) OR
+                    (dificultad_ratio < 0.4 AND $nivel_usuario >= 6) OR
+                    (total_respuestas < 3)
+                )
+                ORDER BY RAND() LIMIT 1";
+        
+        $resultado = $this->conexion->query($sql);
+        
+        if (!$resultado || !is_array($resultado) || count($resultado) === 0) {
+            $sql_fallback = "SELECT p.id_pregunta, p.pregunta, p.id_categoria, r.a, r.b, r.c, r.d, r.es_correcta, c.nombre as categoria
+                FROM preguntas p
+                JOIN respuestas r ON r.id_pregunta = p.id_pregunta
+                JOIN categorias c ON c.id_categoria = p.id_categoria
+                WHERE p.id_pregunta NOT IN (
+                    SELECT DISTINCT jp.id_pregunta 
+                    FROM juego_preguntas jp 
+                    WHERE jp.id_usuario = $id_usuario
+                )
+                ORDER BY RAND() LIMIT 1";
+            
+            $resultado = $this->conexion->query($sql_fallback);
+            
+            if (!$resultado || !is_array($resultado) || count($resultado) === 0) {
+                return null;
+            }
+        }
+        
+        $pregunta = $resultado[0];
+        
+        if ($id_juego) {
+            $this->registrarPreguntaMostrada($id_juego, $id_usuario, $pregunta['id_pregunta']);
+        }
+        
+        return [
+            'id_pregunta' => $pregunta['id_pregunta'],
+            'pregunta' => $pregunta['pregunta'],
+            'categoria' => $pregunta['categoria'],
+            'opciones' => [
+                'A' => $pregunta['a'],
+                'B' => $pregunta['b'],
+                'C' => $pregunta['c'],
+                'D' => $pregunta['d']
+            ],
+            'respuesta_correcta' => $pregunta['es_correcta']
+        ];
+    }
+
+    public function girarRuleta(int $id_juego, int $id_usuario, string $nivel_usuario = 'facil')
     {
         $id_juego = intval($id_juego);
         $id_usuario = intval($id_usuario);
 
-        // verificar partida y pertenencia (simple: id_usuario en juegos)
         $g = $this->conexion->query("SELECT * FROM juegos WHERE id_juego = $id_juego LIMIT 1");
         if (!$g || !isset($g[0])) {
             return ['error' => 'Partida no encontrada'];
         }
-        // si la partida almacena id_usuario como propietario
         if ((int)$g[0]['id_usuario'] !== $id_usuario) {
             return ['error' => 'No autorizado para jugar esta partida'];
         }
 
-        // elegir categoría aleatoria
-        $cats = $this->conexion->query("SELECT id_categoria, nombre FROM categorias");
-        if (!$cats || count($cats) === 0) return ['error' => 'No hay categorías definidas'];
-        $cat = $cats[array_rand($cats)];
-        $id_cat = intval($cat['id_categoria']);
-
-        // obtener preguntas ya usadas en esta partida
-        $usedRows = $this->conexion->query("SELECT id_pregunta FROM juego_preguntas WHERE id_juego = $id_juego");
-        $used = [];
-        if ($usedRows) foreach ($usedRows as $r) $used[] = intval($r['id_pregunta']);
-        $excluir = count($used) ? implode(',', $used) : '0';
-
-        // seleccionar una pregunta de la categoría no usada en la partida
-        $sql = "SELECT p.id_pregunta, p.pregunta, r.a, r.b, r.c, r.d, r.es_correcta
-                FROM preguntas p
-                JOIN respuestas r ON r.id_pregunta = p.id_pregunta
-                WHERE p.id_categoria = $id_cat
-                  AND p.id_pregunta NOT IN ($excluir)
-                ORDER BY RAND() LIMIT 1";
-        $q = $this->conexion->query($sql);
-
-        // fallback: cualquier pregunta no usada
-        if (!$q || count($q) === 0) {
-            $q = $this->conexion->query("SELECT p.id_pregunta, p.pregunta, r.a, r.b, r.c, r.d, r.es_correcta
-                FROM preguntas p
-                JOIN respuestas r ON r.id_pregunta = p.id_pregunta
-                WHERE p.id_pregunta NOT IN ($excluir)
-                ORDER BY RAND() LIMIT 1");
-            if (!$q || count($q) === 0) {
-                return ['error' => 'No hay preguntas disponibles'];
-            }
+        $pregunta = $this->obtenerPreguntaPorNivel($id_usuario, $nivel_usuario, $id_juego);
+        
+        if (!$pregunta) {
+            return ['error' => '🎉 ¡Felicitaciones! Has visto todas las preguntas disponibles para tu nivel.'];
         }
 
-        $preg = $q[0];
-
-        // registrar pregunta mostrada para esta partida y usuario (evita que el cliente "falsifique")
-        $this->conexion->execute("INSERT INTO juego_preguntas (id_juego, id_pregunta, id_usuario, creado_en) VALUES ($id_juego, " . intval($preg['id_pregunta']) . ", $id_usuario, NOW())");
-
-        return [
-            'categoria' => ['id' => $id_cat, 'nombre' => $cat['nombre']],
-            'pregunta' => [
-                'id_pregunta' => (int)$preg['id_pregunta'],
-                'pregunta' => $preg['pregunta'],
-                'opciones' => ['A' => $preg['a'], 'B' => $preg['b'], 'C' => $preg['c'], 'D' => $preg['d']]
-            ]
-        ];
+        return ['pregunta' => $pregunta];
     }
 
-    /**
-     * Procesar respuesta enviada por el cliente.
-     * Valida que la pregunta fue provista por el servidor (existe en juego_preguntas
-     * para esta partida y usuario) y que no fue respondida ya.
-     */
     public function procesarRespuesta(int $id_juego, int $id_usuario, int $id_pregunta, string $opcion)
     {
         $id_juego = intval($id_juego);
@@ -170,36 +130,29 @@ class JuegoModel
         $id_pregunta = intval($id_pregunta);
         $opcion = strtoupper(substr($opcion, 0, 1));
 
-        // buscar registro en juego_preguntas (último inserto para esta pregunta)
         $rows = $this->conexion->query("SELECT * FROM juego_preguntas WHERE id_juego = $id_juego AND id_pregunta = $id_pregunta AND id_usuario = $id_usuario ORDER BY id_juego_pregunta DESC LIMIT 1");
         if (!$rows || count($rows) === 0) {
             return ['error' => 'Pregunta no autorizada para esta partida'];
         }
         $jp = $rows[0];
 
-        // evitar doble respuesta (si ya tiene opcion_elegida o es_correcta no es nulo)
-        $alreadyAnswered = false;
-        if (array_key_exists('opcion_elegida', $jp) && $jp['opcion_elegida'] !== null && $jp['opcion_elegida'] !== '') $alreadyAnswered = true;
-        if (array_key_exists('es_correcta', $jp) && $jp['es_correcta'] !== null && $jp['es_correcta'] !== '0') $alreadyAnswered = $alreadyAnswered || ($jp['es_correcta'] !== null && $jp['es_correcta'] !== '');
-
-        if ($alreadyAnswered) return ['error' => 'La pregunta ya fue respondida'];
-
-        // obtener letra correcta del registro respuestas
-        $r = $this->conexion->query("SELECT es_correcta FROM respuestas WHERE id_pregunta = $id_pregunta LIMIT 1");
-        if (!$r || !isset($r[0]['es_correcta'])) return ['error' => 'No se encontró la respuesta correcta'];
-        $correct = strtoupper($r[0]['es_correcta']);
-        $isCorrect = ($opcion === $correct) ? 1 : 0;
-
-        // actualizar juego_preguntas (si existe columna opcion_elegida la usamos; si no, solo es_correcta)
-        $checkOpc = $this->conexion->query("SHOW COLUMNS FROM juego_preguntas LIKE 'opcion_elegida'");
-        if ($checkOpc && count($checkOpc)) {
-            $this->conexion->execute("UPDATE juego_preguntas SET opcion_elegida = '" . addslashes($opcion) . "', es_correcta = $isCorrect WHERE id_juego = $id_juego AND id_pregunta = $id_pregunta AND id_usuario = $id_usuario");
-        } else {
-            // solo es_correcta
-            $this->conexion->execute("UPDATE juego_preguntas SET es_correcta = $isCorrect WHERE id_juego = $id_juego AND id_pregunta = $id_pregunta AND id_usuario = $id_usuario");
+        if ($jp['id_respuesta_elegida'] !== null) {
+            return ['error' => 'La pregunta ya fue respondida'];
         }
 
-        // actualizar puntaje en tabla juegos (simple)
+        $r = $this->conexion->query("SELECT id_respuesta, es_correcta FROM respuestas WHERE id_pregunta = $id_pregunta LIMIT 1");
+        if (!$r || !isset($r[0]['es_correcta'])) return ['error' => 'No se encontró la respuesta correcta'];
+        $correct = strtoupper($r[0]['es_correcta']);
+        $id_respuesta = $r[0]['id_respuesta'];
+        $isCorrect = ($opcion === $correct) ? 1 : 0;
+
+        $checkOpc = $this->conexion->query("SHOW COLUMNS FROM juego_preguntas LIKE 'opcion_elegida'");
+        if ($checkOpc && count($checkOpc)) {
+            $this->conexion->execute("UPDATE juego_preguntas SET opcion_elegida = '" . addslashes($opcion) . "', es_correcta = $isCorrect, id_respuesta_elegida = $id_respuesta WHERE id_juego = $id_juego AND id_pregunta = $id_pregunta AND id_usuario = $id_usuario");
+        } else {
+            $this->conexion->execute("UPDATE juego_preguntas SET es_correcta = $isCorrect, id_respuesta_elegida = $id_respuesta WHERE id_juego = $id_juego AND id_pregunta = $id_pregunta AND id_usuario = $id_usuario");
+        }
+
         if ($isCorrect) {
             $this->conexion->execute("UPDATE juegos SET puntaje = COALESCE(puntaje,0) + 1 WHERE id_juego = $id_juego");
         }
@@ -212,9 +165,7 @@ class JuegoModel
             'puntaje' => (int)$puntaje
         ];
     }
-    // FIN: métodos nuevos
 
-    // Stubs mínimos — reemplazá por tu lógica real luego
     public function obtenerJuegoActivo($id_usuario)
     {
         $id = intval($id_usuario);
@@ -224,10 +175,11 @@ class JuegoModel
 
     public function obtenerJuego($id_juego)
     {
-        return null;
+        $id = intval($id_juego);
+        $res = $this->conexion->query("SELECT * FROM juegos WHERE id_juego = $id LIMIT 1");
+        return (isset($res[0]) && is_array($res[0])) ? [$res[0]] : null;
     }
 
-    // Devuelve el puntaje actual de la partida (si existe columna puntaje en juegos)
     public function obtenerPuntajeJuego($id_juego)
     {
         $id = intval($id_juego);
@@ -235,30 +187,46 @@ class JuegoModel
         if ($res && isset($res[0]['puntaje'])) {
             return (int)$res[0]['puntaje'];
         }
-
-        // Fallback: calcular a partir de juego_preguntas (suma de es_correcta)
-        $rows = $this->conexion->query("SELECT COALESCE(SUM(es_correcta),0) AS aciertos FROM juego_preguntas WHERE id_juego = $id");
-        if ($rows && isset($rows[0]['aciertos'])) {
-            return (int)$rows[0]['aciertos'];
-        }
-
         return 0;
     }
 
-    // Aumenta el puntaje de la partida (por ejemplo al responder correctamente)
-    public function actualizarPuntaje($incremento, $id_juego)
-    {
-        $inc = intval($incremento);
-        $id = intval($id_juego);
-        $this->conexion->execute("UPDATE juegos SET puntaje = COALESCE(puntaje,0) + $inc WHERE id_juego = $id");
-    }
-
-    // Marca la partida como finalizada y guarda el puntaje final
     public function guardarPartida($puntajeFinal, $id_juego)
     {
         $p = intval($puntajeFinal);
         $id = intval($id_juego);
         $this->conexion->execute("UPDATE juegos SET puntaje = $p, estado = 'finalizado', finalizado_en = NOW() WHERE id_juego = $id");
+    }
+
+    public function marcarPartidaPerdida($id_juego)
+    {
+        $id = intval($id_juego);
+        $puntajeActual = $this->obtenerPuntajeJuego($id);
+        $this->conexion->execute("UPDATE juegos SET puntaje = $puntajeActual, estado = 'perdido', finalizado_en = NOW() WHERE id_juego = $id");
+    }
+
+    public function registrarPreguntaMostrada($id_juego, $id_usuario, $id_pregunta)
+    {
+        $id_juego = intval($id_juego);
+        $id_usuario = intval($id_usuario);
+        $id_pregunta = intval($id_pregunta);
+        
+        $exists = $this->conexion->query("SELECT COUNT(*) as count FROM juego_preguntas WHERE id_juego = $id_juego AND id_pregunta = $id_pregunta AND id_usuario = $id_usuario");
+        
+        if ($exists && isset($exists[0]['count']) && $exists[0]['count'] > 0) {
+            return;
+        }
+        
+        $sql = "INSERT INTO juego_preguntas (id_juego, id_pregunta, id_usuario, id_respuesta_elegida, es_correcta, usada_trampita, creado_en) 
+                VALUES ($id_juego, $id_pregunta, $id_usuario, NULL, 0, 0, NOW())";
+        
+        $this->conexion->execute($sql);
+    }
+
+    public function resetearHistorialUsuario($id_usuario)
+    {
+        $id_usuario = intval($id_usuario);
+        $sql = "DELETE FROM juego_preguntas WHERE id_usuario = $id_usuario";
+        $this->conexion->execute($sql);
     }
 }
 ?>
