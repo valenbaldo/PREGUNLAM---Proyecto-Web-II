@@ -30,6 +30,11 @@ class JuegoController
         if ($partidaActiva && $partidaActiva['estado'] === 'activo') {
             $_SESSION['id_juego'] = $partidaActiva['id_juego'];
         } else {
+            if ($partidaActiva) {
+                $this->juegoModel->marcarPartidaPerdida($partidaActiva['id_juego']);
+            }
+            unset($_SESSION['puntajeFinal']);
+            unset($_SESSION['esCorrecta']);
             $_SESSION['id_juego'] = $this->juegoModel->iniciarJuego($id_usuario);
         }
 
@@ -71,12 +76,27 @@ class JuegoController
     public function finalizarJuego()
     {
         $this->estalogeado();
+        $user = $_SESSION['id_usuario'];
         $juego = $this->juegoModel->obtenerJuego($_SESSION['id_juego']);
         $nombreUsuario = $_SESSION['nombreUsuario'];
-        $puntajeFinal = $juego[0]['puntaje'];
+        
+        $infoNivelAnterior = $this->usuarioModel->obtenerInfoCompleteNivel($user);
+        $nivelAnterior = $infoNivelAnterior['nivel'];
+        
+        $puntajeFinal = $this->juegoModel->obtenerPuntajeJuego($_SESSION['id_juego']);
+        
         $_SESSION['puntajeFinal'] = $puntajeFinal;
         $_SESSION['esCorrecta'] = false;
         $this->juegoModel->guardarPartida($puntajeFinal, $_SESSION['id_juego']);
+        
+        $infoNivelNuevo = $this->usuarioModel->obtenerInfoCompleteNivel($user);
+        $nivelNuevo = $infoNivelNuevo['nivel'];
+        $cambioNivel = $this->determinarCambioNivel($nivelAnterior, $nivelNuevo);
+        
+        $_SESSION['nivel_anterior'] = $nivelAnterior;
+        $_SESSION['nivel_nuevo'] = $nivelNuevo;
+        $_SESSION['cambio_nivel'] = $cambioNivel;
+        
         header('Location: /juego/resultadoJuego');
         exit();
     }
@@ -84,10 +104,35 @@ class JuegoController
     public function resultadoJuego(){
         $this->estalogeado();
         $nombreUsuario = $_SESSION['nombreUsuario'];
-        $puntajeFinal = $_SESSION['puntajeFinal'];
+        
+        $puntajeFinal = $_SESSION['puntajeFinal'] ?? 0;
+        
+        if (!$puntajeFinal && isset($_SESSION['id_juego'])) {
+            $puntajeFinal = $this->juegoModel->obtenerPuntajeJuego($_SESSION['id_juego']);
+        }
+        
+        $mensajeCambioNivel = '';
+        if (isset($_SESSION['cambio_nivel']) && isset($_SESSION['nivel_anterior']) && isset($_SESSION['nivel_nuevo'])) {
+            $cambio = $_SESSION['cambio_nivel'];
+            $anterior = $_SESSION['nivel_anterior'];
+            $nuevo = $_SESSION['nivel_nuevo'];
+            
+            if ($cambio === 'subio') {
+                $mensajeCambioNivel = "¡Subiste de nivel! $anterior → $nuevo";
+            } elseif ($cambio === 'bajo') {
+                $mensajeCambioNivel = "Bajaste de nivel: $anterior → $nuevo";
+            } else {
+                $mensajeCambioNivel = "Mantuviste tu nivel: $nuevo";
+            }
+        }
+        
         $data = [
             "nombreUsuario" => $nombreUsuario,
-            "puntaje" => $puntajeFinal
+            "puntaje" => $puntajeFinal,
+            "nivel_anterior" => $_SESSION['nivel_anterior'] ?? null,
+            "nivel_nuevo" => $_SESSION['nivel_nuevo'] ?? null,
+            "cambio_nivel" => $_SESSION['cambio_nivel'] ?? null,
+            "mensaje_cambio_nivel" => $mensajeCambioNivel
         ];
         $this->renderer->render("resultadoJuego", $data);
     }
@@ -137,7 +182,7 @@ class JuegoController
 
         if (!$user || !$idJuego) {
             http_response_code(401);
-            echo json_encode(['success'=>false,'error'=>'No autorizado','session_user'=>$user,'id_juego'=>$idJuego]);
+            echo json_encode(['success'=>false,'error'=>'No autorizado']);
             exit;
         }
 
@@ -147,6 +192,7 @@ class JuegoController
             echo json_encode(['success'=>false,'error'=>$data['error']]);
             exit;
         }
+        
         echo json_encode(['success'=>true,'data'=>$data]);
         exit;
     }
@@ -163,7 +209,7 @@ class JuegoController
 
         if (!$user || !$idJuego || !$idPreg || !$op) {
             http_response_code(400);
-            echo json_encode(['success'=>false,'error'=>'Datos inválidos','received'=>$_POST,'session'=>$_SESSION]);
+            echo json_encode(['success'=>false,'error'=>'Datos inválidos']);
             exit;
         }
 
@@ -174,19 +220,45 @@ class JuegoController
                 exit;
             }
 
-            $infoNivel = $this->usuarioModel->obtenerInfoCompleteNivel($user);
+            $puntajeActual = $this->juegoModel->obtenerPuntajeJuego($idJuego);
 
-            if (!empty($res['correct'])) {
-                $_SESSION['esCorrecta'] = true;
-                echo json_encode(['success'=>true,'result'=>$res,'finalize'=>false,'nivel_info'=>$infoNivel]);
+            if (empty($res['correct']) || $res['correct'] == false) {
+                $_SESSION['esCorrecta'] = false;
+                
+                $infoNivelAnterior = $this->obtenerNivelSinPartidaActual($user, $idJuego);
+                $nivelAnterior = $infoNivelAnterior['nivel'];
+                
+                $this->juegoModel->marcarPartidaPerdida($idJuego);
+                $_SESSION['puntajeFinal'] = $puntajeActual;
+                
+                $infoNivelNuevo = $this->usuarioModel->obtenerInfoCompleteNivel($user);
+                $nivelNuevo = $infoNivelNuevo['nivel'];
+                
+                $cambioNivel = $this->determinarCambioNivel($nivelAnterior, $nivelNuevo);
+                
+                // Guardar en sesión para mostrar en la vista de resultados
+                $_SESSION['nivel_anterior'] = $nivelAnterior;
+                $_SESSION['nivel_nuevo'] = $nivelNuevo;
+                $_SESSION['cambio_nivel'] = $cambioNivel;
+                
+                echo json_encode([
+                    'success'=>true,
+                    'result'=>['correct' => false, 'correcta' => $res['correcta'], 'puntaje' => $puntajeActual],
+                    'finalize'=>true,
+                    'game_over'=>true,
+                    'mensaje'=>'❌ Respuesta incorrecta. ¡Partida terminada!'
+                    // NO enviar información de nivel aquí - solo se mostrará en resultados
+                ]);
                 exit;
             }
 
-            $_SESSION['esCorrecta'] = false;
-            $_SESSION['puntajeFinal'] = $res['puntaje'] ?? ($this->juegoModel->obtenerPuntajeJuego($idJuego) ?? 0);
-            $this->juegoModel->guardarPartida($_SESSION['puntajeFinal'], $idJuego);
-
-            echo json_encode(['success'=>true,'result'=>$res,'finalize'=>true,'redirect'=>'/juego/resultadoJuego','nivel_info'=>$infoNivel]);
+            // Si la respuesta es correcta - NO actualizar nivel durante partida
+            $_SESSION['esCorrecta'] = true;
+            
+            // Devolver el resultado con puntaje actualizado (sin nivel)
+            $res['puntaje'] = $puntajeActual;
+            
+            echo json_encode(['success'=>true,'result'=>$res,'finalize'=>false]);
             exit;
 
         } catch (\Throwable $e) {
@@ -227,6 +299,103 @@ class JuegoController
             'session' => $sess,
             'db_result' => $res ?: null
         ]);
+        exit;
+    }
+
+    public function ajaxGetEstadoJuego()
+    {
+        if (session_status() === PHP_SESSION_NONE) session_start();
+        header('Content-Type: application/json; charset=utf-8');
+
+        $user = $_SESSION['id_usuario'] ?? null;
+        $idJuego = intval($_POST['id_juego'] ?? $_SESSION['id_juego'] ?? 0);
+
+        if (!$user || !$idJuego) {
+            echo json_encode(['success'=>false,'error'=>'No autorizado']);
+            exit;
+        }
+
+        try {
+            $estado = $this->juegoModel->obtenerEstadoJuego($idJuego, $user);
+            echo json_encode(['success'=>true,'data'=>$estado]);
+        } catch (\Throwable $e) {
+            echo json_encode(['success'=>false,'error'=>'Error al obtener estado','msg'=>$e->getMessage()]);
+        }
+        exit;
+    }
+
+    public function ajaxValidarEstado()
+    {
+        if (session_status() === PHP_SESSION_NONE) session_start();
+        header('Content-Type: application/json; charset=utf-8');
+
+        $user = $_SESSION['id_usuario'] ?? null;
+        $idJuego = intval($_POST['id_juego'] ?? $_SESSION['id_juego'] ?? 0);
+
+        if (!$user || !$idJuego) {
+            echo json_encode(['success'=>false,'error'=>'No autorizado']);
+            exit;
+        }
+
+        try {
+            $tienePreguntas = $this->juegoModel->tienePreguntasPendientes($idJuego, $user);
+            
+            echo json_encode([
+                'success'=>true,
+                'data'=>['pregunta_pendiente'=>$tienePreguntas]
+            ]);
+        } catch (\Throwable $e) {
+            echo json_encode(['success'=>false,'error'=>'Error en validación','msg'=>$e->getMessage()]);
+        }
+        exit;
+    }
+    
+    private function determinarCambioNivel($nivelAnterior, $nivelNuevo) {
+        // Mapeo de niveles a números para comparar
+        $niveles = ['facil' => 1, 'intermedia' => 2, 'dificil' => 3];
+        
+        $valorAnterior = $niveles[$nivelAnterior] ?? 1;
+        $valorNuevo = $niveles[$nivelNuevo] ?? 1;
+        
+        if ($valorNuevo > $valorAnterior) {
+            return 'subio';
+        } elseif ($valorNuevo < $valorAnterior) {
+            return 'bajo';
+        } else {
+            return 'mantuvo';
+        }
+    }
+    
+    private function obtenerNivelSinPartidaActual($id_usuario, $id_juego_actual) {
+        // Obtener nivel excluyendo las respuestas de la partida actual
+        return $this->usuarioModel->obtenerInfoCompleteNivelExcluyendoJuego($id_usuario, $id_juego_actual);
+    }
+    
+    public function resetearPreguntasVistas()
+    {
+        if (session_status() === PHP_SESSION_NONE) session_start();
+        header('Content-Type: application/json; charset=utf-8');
+
+        $user = $_SESSION['id_usuario'] ?? null;
+        $idJuego = intval($_POST['id_juego'] ?? 0);
+
+        if (!$user || !$idJuego) {
+            http_response_code(401);
+            echo json_encode(['success'=>false,'error'=>'No autorizado']);
+            exit;
+        }
+
+        try {
+            $result = $this->juegoModel->resetearPreguntasVistas($idJuego, $user);
+            if ($result) {
+                echo json_encode(['success'=>true,'message'=>'Preguntas reseteadas correctamente']);
+            } else {
+                echo json_encode(['success'=>false,'error'=>'No se pudieron resetear las preguntas']);
+            }
+        } catch (\Throwable $e) {
+            http_response_code(500);
+            echo json_encode(['success'=>false,'error'=>'Error interno: ' . $e->getMessage()]);
+        }
         exit;
     }
 }

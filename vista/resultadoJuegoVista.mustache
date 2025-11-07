@@ -1,16 +1,169 @@
 <style>
-    .res-wrap { max-width: 680px; margin: 48px auto; padding: 28px; border:1px solid #e5e7eb; border-radius:16px; text-align:center; box-shadow: 0 2px 10px rgba(0,0,0,.06);}
-    .res-title { font-size: 26px; font-weight: 800; margin-bottom: 6px; }
-    .res-score { font-size: 54px; font-weight: 900; margin: 8px 0 18px; }
-    .btn { display:inline-block; margin-top:12px; padding:12px 18px; border:none; border-radius:12px; background:#111; color:#fff; font-weight:700; cursor:pointer; text-decoration:none; }
+    .result-container { 
+        max-width: 600px; 
+        margin: 40px auto; 
+        padding: 40px; 
+        background: rgba(255, 255, 255, 0.98);
+        backdrop-filter: blur(20px);
+        border-radius: 20px; 
+        text-align: center; 
+        box-shadow: 0 8px 32px rgba(15, 157, 121, 0.15);
+        border: 1px solid rgba(15, 157, 121, 0.1);
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .result-container::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 4px;
+        background: #0f9d79;
+        border-radius: 20px 20px 0 0;
+    }
+    
+    .result-title { 
+        font-size: 2rem; 
+        font-weight: 800; 
+        margin-bottom: 16px;
+        color: #0f9d79;
+    }
+    
+    .result-subtitle {
+        font-size: 1.1rem;
+        color: #4a5568;
+        margin-bottom: 20px;
+        font-weight: 500;
+    }
+    
+    .result-score { 
+        font-size: 4rem; 
+        font-weight: 900; 
+        margin: 20px 0 30px;
+        background: linear-gradient(135deg, #48bb78 0%, #38a169 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+        text-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+    
+    .result-actions {
+        display: flex;
+        gap: 16px;
+        justify-content: center;
+        flex-wrap: wrap;
+        margin-top: 30px;
+    }
+    
+    .btn { 
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 12px 24px; 
+        border: none; 
+        border-radius: 12px; 
+        background: #0f9d79;
+        color: white; 
+        font-weight: 600; 
+        cursor: pointer; 
+        text-decoration: none;
+        transition: all 0.3s ease;
+        box-shadow: 0 4px 12px rgba(15, 157, 121, 0.3);
+    }
+    
+    .btn:hover {
+        transform: translateY(-2px);
+        background: #0d8969;
+        box-shadow: 0 8px 20px rgba(15, 157, 121, 0.4);
+    }
+    
+    .btn.secondary {
+        background: rgba(255, 255, 255, 0.2);
+        color: #4a5568;
+        border: 2px solid rgba(15, 157, 121, 0.2);
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    }
+    
+    .btn.secondary:hover {
+        background: rgba(255, 255, 255, 0.3);
+        border-color: rgba(15, 157, 121, 0.3);
+    }
+    
+    .nivel-change {
+        margin: 20px 0;
+        padding: 16px;
+        border-radius: 12px;
+        font-weight: 600;
+        font-size: 1.1rem;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+    }
+    
+    .nivel-change.subio {
+        background: linear-gradient(135deg, #f0fff4, #c6f6d5);
+        color: #22543d;
+        border: 2px solid #48bb78;
+    }
+    
+    .nivel-change.bajo {
+        background: linear-gradient(135deg, #fed7d7, #feb2b2);
+        color: #742a2a;
+        border: 2px solid #f56565;
+    }
+    
+    .nivel-change.mantuvo {
+        background: linear-gradient(135deg, #f7fafc, #edf2f7);
+        color: #4a5568;
+        border: 2px solid #cbd5e0;
+    }
+    
+    @media (max-width: 640px) {
+        .result-container {
+            margin: 20px;
+            padding: 30px 20px;
+        }
+        
+        .result-title {
+            font-size: 1.75rem;
+        }
+        
+        .result-score {
+            font-size: 3rem;
+        }
+        
+        .result-actions {
+            flex-direction: column;
+        }
+        
+        .btn {
+            width: 100%;
+            justify-content: center;
+        }
+    }
 </style>
 
-<div class="res-wrap">
-    <div class="res-title">¡Partida finalizada! ✅</div>
-    <div>Tu puntaje final es</div>
-    <div class="res-score">{{puntaje}}</div>
-
-    <a class="btn" href="/juego">Jugar de nuevo</a>
-    <a class="btn" style="margin-left:8px" href="/home">Ir al inicio</a>
+<div class="result-container">
+    <div class="result-title">¡Partida Finalizada!</div>
+    <div class="result-subtitle">Tu puntaje final es:</div>
+    <div class="result-score">{{puntaje}}</div>
+    
+    {{#cambio_nivel}}
+    <div class="nivel-change {{cambio_nivel}}">
+        {{mensaje_cambio_nivel}}
+    </div>
+    {{/cambio_nivel}}
+    
+    <div class="result-actions">
+        <a class="btn" href="/juego">
+            Jugar de nuevo
+        </a>
+        <a class="btn secondary" href="/home/base">
+            Ir al inicio
+        </a>
+    </div>
 </div>
 

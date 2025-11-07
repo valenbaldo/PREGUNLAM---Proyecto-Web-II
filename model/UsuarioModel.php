@@ -102,7 +102,7 @@ class UsuarioModel
     {
         $sql = "SELECT SUM(es_correcta) AS total_aciertos, COUNT(id_juego_pregunta) AS total_respondidas
             FROM juego_preguntas
-            WHERE id_usuario = $id_usuario";
+            WHERE id_usuario = $id_usuario AND id_respuesta_elegida IS NOT NULL";
 
         $data = $this->conexion->query($sql);
 
@@ -118,28 +118,71 @@ class UsuarioModel
 
         $aciertos = $data[0]['total_aciertos'];
         $total = $data[0]['total_respondidas'];
-        $porcentaje = round(($aciertos / $total) * 100, 1);
+        $ratio = $aciertos / $total;
 
-        $nivel = '';
-        $mensaje = '';
-        
-        if ($porcentaje > 70) {
+        // Algoritmo simple basado en ratio
+        if ($ratio >= 0.7) {
             $nivel = 'dificil';
             $mensaje = 'Experto - Preguntas desafiantes';
-        } elseif ($porcentaje < 30) {
-            $nivel = 'facil';
-            $mensaje = 'Principiante - Seguí practicando';
-        } else {
+        } elseif ($ratio >= 0.4) {
             $nivel = 'intermedia';
             $mensaje = 'Intermedio - ¡Vas bien!';
+        } else {
+            $nivel = 'facil';
+            $mensaje = 'Principiante - Seguí practicando';
         }
 
         return [
             'nivel' => $nivel,
-            'porcentaje' => $porcentaje,
+            'porcentaje' => round($ratio * 100, 1),
             'aciertos' => $aciertos,
             'total' => $total,
-            'mensaje' => $mensaje
+            'mensaje' => $mensaje,
+            'ratio' => $ratio
+        ];
+    }
+
+    public function obtenerInfoCompleteNivelExcluyendoJuego($id_usuario, $id_juego_excluir)
+    {
+        $sql = "SELECT SUM(es_correcta) AS total_aciertos, COUNT(id_juego_pregunta) AS total_respondidas
+            FROM juego_preguntas
+            WHERE id_usuario = $id_usuario AND id_respuesta_elegida IS NOT NULL AND id_juego != $id_juego_excluir";
+
+        $data = $this->conexion->query($sql);
+
+        if (!$data || $data[0]['total_respondidas'] == 0) {
+            return [
+                'nivel' => 'facil',
+                'porcentaje' => 0,
+                'aciertos' => 0,
+                'total' => 0,
+                'mensaje' => 'Principiante - ¡Empezá a jugar!'
+            ];
+        }
+
+        $aciertos = $data[0]['total_aciertos'];
+        $total = $data[0]['total_respondidas'];
+        $ratio = $aciertos / $total;
+
+        // Algoritmo simple basado en ratio
+        if ($ratio >= 0.7) {
+            $nivel = 'dificil';
+            $mensaje = 'Experto - Preguntas desafiantes';
+        } elseif ($ratio >= 0.4) {
+            $nivel = 'intermedia';
+            $mensaje = 'Intermedio - ¡Vas bien!';
+        } else {
+            $nivel = 'facil';
+            $mensaje = 'Principiante - Seguí practicando';
+        }
+
+        return [
+            'nivel' => $nivel,
+            'porcentaje' => round($ratio * 100, 1),
+            'aciertos' => $aciertos,
+            'total' => $total,
+            'mensaje' => $mensaje,
+            'ratio' => $ratio
         ];
     }
 
