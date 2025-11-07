@@ -16,11 +16,9 @@ class JuegoModel
         $result = $this->conexion->query("SELECT LAST_INSERT_ID() as id_juego");
         return $result[0]['id_juego'];
     }
-
     public function obtenerPreguntaPorNivel($id_usuario, $nivel_usuario, $id_juego = null)
     {
         $id_usuario = intval($id_usuario);
-        
         if (is_string($nivel_usuario)) {
             switch($nivel_usuario) {
                 case 'facil': $nivel_usuario = 1; break;
@@ -31,81 +29,71 @@ class JuegoModel
         } else {
             $nivel_usuario = intval($nivel_usuario);
         }
-        
+        $filtro_excluir_historicas = "
+        SELECT jp.id_pregunta 
+        FROM juego_preguntas jp 
+        WHERE jp.id_usuario = $id_usuario AND jp.id_respuesta_elegida IS NOT NULL
+    ";
+
         $sql = "SELECT p.id_pregunta, p.pregunta, p.id_categoria, r.a, r.b, r.c, r.d, r.es_correcta, c.nombre as categoria,
-                COALESCE(
-                    (SELECT COUNT(*) FROM juego_preguntas jp2 WHERE jp2.id_pregunta = p.id_pregunta AND jp2.es_correcta = 1), 0
-                ) as aciertos,
-                COALESCE(
-                    (SELECT COUNT(*) FROM juego_preguntas jp3 WHERE jp3.id_pregunta = p.id_pregunta AND jp3.id_respuesta_elegida IS NOT NULL), 0
-                ) as total_respuestas,
-                CASE 
-                    WHEN (SELECT COUNT(*) FROM juego_preguntas jp4 WHERE jp4.id_pregunta = p.id_pregunta AND jp4.id_respuesta_elegida IS NOT NULL) = 0 THEN 0.5
-                    ELSE (SELECT COUNT(*) FROM juego_preguntas jp5 WHERE jp5.id_pregunta = p.id_pregunta AND jp5.es_correcta = 1) / 
-                         (SELECT COUNT(*) FROM juego_preguntas jp6 WHERE jp6.id_pregunta = p.id_pregunta AND jp6.id_respuesta_elegida IS NOT NULL)
-                END as dificultad_ratio
-                FROM preguntas p
-                JOIN respuestas r ON r.id_pregunta = p.id_pregunta
-                JOIN categorias c ON c.id_categoria = p.id_categoria
-                WHERE p.id_pregunta NOT IN (
-                    SELECT DISTINCT jp.id_pregunta 
-                    FROM juego_preguntas jp 
-                    WHERE jp.id_usuario = $id_usuario
-                )
-                HAVING (
-                    (dificultad_ratio >= 0.7 AND $nivel_usuario <= 2) OR
-                    (dificultad_ratio >= 0.4 AND dificultad_ratio < 0.7 AND $nivel_usuario BETWEEN 3 AND 5) OR
-                    (dificultad_ratio < 0.4 AND $nivel_usuario >= 6) OR
-                    (total_respuestas < 3)
-                )
-                ORDER BY RAND() LIMIT 1";
-        
+            COALESCE(
+                (SELECT COUNT(*) FROM juego_preguntas jp2 WHERE jp2.id_pregunta = p.id_pregunta AND jp2.es_correcta = 1), 0
+            ) as aciertos,
+            COALESCE(
+                (SELECT COUNT(*) FROM juego_preguntas jp3 WHERE jp3.id_pregunta = p.id_pregunta AND jp3.id_respuesta_elegida IS NOT NULL), 0
+            ) as total_respuestas,
+            CASE 
+                WHEN (SELECT COUNT(*) FROM juego_preguntas jp4 WHERE jp4.id_pregunta = p.id_pregunta AND jp4.id_respuesta_elegida IS NOT NULL) = 0 THEN 0.5
+                ELSE (SELECT COUNT(*) FROM juego_preguntas jp5 WHERE jp5.id_pregunta = p.id_pregunta AND jp5.es_correcta = 1) / 
+                     (SELECT COUNT(*) FROM juego_preguntas jp6 WHERE jp6.id_pregunta = p.id_pregunta AND jp6.id_respuesta_elegida IS NOT NULL)
+            END as dificultad_ratio
+            FROM preguntas p
+            JOIN respuestas r ON r.id_pregunta = p.id_pregunta
+            JOIN categorias c ON c.id_categoria = p.id_categoria
+            WHERE p.id_pregunta NOT IN ($filtro_excluir_historicas)
+            AND p.id_pregunta NOT IN (
+                SELECT jp2.id_pregunta 
+                FROM juego_preguntas jp2 
+                WHERE jp2.id_juego = $id_juego AND jp2.id_respuesta_elegida IS NULL
+            )
+
+            HAVING (
+                (dificultad_ratio >= 0.7 AND $nivel_usuario <= 2) OR
+                (dificultad_ratio >= 0.4 AND dificultad_ratio < 0.7 AND $nivel_usuario BETWEEN 3 AND 5) OR
+                (dificultad_ratio < 0.4 AND $nivel_usuario >= 6) OR
+                (total_respuestas < 3)
+            )
+            ORDER BY RAND() LIMIT 1";
+
         $resultado = $this->conexion->query($sql);
-        
+
         if (!$resultado || !is_array($resultado) || count($resultado) === 0) {
-            $sql_fallback = "SELECT p.id_pregunta, p.pregunta, p.id_categoria, r.a, r.b, r.c, r.d, r.es_correcta, c.nombre as categoria
-                FROM preguntas p
-                JOIN respuestas r ON r.id_pregunta = p.id_pregunta
-                JOIN categorias c ON c.id_categoria = p.id_categoria
-                WHERE p.id_pregunta NOT IN (
-                    SELECT DISTINCT jp.id_pregunta 
-                    FROM juego_preguntas jp 
-                    WHERE jp.id_usuario = $id_usuario
-                )
-                ORDER BY RAND() LIMIT 1";
-            
+
+            $sql_fallback = "
+            SELECT p.id_pregunta, p.pregunta, p.id_categoria, r.a, r.b, r.c, r.d, r.es_correcta, c.nombre as categoria
+            FROM preguntas p
+            JOIN respuestas r ON r.id_pregunta = p.id_pregunta
+            JOIN categorias c ON c.id_categoria = p.id_categoria
+            WHERE p.id_pregunta NOT IN (
+                SELECT jp3.id_pregunta 
+                FROM juego_preguntas jp3 
+                WHERE jp3.id_juego = $id_juego AND jp3.id_respuesta_elegida IS NULL
+            )
+            ORDER BY RAND() LIMIT 1";
+
             $resultado = $this->conexion->query($sql_fallback);
-            
-            if (!$resultado || !is_array($resultado) || count($resultado) === 0) {
-                $sql_reutilizar = "SELECT p.id_pregunta, p.pregunta, p.id_categoria, r.a, r.b, r.c, r.d, r.es_correcta, c.nombre as categoria
-                    FROM preguntas p
-                    JOIN respuestas r ON r.id_pregunta = p.id_pregunta
-                    JOIN categorias c ON c.id_categoria = p.id_categoria";
-                
-                if ($id_juego) {
-                    $sql_reutilizar .= " WHERE p.id_pregunta NOT IN (
-                        SELECT DISTINCT jp.id_pregunta 
-                        FROM juego_preguntas jp 
-                        WHERE jp.id_usuario = $id_usuario AND jp.id_juego = $id_juego
-                    )";
-                }
-                
-                $sql_reutilizar .= " ORDER BY RAND() LIMIT 1";
-                
-                $resultado = $this->conexion->query($sql_reutilizar);
-            }
-            
+
             if (!$resultado || !is_array($resultado) || count($resultado) === 0) {
                 return null;
             }
         }
-        
+
         $pregunta = $resultado[0];
-        
+
         if ($id_juego) {
             $this->registrarPreguntaMostrada($id_juego, $id_usuario, $pregunta['id_pregunta']);
         }
-        
+
         return [
             'id_pregunta' => $pregunta['id_pregunta'],
             'pregunta' => $pregunta['pregunta'],
@@ -119,6 +107,7 @@ class JuegoModel
             'respuesta_correcta' => $pregunta['es_correcta']
         ];
     }
+
 
     public function girarRuleta(int $id_juego, int $id_usuario, string $nivel_usuario = 'facil')
     {
