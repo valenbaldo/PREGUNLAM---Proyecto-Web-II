@@ -56,14 +56,14 @@ class UsuarioController
     }
     public function ranking()
     {
-        $topJugadores = $this->model->obtenerRankingAcumulado(10);
-
+        $topJugadores = $this->model->obtenerRankingPorAverage(10);
 
         foreach ($topJugadores as $i => &$row) {
             $row['pos'] = $i + 1;
             if (empty($row['imagen'])) {
                 $row['imagen'] = '/imagenes/default.png';
             }
+            $row['average_formateado'] = round($row['average_aciertos_por_partida'], 2);
         }
 
         $data = [
@@ -74,6 +74,7 @@ class UsuarioController
 
         $this->renderer->render("ranking", $data);
     }
+
 
 
     public function estalogeado(){

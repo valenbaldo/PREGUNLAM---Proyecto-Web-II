@@ -12,7 +12,7 @@
 </style>
 
 <div class="rk-wrap">
-    <div class="rk-title">🏆 Ranking acumulado</div>
+    <div class="rk-title">🏆 Ranking por Average de Aciertos</div>
 
     {{#has_ranking}}
         <table class="rk-table">
@@ -20,8 +20,7 @@
             <tr>
                 <th>#</th>
                 <th>Usuario</th>
-                <th>Puntaje total</th>
-                <th>Partidas</th>
+                <th>Average de Aciertos</th> <th>Partidas</th>
             </tr>
             </thead>
             <tbody>
@@ -34,18 +33,12 @@
                             <div>{{usuario}}</div>
                         </div>
                     </td>
-                    <td>{{puntaje_total_acumulado}}</td>
-                    <td>{{partidas_jugadas}}</td>
+                    <td>{{average_formateado}}</td> <td>{{partidas_jugadas}}</td>
                 </tr>
             {{/ranking}}
             </tbody>
         </table>
     {{/has_ranking}}
-
-    {{^has_ranking}}
-        <div class="rk-empty">Todavía no hay partidas finalizadas para armar el ranking.</div>
-    {{/has_ranking}}
-
     <div style="margin-top:16px">
         <a class="btn" href="?controller=home&method=base">⬅ Volver</a>
     </div>
