@@ -154,16 +154,20 @@ class JuegoModel
         }
         $correct = strtoupper($r[0]['es_correcta']);
         $id_respuesta = $r[0]['id_respuesta'];
-        $isCorrect = ($opcion === $correct) ? 1 : 0;
-
+        $isCorrect = ($opcion === $correct) ? 1 : 0; // 1 si es correcta, 0 si no
         $checkOpc = $this->conexion->query("SHOW COLUMNS FROM juego_preguntas LIKE 'opcion_elegida'");
+
         if ($checkOpc && count($checkOpc)) {
             $this->conexion->execute("UPDATE juego_preguntas SET opcion_elegida = '" . addslashes($opcion) . "', es_correcta = $isCorrect, id_respuesta_elegida = $id_respuesta WHERE id_juego = $id_juego AND id_pregunta = $id_pregunta AND id_usuario = $id_usuario");
         } else {
             $this->conexion->execute("UPDATE juego_preguntas SET es_correcta = $isCorrect, id_respuesta_elegida = $id_respuesta WHERE id_juego = $id_juego AND id_pregunta = $id_pregunta AND id_usuario = $id_usuario");
         }
+        $sql_actualizar_respondida = "UPDATE preguntas SET veces_respondida = COALESCE(veces_respondida, 0) + 1 WHERE id_pregunta = $id_pregunta";
+        $this->conexion->execute($sql_actualizar_respondida);
 
         if ($isCorrect) {
+            $sql_actualizar_acertada = "UPDATE preguntas SET veces_acertada = COALESCE(veces_acertada, 0) + 1 WHERE id_pregunta = $id_pregunta";
+            $this->conexion->execute($sql_actualizar_acertada);
             $this->conexion->execute("UPDATE juegos SET puntaje = COALESCE(puntaje,0) + 1 WHERE id_juego = $id_juego");
         }
 
