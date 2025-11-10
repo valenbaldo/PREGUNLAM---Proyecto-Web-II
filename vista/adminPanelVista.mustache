@@ -1,0 +1,200 @@
+<style>
+    :root{
+        --brand:#0b8f72;         /* tu verde */
+        --ink:#0b0b0b;
+        --muted:#6b7280;
+        --card:#ffffff;
+        --ring:#e5e7eb;
+        --bg:#f3f4f6;
+    }
+    body{ background:var(--bg); }
+
+    .adm-wrap{ max-width:1200px; margin:28px auto 40px; padding:0 16px; }
+    .adm-head{ display:flex; align-items:center; justify-content:space-between; gap:14px; margin-bottom:18px; }
+    .adm-title{ font-size:22px; font-weight:900; display:flex; align-items:center; gap:10px; }
+    .adm-title i{ width:28px; height:28px; display:inline-grid; place-items:center; background:var(--brand); color:#fff; border-radius:8px; }
+
+    /* Filters + actions */
+    .adm-actions{ display:flex; gap:10px; flex-wrap:wrap; align-items:center; }
+    .btn{ border:none; border-radius:12px; padding:10px 14px; background:#111; color:#fff; cursor:pointer; text-decoration:none; display:inline-flex; align-items:center; gap:8px; }
+    .btn.outline{ background:#fff; color:var(--ink); border:1px solid var(--ring); }
+    .btn.brand{ background:var(--brand); }
+    .btn.small{ padding:7px 11px; border-radius:10px; font-size:14px; }
+
+    .chip{ padding:6px 10px; border-radius:999px; border:1px solid var(--ring); background:#fff; color:var(--ink); font-size:13px; }
+    .chip.active{ background:var(--brand); color:#fff; border-color:var(--brand); }
+
+    /* KPI grid */
+    .adm-kpis{ display:grid; grid-template-columns:repeat(4,1fr); gap:14px; margin-bottom:18px; }
+    @media (max-width:1000px){ .adm-kpis{ grid-template-columns:repeat(2,1fr);} }
+    @media (max-width:640px){ .adm-kpis{ grid-template-columns:1fr;} }
+
+    .card{ background:var(--card); border:1px solid var(--ring); border-radius:16px; padding:16px; }
+    .kpi{ display:flex; align-items:center; gap:12px; }
+    .kpi i{ width:40px; height:40px; border-radius:12px; display:grid; place-items:center; background:#eef8f5; color:var(--brand); font-size:18px; }
+    .kpi .kpi-label{ font-size:13px; color:var(--muted); margin-bottom:4px; }
+    .kpi .kpi-value{ font-weight:900; font-size:26px; line-height:1; }
+
+    /* Tables layout */
+    .adm-grid{ display:grid; grid-template-columns:2fr 1fr; gap:14px; }
+    @media (max-width:1000px){ .adm-grid{ grid-template-columns:1fr; } }
+
+    .tbl{ width:100%; border-collapse:collapse; }
+    .tbl th,.tbl td{ padding:10px 12px; border-bottom:1px solid var(--ring); font-size:14px; }
+    .tbl th{ background:#f9fafb; text-align:left; color:#111; font-weight:700; }
+    .tbl td.muted{ color:var(--muted); }
+
+    .card h3{ font-weight:800; font-size:16px; margin-bottom:10px; display:flex; align-items:center; gap:8px; }
+    .subcard{ background:var(--card); border:1px solid var(--ring); border-radius:16px; padding:12px; }
+    .stack > * + *{ margin-top:12px; }
+
+    /* Print */
+    @media print{
+        .adm-actions, .chip, .btn{ display:none !important; }
+        .adm-wrap{ max-width:none; margin:0; padding:0; }
+        body{ background:#fff; }
+        .card, .subcard{ border:1px solid #000; }
+    }
+</style>
+
+<div class="adm-wrap">
+
+    <!-- Header -->
+    <div class="adm-head">
+        <div class="adm-title">
+            <i>📊</i> <span>Panel de Administración</span>
+        </div>
+
+        <div class="adm-actions">
+            <!-- Filtros de rango (links simples con ?r=...) -->
+            {{! valores posibles: day | week | month | year }}
+            <a href="?controller=admin&method=base&r=day"   class="chip {{#r_day}}active{{/r_day}}">Hoy</a>
+            <a href="?controller=admin&method=base&r=week"  class="chip {{#r_week}}active{{/r_week}}">Semana</a>
+            <a href="?controller=admin&method=base&r=month" class="chip {{#r_month}}active{{/r_month}}">Mes</a>
+            <a href="?controller=admin&method=base&r=year"  class="chip {{#r_year}}active{{/r_year}}">Año</a>
+
+            <button class="btn outline small" onclick="window.print()">🖨️ Imprimir</button>
+            <a class="btn small" href="/login/logout">Cerrar sesión</a>
+        </div>
+    </div>
+
+    <!-- KPIs -->
+    <div class="adm-kpis">
+        <div class="card kpi">
+            <i>👥</i>
+            <div>
+                <div class="kpi-label">Usuarios Totales</div>
+                <div class="kpi-value">{{stats.usuarios_totales}}</div>
+            </div>
+        </div>
+
+        <div class="card kpi">
+            <i>🎮</i>
+            <div>
+                <div class="kpi-label">Partidas Jugadas</div>
+                <div class="kpi-value">{{stats.partidas}}</div>
+            </div>
+        </div>
+
+        <div class="card kpi">
+            <i>❓</i>
+            <div>
+                <div class="kpi-label">Preguntas Totales</div>
+                <div class="kpi-value">{{stats.preguntas_totales}}</div>
+            </div>
+        </div>
+
+        <div class="card kpi">
+            <i>🆕</i>
+            <div>
+                <div class="kpi-label">Usuarios Nuevos</div>
+                <div class="kpi-value">{{stats.usuarios_nuevos}}</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Body: tabla grande + paneles laterales -->
+    <div class="adm-grid">
+        <!-- Porcentaje de aciertos por usuario -->
+        <div class="card">
+            <h3>🎯 Porcentaje de aciertos por usuario</h3>
+            <table class="tbl">
+                <thead>
+                <tr>
+                    <th>Usuario</th>
+                    <th>Respondidas</th>
+                    <th>Aciertos</th>
+                    <th>Porcentaje</th>
+                </tr>
+                </thead>
+                <tbody>
+                {{#aciertos}}
+                    <tr>
+                        <td>{{usuario}}</td>
+                        <td class="muted">{{respondidas}}</td>
+                        <td class="muted">{{aciertos}}</td>
+                        <td><b>{{porcentaje}}%</b></td>
+                    </tr>
+                {{/aciertos}}
+                {{^aciertos}}
+                    <tr><td colspan="4" class="muted">Sin datos en el rango seleccionado.</td></tr>
+                {{/aciertos}}
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Columna derecha: 3 mini-tablas apiladas -->
+        <div class="stack">
+            <div class="subcard">
+                <h3>🌍 Usuarios por País</h3>
+                <table class="tbl">
+                    <thead>
+                    <tr><th>País</th><th>Cantidad</th></tr>
+                    </thead>
+                    <tbody>
+                    {{#porPais}}
+                        <tr><td>{{pais}}</td><td class="muted">{{cantidad}}</td></tr>
+                    {{/porPais}}
+                    {{^porPais}}
+                        <tr><td colspan="2" class="muted">Sin datos.</td></tr>
+                    {{/porPais}}
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="subcard">
+                <h3>🚻 Usuarios por Sexo</h3>
+                <table class="tbl">
+                    <thead>
+                    <tr><th>Sexo</th><th>Cantidad</th></tr>
+                    </thead>
+                    <tbody>
+                    {{#porSexo}}
+                        <tr><td>{{sexo}}</td><td class="muted">{{cantidad}}</td></tr>
+                    {{/porSexo}}
+                    {{^porSexo}}
+                        <tr><td colspan="2" class="muted">Sin datos.</td></tr>
+                    {{/porSexo}}
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="subcard">
+                <h3>📈 Usuarios por Grupo de Edad</h3>
+                <table class="tbl">
+                    <thead>
+                    <tr><th>Grupo</th><th>Cantidad</th></tr>
+                    </thead>
+                    <tbody>
+                    {{#porEdad}}
+                        <tr><td>{{grupo}}</td><td class="muted">{{cantidad}}</td></tr>
+                    {{/porEdad}}
+                    {{^porEdad}}
+                        <tr><td colspan="2" class="muted">Sin datos.</td></tr>
+                    {{/porEdad}}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
