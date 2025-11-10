@@ -1,12 +1,9 @@
 <?php
 
-//Import PHPMailer classes into the global namespace
-//These must be at the top of your script, not inside a function
 use PHPMailer\PHPMailer\PHPMailer;
 use PHPMailer\PHPMailer\SMTP;
 use PHPMailer\PHPMailer\Exception;
 
-//Load Composer's autoloader (created by composer, not included with PHPMailer)
 require 'vendor/autoload.php';
 
 class LoginController
@@ -40,8 +37,9 @@ class LoginController
         $rutaImagen = dirname(__DIR__) . "/imagenes/" . $_POST['usuario'] . ".png";
         move_uploaded_file($_FILES["imagen"]["tmp_name"], $rutaImagen);
         $imagen = "/imagenes/" . $_POST['usuario'] . ".png";
+        $id_rol_jugador = 1;
         if ($_POST["contraseña"]===$_POST["confirmarContraseña"]){
-            $this->model->nuevo($_POST["nombre"], $_POST["apellido"], $_POST["usuario"], $_POST["nacimiento"], $imagen, $_POST["sexo"], $_POST["mail"], $ubicacion["address"]["country"], $ubicacion["address"]["state_district"], $hash, $token);
+            $this->model->nuevo($_POST["nombre"], $_POST["apellido"], $_POST["usuario"], $_POST["nacimiento"], $imagen, $_POST["sexo"], $_POST["mail"], $ubicacion["address"]["country"], $ubicacion["address"]["state_district"], $hash, $token, $id_rol_jugador);
 
             $this->confirmacionDeUsuario($_POST["mail"], $token);
 
@@ -80,18 +78,18 @@ class LoginController
 
         try {
 
-            $mail->SMTPDebug = 0; // Desactívarlo para producción
+            $mail->SMTPDebug = 0;
             $mail->isSMTP();
-            $mail->Host       = $_ENV['SMTP_HOST'];                     // <-- CAMBIO
+            $mail->Host       = $_ENV['SMTP_HOST'];
             $mail->SMTPAuth   = true;
-            $mail->Username   = $_ENV['SMTP_USER'];                     // <-- CAMBIO
-            $mail->Password   = $_ENV['SMTP_PASS'];                     // <-- CAMBIO
-            $mail->SMTPSecure = $_ENV['SMTP_SECURE'];                   // <-- CAMBIO
-            $mail->Port       = $_ENV['SMTP_PORT'];                     // <-- CAMBIO
+            $mail->Username   = $_ENV['SMTP_USER'];
+            $mail->Password   = $_ENV['SMTP_PASS'];
+            $mail->SMTPSecure = $_ENV['SMTP_SECURE'];
+            $mail->Port       = $_ENV['SMTP_PORT'];
 
             //Recipients
-            $mail->setFrom($_ENV['SMTP_USER'], $_ENV['SMTP_FROM_NAME']); // <-- CAMBIO
-            $mail->addAddress($mailUser);     //Add a recipient
+            $mail->setFrom($_ENV['SMTP_USER'], $_ENV['SMTP_FROM_NAME']);
+            $mail->addAddress($mailUser);
 
             $enlace = 'http://localhost/login/verificarMail?token=' . $token;
 
@@ -139,8 +137,13 @@ class LoginController
             $_SESSION['nombreUsuario'] = $usuarioEncontrado[0]["usuario"];
             $_SESSION['imagen'] = $usuarioEncontrado[0]["imagen"];
             $_SESSION['id_usuario'] = $usuarioEncontrado[0]["id_usuario"];
+            $_SESSION['id_rol'] = $usuarioEncontrado[0]["id_rol"];
             $_SESSION['esCorrecta'] = false;
-            header("Location: /home");
+            if ($_SESSION['id_rol'] == 2) {
+                header("Location: /editor");
+            } else {
+                header("Location: /home");
+            }
             exit;
         }elseif ($usuarioEncontrado && password_verify($contraseñaIntentada, $usuarioEncontrado[0]["contraseña"]) && $usuarioEncontrado[0]["verificado"] == 0){
             $data["error"] = "Mail no verificado";
@@ -149,6 +152,7 @@ class LoginController
             $data["error"] = "Mail o contraseña incorrectos";
             $this->renderer->render("login", $data);
         }
+
     }
 
 
