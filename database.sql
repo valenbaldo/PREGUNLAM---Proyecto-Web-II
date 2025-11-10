@@ -15,7 +15,16 @@ CREATE TABLE usuarios (
                           contraseña VARCHAR(255) NOT NULL,
                           token VARCHAR(255) NULL,
                           verificado TINYINT(1) NOT NULL DEFAULT 0,
-                          created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+                          id_rol INT NOT NULL DEFAULT 1,
+                          created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                          FOREIGN KEY (id_rol) REFERENCES roles(id_rol)
+);
+
+DROP TABLE IF EXISTS roles;
+
+CREATE TABLE roles (
+                       id_rol INT PRIMARY KEY,
+                       nombre VARCHAR(50) NOT NULL UNIQUE
 );
 
 DROP TABLE IF EXISTS ubicacion;
@@ -33,81 +42,86 @@ CREATE TABLE ubicacion (
 DROP TABLE IF EXISTS sexo;
 
 CREATE TABLE sexo (
-                         id_sexo    INT AUTO_INCREMENT PRIMARY KEY,
-                           sexo       VARCHAR(12) NOT NULL,
-                           id_usuario INT         NOT NULL UNIQUE,
-                           FOREIGN KEY (id_usuario)
-                               REFERENCES usuarios (id_usuario)
-                               ON DELETE CASCADE
+                      id_sexo    INT AUTO_INCREMENT PRIMARY KEY,
+                      sexo       VARCHAR(12) NOT NULL,
+                      id_usuario INT         NOT NULL UNIQUE,
+                      FOREIGN KEY (id_usuario)
+                          REFERENCES usuarios (id_usuario)
+                          ON DELETE CASCADE
 );
 
 DROP TABLE IF EXISTS categorias;
 CREATE TABLE categorias (
-                        id_categoria INT AUTO_INCREMENT PRIMARY KEY,
-                        nombre VARCHAR(50) NOT NULL
-);  
+                            id_categoria INT AUTO_INCREMENT PRIMARY KEY,
+                            nombre VARCHAR(50) NOT NULL
+);
 
 DROP TABLE IF EXISTS preguntas;
 CREATE TABLE preguntas (
-                      id_pregunta    INT AUTO_INCREMENT PRIMARY KEY,
-                      pregunta       VARCHAR(150) NOT NULL,
-                      id_usuario INT         NOT NULL ,
-                      id_categoria INT NOT NULL,
-                    veces_respondida INT DEFAULT 0,
-                    veces_acertada INT DEFAULT 0,
-                      FOREIGN KEY (id_usuario)
-                          REFERENCES usuarios (id_usuario)
-                          ON DELETE CASCADE,
-                          FOREIGN KEY (id_categoria)
-        REFERENCES categorias(id_categoria)
-        ON DELETE RESTRICT
+                           id_pregunta    INT AUTO_INCREMENT PRIMARY KEY,
+                           pregunta       VARCHAR(150) NOT NULL,
+                           id_usuario INT         NOT NULL ,
+                           id_categoria INT NOT NULL,
+                           veces_respondida INT DEFAULT 0,
+                           veces_acertada INT DEFAULT 0,
+                           FOREIGN KEY (id_usuario)
+                               REFERENCES usuarios (id_usuario)
+                               ON DELETE CASCADE,
+                           FOREIGN KEY (id_categoria)
+                               REFERENCES categorias(id_categoria)
+                               ON DELETE RESTRICT
 );
 
 DROP TABLE IF EXISTS respuestas;
 CREATE TABLE respuestas (
-                      id_respuesta    INT AUTO_INCREMENT PRIMARY KEY,
-                      a VARCHAR(150) NOT NULL,
-                      b VARCHAR(150) NOT NULL,
-                      c VARCHAR(150) NOT NULL,
-                      d VARCHAR(150) NOT NULL,
-                      es_correcta CHAR(1) NOT NULL,
-                      id_pregunta INT NOT NULL UNIQUE,
-                      FOREIGN KEY (id_pregunta)
-                          REFERENCES preguntas (id_pregunta)
-                          ON DELETE CASCADE
+                            id_respuesta    INT AUTO_INCREMENT PRIMARY KEY,
+                            a VARCHAR(150) NOT NULL,
+                            b VARCHAR(150) NOT NULL,
+                            c VARCHAR(150) NOT NULL,
+                            d VARCHAR(150) NOT NULL,
+                            es_correcta CHAR(1) NOT NULL,
+                            id_pregunta INT NOT NULL UNIQUE,
+                            FOREIGN KEY (id_pregunta)
+                                REFERENCES preguntas (id_pregunta)
+                                ON DELETE CASCADE
 );
 
 
 DROP TABLE IF EXISTS juegos;
 CREATE TABLE juegos (
-    id_juego INT AUTO_INCREMENT PRIMARY KEY,
-    id_usuario INT NOT NULL,
-    puntaje INT DEFAULT 0,
-    estado ENUM('activo','perdido','finalizado') DEFAULT 'activo',
-    iniciado_en TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    finalizado_en TIMESTAMP NULL,
-    FOREIGN KEY (id_usuario)
-        REFERENCES usuarios(id_usuario)
-        ON DELETE CASCADE
+                        id_juego INT AUTO_INCREMENT PRIMARY KEY,
+                        id_usuario INT NOT NULL,
+                        puntaje INT DEFAULT 0,
+                        estado ENUM('activo','perdido','finalizado') DEFAULT 'activo',
+                        iniciado_en TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                        finalizado_en TIMESTAMP NULL,
+                        FOREIGN KEY (id_usuario)
+                            REFERENCES usuarios(id_usuario)
+                            ON DELETE CASCADE
 );
 
 DROP TABLE IF EXISTS juego_preguntas;
 CREATE TABLE juego_preguntas (
-    id_juego_pregunta INT AUTO_INCREMENT PRIMARY KEY,
-    id_juego INT NOT NULL,
-    id_pregunta INT NOT NULL,
-    id_usuario INT NOT NULL,
-    id_respuesta_elegida INT NULL,
-    es_correcta TINYINT(1) DEFAULT 0,
-    usada_trampita TINYINT(1) DEFAULT 0,
-    creado_en TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY (id_juego) REFERENCES juegos(id_juego) ON DELETE CASCADE,
-    FOREIGN KEY (id_pregunta) REFERENCES preguntas(id_pregunta) ON DELETE CASCADE,
-    FOREIGN KEY (id_usuario) REFERENCES usuarios(id_usuario) ON DELETE CASCADE,
-    FOREIGN KEY (id_respuesta_elegida) REFERENCES respuestas(id_respuesta) ON DELETE SET NULL
+                                 id_juego_pregunta INT AUTO_INCREMENT PRIMARY KEY,
+                                 id_juego INT NOT NULL,
+                                 id_pregunta INT NOT NULL,
+                                 id_usuario INT NOT NULL,
+                                 id_respuesta_elegida INT NULL,
+                                 es_correcta TINYINT(1) DEFAULT 0,
+                                 usada_trampita TINYINT(1) DEFAULT 0,
+                                 creado_en TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                                 FOREIGN KEY (id_juego) REFERENCES juegos(id_juego) ON DELETE CASCADE,
+                                 FOREIGN KEY (id_pregunta) REFERENCES preguntas(id_pregunta) ON DELETE CASCADE,
+                                 FOREIGN KEY (id_usuario) REFERENCES usuarios(id_usuario) ON DELETE CASCADE,
+                                 FOREIGN KEY (id_respuesta_elegida) REFERENCES respuestas(id_respuesta) ON DELETE SET NULL
 );
 
 ------INSERTS------
+
+INSERT INTO roles (id_rol, nombre) VALUES
+                                       (1, 'Jugador'),
+                                       (2, 'Editor'),
+                                       (3, 'Administrador');
 
 INSERT INTO categorias (nombre) VALUES
                                     ('Ingeniería e Investigaciones Tecnológicas'),

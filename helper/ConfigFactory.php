@@ -7,6 +7,7 @@ include_once("helper/NewRouter.php");
 include_once ("helper/MustacheRenderer.php");
 
 // Controllers
+include_once ("controller/EditorController.php");
 include_once("controller/LoginController.php");
 include_once("controller/JuegoController.php");
 include_once("controller/UsuarioController.php");
@@ -14,6 +15,7 @@ include_once("controller/HomeController.php");
 include_once("controller/PerfilController.php");
 
 // Models
+include_once("model/EditorModel.php");
 include_once("model/LoginModel.php");
 include_once("model/HomeModel.php");
 include_once("model/UsuarioModel.php");
@@ -60,6 +62,8 @@ class ConfigFactory
         $this->objetos["UsuarioController"] = new UsuarioController(new UsuarioModel($this->conexion), $this->renderer);
 
         $this->objetos["PerfilController"] = new PerfilController(new PerfilModel($this->conexion), $this->renderer);
+
+        $this->objetos["EditorController"] = new EditorController(new EditorModel($this->conexion), $this->renderer);
 
     }
 

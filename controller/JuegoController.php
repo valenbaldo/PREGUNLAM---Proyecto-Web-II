@@ -26,7 +26,7 @@ class JuegoController
         $nombreUsuario  = $_SESSION['nombreUsuario'];
 
         $partidaActiva = $this->juegoModel->obtenerJuegoActivo($id_usuario);
-        
+
         if ($partidaActiva && $partidaActiva['estado'] === 'activo') {
             $_SESSION['id_juego'] = $partidaActiva['id_juego'];
         } else {
@@ -42,14 +42,14 @@ class JuegoController
 
         $infoNivel = $this->usuarioModel->obtenerInfoCompleteNivel($id_usuario);
         $datosPregunta = $this->juegoModel->obtenerPreguntaPorNivel($id_usuario, $infoNivel['nivel'], $id_juego);
-        
+
         if ($datosPregunta == null) {
             $data = [
                 "error" => "🎉 ¡Felicitaciones! Has visto todas las preguntas disponibles.",
                 "mensaje" => "Has completado todo el contenido del juego. Puedes:",
                 "opciones" => [
                     "• Revisar tu perfil y estadísticas",
-                    "• Competir en el ranking con otros jugadores", 
+                    "• Competir en el ranking con otros jugadores",
                     "• Contactar al administrador para más contenido"
                 ],
                 "nombreUsuario" => $nombreUsuario
@@ -79,24 +79,24 @@ class JuegoController
         $user = $_SESSION['id_usuario'];
         $juego = $this->juegoModel->obtenerJuego($_SESSION['id_juego']);
         $nombreUsuario = $_SESSION['nombreUsuario'];
-        
+
         $infoNivelAnterior = $this->usuarioModel->obtenerInfoCompleteNivel($user);
         $nivelAnterior = $infoNivelAnterior['nivel'];
-        
+
         $puntajeFinal = $this->juegoModel->obtenerPuntajeJuego($_SESSION['id_juego']);
-        
+
         $_SESSION['puntajeFinal'] = $puntajeFinal;
         $_SESSION['esCorrecta'] = false;
         $this->juegoModel->guardarPartida($puntajeFinal, $_SESSION['id_juego']);
-        
+
         $infoNivelNuevo = $this->usuarioModel->obtenerInfoCompleteNivel($user);
         $nivelNuevo = $infoNivelNuevo['nivel'];
         $cambioNivel = $this->determinarCambioNivel($nivelAnterior, $nivelNuevo);
-        
+
         $_SESSION['nivel_anterior'] = $nivelAnterior;
         $_SESSION['nivel_nuevo'] = $nivelNuevo;
         $_SESSION['cambio_nivel'] = $cambioNivel;
-        
+
         header('Location: /juego/resultadoJuego');
         exit();
     }
@@ -104,19 +104,19 @@ class JuegoController
     public function resultadoJuego(){
         $this->estalogeado();
         $nombreUsuario = $_SESSION['nombreUsuario'];
-        
+
         $puntajeFinal = $_SESSION['puntajeFinal'] ?? 0;
-        
+
         if (!$puntajeFinal && isset($_SESSION['id_juego'])) {
             $puntajeFinal = $this->juegoModel->obtenerPuntajeJuego($_SESSION['id_juego']);
         }
-        
+
         $mensajeCambioNivel = '';
         if (isset($_SESSION['cambio_nivel']) && isset($_SESSION['nivel_anterior']) && isset($_SESSION['nivel_nuevo'])) {
             $cambio = $_SESSION['cambio_nivel'];
             $anterior = $_SESSION['nivel_anterior'];
             $nuevo = $_SESSION['nivel_nuevo'];
-            
+
             if ($cambio === 'subio') {
                 $mensajeCambioNivel = "¡Subiste de nivel! $anterior → $nuevo";
             } elseif ($cambio === 'bajo') {
@@ -125,7 +125,7 @@ class JuegoController
                 $mensajeCambioNivel = "Mantuviste tu nivel: $nuevo";
             }
         }
-        
+
         $data = [
             "nombreUsuario" => $nombreUsuario,
             "puntaje" => $puntajeFinal,
@@ -170,6 +170,10 @@ class JuegoController
             header("Location: /login");
             exit;
         }
+        if (isset($_SESSION['id_rol']) && $_SESSION['id_rol'] == 2) {
+            header("Location: /editor");
+            exit;
+        }
     }
 
     public function ajaxRuleta()
@@ -192,7 +196,7 @@ class JuegoController
             echo json_encode(['success'=>false,'error'=>$data['error']]);
             exit;
         }
-        
+
         echo json_encode(['success'=>true,'data'=>$data]);
         exit;
     }
@@ -224,23 +228,23 @@ class JuegoController
 
             if (empty($res['correct']) || $res['correct'] == false) {
                 $_SESSION['esCorrecta'] = false;
-                
+
                 $infoNivelAnterior = $this->obtenerNivelSinPartidaActual($user, $idJuego);
                 $nivelAnterior = $infoNivelAnterior['nivel'];
-                
+
                 $this->juegoModel->marcarPartidaPerdida($idJuego);
                 $_SESSION['puntajeFinal'] = $puntajeActual;
-                
+
                 $infoNivelNuevo = $this->usuarioModel->obtenerInfoCompleteNivel($user);
                 $nivelNuevo = $infoNivelNuevo['nivel'];
-                
+
                 $cambioNivel = $this->determinarCambioNivel($nivelAnterior, $nivelNuevo);
-                
+
                 // Guardar en sesión para mostrar en la vista de resultados
                 $_SESSION['nivel_anterior'] = $nivelAnterior;
                 $_SESSION['nivel_nuevo'] = $nivelNuevo;
                 $_SESSION['cambio_nivel'] = $cambioNivel;
-                
+
                 echo json_encode([
                     'success'=>true,
                     'result'=>['correct' => false, 'correcta' => $res['correcta'], 'puntaje' => $puntajeActual],
@@ -254,10 +258,10 @@ class JuegoController
 
             // Si la respuesta es correcta - NO actualizar nivel durante partida
             $_SESSION['esCorrecta'] = true;
-            
+
             // Devolver el resultado con puntaje actualizado (sin nivel)
             $res['puntaje'] = $puntajeActual;
-            
+
             echo json_encode(['success'=>true,'result'=>$res,'finalize'=>false]);
             exit;
 
@@ -339,7 +343,7 @@ class JuegoController
 
         try {
             $tienePreguntas = $this->juegoModel->tienePreguntasPendientes($idJuego, $user);
-            
+
             echo json_encode([
                 'success'=>true,
                 'data'=>['pregunta_pendiente'=>$tienePreguntas]
@@ -349,14 +353,14 @@ class JuegoController
         }
         exit;
     }
-    
+
     private function determinarCambioNivel($nivelAnterior, $nivelNuevo) {
         // Mapeo de niveles a números para comparar
         $niveles = ['facil' => 1, 'intermedia' => 2, 'dificil' => 3];
-        
+
         $valorAnterior = $niveles[$nivelAnterior] ?? 1;
         $valorNuevo = $niveles[$nivelNuevo] ?? 1;
-        
+
         if ($valorNuevo > $valorAnterior) {
             return 'subio';
         } elseif ($valorNuevo < $valorAnterior) {
@@ -365,12 +369,12 @@ class JuegoController
             return 'mantuvo';
         }
     }
-    
+
     private function obtenerNivelSinPartidaActual($id_usuario, $id_juego_actual) {
         // Obtener nivel excluyendo las respuestas de la partida actual
         return $this->usuarioModel->obtenerInfoCompleteNivelExcluyendoJuego($id_usuario, $id_juego_actual);
     }
-    
+
     public function resetearPreguntasVistas()
     {
         if (session_status() === PHP_SESSION_NONE) session_start();
