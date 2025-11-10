@@ -210,6 +210,7 @@ class JuegoController
         $idJuego = intval($_POST['id_juego'] ?? $_SESSION['id_juego'] ?? 0);
         $idPreg = intval($_POST['id_pregunta'] ?? 0);
         $op = $_POST['opcion'] ?? $_POST['respuesta_elegida'] ?? '';
+        $tiempoRespuesta = intval($_POST['tiempo_respuesta'] ?? 0);
 
         if (!$user || !$idJuego || !$idPreg || !$op) {
             http_response_code(400);
@@ -217,8 +218,19 @@ class JuegoController
             exit;
         }
 
+        if ($tiempoRespuesta > 10) {
+            http_response_code(400);
+            echo json_encode(['success'=>false,'error'=>'Tiempo de respuesta inválido']);
+            exit;
+        }
+
+        $esTimeout = ($op === 'TIMEOUT');
+        if ($esTimeout) {
+            $op = '';
+        }
+
         try {
-            $res = $this->juegoModel->procesarRespuesta($idJuego, $user, $idPreg, $op);
+            $res = $this->juegoModel->procesarRespuesta($idJuego, $user, $idPreg, $op, $tiempoRespuesta);
             if (isset($res['error'])) {
                 echo json_encode(['success'=>false,'error'=>$res['error']]);
                 exit;
@@ -239,6 +251,8 @@ class JuegoController
                 $nivelNuevo = $infoNivelNuevo['nivel'];
 
                 $cambioNivel = $this->determinarCambioNivel($nivelAnterior, $nivelNuevo);
+                
+                $mensajeFinal = $esTimeout ? 'Se agotó el tiempo de respuesta (10 segundos)' : 'Respuesta incorrecta';
 
                 // Guardar en sesión para mostrar en la vista de resultados
                 $_SESSION['nivel_anterior'] = $nivelAnterior;
@@ -250,8 +264,7 @@ class JuegoController
                     'result'=>['correct' => false, 'correcta' => $res['correcta'], 'puntaje' => $puntajeActual],
                     'finalize'=>true,
                     'game_over'=>true,
-                    'mensaje'=>'❌ Respuesta incorrecta. ¡Partida terminada!'
-                    // NO enviar información de nivel aquí - solo se mostrará en resultados
+                    'mensaje'=>'❌ ' . $mensajeFinal . '. ¡Partida terminada!'
                 ]);
                 exit;
             }

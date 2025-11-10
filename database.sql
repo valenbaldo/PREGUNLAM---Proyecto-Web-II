@@ -295,3 +295,9 @@ INSERT INTO preguntas (pregunta, id_usuario, id_categoria)
 VALUES ('¿Cuántos huesos tiene el cuerpo humano adulto?', 1, 5);
 INSERT INTO respuestas (a, b, c, d, es_correcta, id_pregunta)
 VALUES ('206', '208', '210', '202', 'a', LAST_INSERT_ID());
+
+ALTER TABLE juego_preguntas 
+ADD COLUMN opcion_elegida VARCHAR(10) DEFAULT NULL COMMENT 'Opción elegida por el usuario (A,B,C,D,TIMEOUT)';
+
+ALTER TABLE juego_preguntas 
+ADD COLUMN tiempo_respuesta INT DEFAULT 0 COMMENT 'Tiempo en segundos que tardó el usuario en responder';

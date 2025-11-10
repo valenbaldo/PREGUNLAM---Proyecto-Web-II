@@ -598,6 +598,59 @@
         min-height: 120px;
       }
     }
+
+    .timer-container {
+      position: relative;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 60px;
+      height: 60px;
+      margin: 0 auto 20px;
+    }
+
+    .timer-circle {
+      width: 60px;
+      height: 60px;
+      border-radius: 50%;
+      background: conic-gradient(from 0deg, #48bb78, #48bb78 var(--progress), transparent var(--progress));
+      padding: 4px;
+      position: relative;
+      transition: all 0.1s linear;
+    }
+
+    .timer-circle.warning {
+      background: conic-gradient(from 0deg, #ed8936, #ed8936 var(--progress), transparent var(--progress));
+      animation: timerPulse 1s ease-in-out infinite;
+    }
+
+    .timer-circle.danger {
+      background: conic-gradient(from 0deg, #f56565, #f56565 var(--progress), transparent var(--progress));
+      animation: timerPulse 0.5s ease-in-out infinite;
+    }
+
+    .timer-inner {
+      width: 100%;
+      height: 100%;
+      background: white;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: bold;
+      font-size: 1.2rem;
+      color: var(--text-primary);
+      box-shadow: inset 0 2px 4px rgba(0,0,0,0.1);
+    }
+
+    @keyframes timerPulse {
+      0%, 100% { transform: scale(1); }
+      50% { transform: scale(1.05); }
+    }
+
+    .timer-hidden {
+      display: none;
+    }
   </style>
 </head>
 <body class="bg-gray-100 min-h-screen">
@@ -631,6 +684,11 @@
         
         <div class="question-area">
           <div id="categoria" class="category-info" style="display: none;"></div>
+          <div id="timer" class="timer-container timer-hidden">
+            <div id="timerCircle" class="timer-circle" style="--progress: 100%;">
+              <div id="timerDisplay" class="timer-inner">10</div>
+            </div>
+          </div>
           <div id="preguntaBox" class="question-box hidden">
             <div id="preguntaTexto" class="question-text"></div>
             <div id="opciones"></div>
@@ -671,6 +729,13 @@
   const puntajeEl = document.getElementById('puntaje');
   const btnVolver = document.getElementById('btn-volver');
   const questionPlaceholder = document.getElementById('questionPlaceholder');
+  const timerContainer = document.getElementById('timer');
+  const timerCircle = document.getElementById('timerCircle');
+  const timerDisplay = document.getElementById('timerDisplay');
+
+  let timerInterval = null;
+  let timeLeft = 10;
+  let preguntaStartTime = null;
 
   const categorias = [
     'Ingeniería e Investigaciones Tecnológicas',
@@ -690,6 +755,98 @@
   function marcarNavegacionIntencional() {
     window.isNavigatingAway = true;
     partidaActiva = false;
+  }
+
+  function iniciarTemporizador() {
+    if (timerInterval) clearInterval(timerInterval);
+    
+    timeLeft = 10;
+    preguntaStartTime = Date.now();
+    timerContainer.classList.remove('timer-hidden');
+    timerDisplay.textContent = timeLeft;
+    timerCircle.className = 'timer-circle';
+    timerCircle.style.setProperty('--progress', '100%');
+    
+    timerInterval = setInterval(() => {
+      timeLeft--;
+      const progress = (timeLeft / 10) * 100;
+      timerCircle.style.setProperty('--progress', `${progress}%`);
+      timerDisplay.textContent = timeLeft;
+      
+      if (timeLeft <= 3) {
+        timerCircle.className = 'timer-circle danger';
+      } else if (timeLeft <= 5) {
+        timerCircle.className = 'timer-circle warning';
+      }
+      
+      if (timeLeft <= 0) {
+        clearInterval(timerInterval);
+        tiempoAgotado();
+      }
+    }, 1000);
+  }
+
+  function detenerTemporizador() {
+    if (timerInterval) {
+      clearInterval(timerInterval);
+      timerInterval = null;
+    }
+    timerContainer.classList.add('timer-hidden');
+  }
+
+  function tiempoAgotado() {
+    if (!isWaitingResponse || !preguntaActual) return;
+    
+    Array.from(opcionesEl.children).forEach(btn => btn.disabled = true);
+    mensajeEl.textContent = '⏰ ¡Tiempo agotado! Respuesta incorrecta.';
+    mensajeEl.style.background = '#fed7d7';
+    mensajeEl.style.color = '#742a2a';
+    mensajeEl.style.border = '1px solid #f56565';
+    
+    responderAutomaticamente();
+  }
+
+  async function responderAutomaticamente() {
+    const tiempoTranscurrido = Date.now() - preguntaStartTime;
+    
+    try {
+      const r2 = await fetchJson('index.php?controller=juego&method=ajaxResponder', { 
+        id_juego: idJuego, 
+        id_pregunta: preguntaActual.id_pregunta, 
+        opcion: 'TIMEOUT',
+        tiempo_respuesta: Math.round(tiempoTranscurrido / 1000)
+      });
+      
+      if (r2 && r2.success) {
+        const result = r2.result || {};
+        
+        Array.from(opcionesEl.children).forEach(btn => {
+          if (btn.dataset.opt === result.correcta) {
+            btn.classList.add('correct');
+          }
+        });
+        
+        if (result.puntaje !== undefined) {
+          puntajeEl.textContent = result.puntaje;
+        }
+        
+        if (r2.finalize === true || r2.game_over === true) {
+          partidaActiva = false;
+          mensajeEl.innerHTML = r2.mensaje || 
+            ` <strong>¡Partida terminada!</strong> Se agotó el tiempo.</strong><br><small style="color: #666;">Serás redirigido a los resultados...</small>`;
+          
+          btnCategoria.disabled = true;
+          btnCategoria.querySelector('.category-text').textContent = 'Partida terminada';
+          
+          setTimeout(() => {
+            marcarNavegacionIntencional();
+            window.location.href = '/juego/resultadoJuego';
+          }, 3000);
+        }
+      }
+    } catch (error) {
+      mensajeEl.textContent = 'Error de conexión. La partida ha terminado.';
+    }
   }
 
   window.addEventListener('load', () => {
@@ -731,7 +888,7 @@
 
   if (btnVolver) {
     btnVolver.addEventListener('click', () => {
-      const mensaje = '⚠️ Si vuelves al lobby, perderás la partida actual y tu puntaje.\n\n¿Estás seguro de que quieres abandonar?';
+      const mensaje = ' Si vuelves al lobby, perderás la partida actual y tu puntaje.\n\n¿Estás seguro de que quieres abandonar?';
       if (confirm(mensaje)) {
         marcarNavegacionIntencional();
         fetch('index.php?controller=juego&method=abandonarPartida', {
@@ -784,7 +941,7 @@
     try {
       const res = await fetchJson('index.php?controller=juego&method=ajaxGetEstadoJuego', { id_juego: idJuego });
       if (res && res.success && res.data) {
-        if (res.data.pregunta_pendiente && res.data.juego_en_progreso) {
+        if (res.data.pregunta_pendiente) {
           preguntaActual = res.data.pregunta_pendiente;
           mostrarPregunta(preguntaActual);
           isWaitingResponse = true;
@@ -897,12 +1054,16 @@
     });
     preguntaBox.classList.remove('hidden');
     mensajeEl.textContent = '';
+    
+    iniciarTemporizador();
   }
 
   async function responderPregunta(e) {
     if (!isWaitingResponse || !preguntaActual) return;
 
+    detenerTemporizador();
     const opcionSeleccionada = e.currentTarget.dataset.opt;
+    const tiempoTranscurrido = Date.now() - preguntaStartTime;
     
     Array.from(opcionesEl.children).forEach(b => b.disabled = true);
     e.currentTarget.style.transform = 'scale(0.98)';
@@ -915,7 +1076,8 @@
       const r2 = await fetchJson('index.php?controller=juego&method=ajaxResponder', { 
         id_juego: idJuego, 
         id_pregunta: preguntaActual.id_pregunta, 
-        opcion: opcionSeleccionada 
+        opcion: opcionSeleccionada,
+        tiempo_respuesta: Math.round(tiempoTranscurrido / 1000)
       });
       
       if (!r2 || !r2.success) { 
@@ -943,16 +1105,17 @@
         mensajeEl.style.background = '';
         mensajeEl.style.color = '';
         mensajeEl.style.border = '';
-        mensajeEl.textContent = '✅ ¡Respuesta correcta! +1 punto';
+        mensajeEl.textContent = ' ¡Respuesta correcta! +1 punto';
       }
       
       if (r2.finalize === true || r2.game_over === true) {
+        detenerTemporizador();
         partidaActiva = false;
         mensajeEl.style.background = '';
         mensajeEl.style.color = '';
         mensajeEl.style.border = '';
         mensajeEl.innerHTML = r2.mensaje || 
-          `❌ <strong>¡Partida terminada!</strong> Respuesta incorrecta.</strong><br><small style="color: #666;">Serás redirigido a los resultados...</small>`;
+          ` <strong>¡Partida terminada!</strong> Respuesta incorrecta.</strong><br><small style="color: #666;">Serás redirigido a los resultados...</small>`;
         
         btnCategoria.disabled = true;
         btnCategoria.querySelector('.category-text').textContent = 'Partida terminada';
@@ -966,6 +1129,7 @@
       
       if (result.correct === true) {
         setTimeout(() => {
+          detenerTemporizador();
           preguntaBox.classList.add('hidden');
           const categoriaEl = document.getElementById('categoria');
           if (categoriaEl) categoriaEl.style.display = 'none';

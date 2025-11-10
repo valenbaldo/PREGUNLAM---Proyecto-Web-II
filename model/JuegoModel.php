@@ -131,12 +131,21 @@ class JuegoModel
         return ['pregunta' => $pregunta];
     }
 
-    public function procesarRespuesta(int $id_juego, int $id_usuario, int $id_pregunta, string $opcion)
+    public function procesarRespuesta(int $id_juego, int $id_usuario, int $id_pregunta, string $opcion, int $tiempo_respuesta = 0)
     {
         $id_juego = intval($id_juego);
         $id_usuario = intval($id_usuario);
         $id_pregunta = intval($id_pregunta);
-        $opcion = strtoupper(substr($opcion, 0, 1));
+        $tiempo_respuesta = intval($tiempo_respuesta);
+        
+        if ($tiempo_respuesta > 10) {
+            return ['error' => 'Tiempo de respuesta excedido'];
+        }
+        
+        $esTimeout = empty($opcion);
+        if (!$esTimeout) {
+            $opcion = strtoupper(substr($opcion, 0, 1));
+        }
 
         $rows = $this->conexion->query("SELECT * FROM juego_preguntas WHERE id_juego = $id_juego AND id_pregunta = $id_pregunta AND id_usuario = $id_usuario ORDER BY id_juego_pregunta DESC LIMIT 1");
         if (!$rows || count($rows) === 0) {
@@ -154,14 +163,31 @@ class JuegoModel
         }
         $correct = strtoupper($r[0]['es_correcta']);
         $id_respuesta = $r[0]['id_respuesta'];
-        $isCorrect = ($opcion === $correct) ? 1 : 0; // 1 si es correcta, 0 si no
-        $checkOpc = $this->conexion->query("SHOW COLUMNS FROM juego_preguntas LIKE 'opcion_elegida'");
-
-        if ($checkOpc && count($checkOpc)) {
-            $this->conexion->execute("UPDATE juego_preguntas SET opcion_elegida = '" . addslashes($opcion) . "', es_correcta = $isCorrect, id_respuesta_elegida = $id_respuesta WHERE id_juego = $id_juego AND id_pregunta = $id_pregunta AND id_usuario = $id_usuario");
+        
+        if ($esTimeout) {
+            $isCorrect = 0;
+            $opcion_final = 'TIMEOUT';
         } else {
-            $this->conexion->execute("UPDATE juego_preguntas SET es_correcta = $isCorrect, id_respuesta_elegida = $id_respuesta WHERE id_juego = $id_juego AND id_pregunta = $id_pregunta AND id_usuario = $id_usuario");
+            $isCorrect = ($opcion === $correct) ? 1 : 0;
+            $opcion_final = $opcion;
         }
+        
+        $checkOpc = $this->conexion->query("SHOW COLUMNS FROM juego_preguntas LIKE 'opcion_elegida'");
+        $checkTiempo = $this->conexion->query("SHOW COLUMNS FROM juego_preguntas LIKE 'tiempo_respuesta'");
+
+        $updateQuery = "UPDATE juego_preguntas SET es_correcta = $isCorrect, id_respuesta_elegida = $id_respuesta";
+        
+        if ($checkOpc && count($checkOpc)) {
+            $updateQuery .= ", opcion_elegida = '" . addslashes($opcion_final) . "'";
+        }
+        
+        if ($checkTiempo && count($checkTiempo)) {
+            $updateQuery .= ", tiempo_respuesta = $tiempo_respuesta";
+        }
+        
+        $updateQuery .= " WHERE id_juego = $id_juego AND id_pregunta = $id_pregunta AND id_usuario = $id_usuario";
+        
+        $this->conexion->execute($updateQuery);
         $sql_actualizar_respondida = "UPDATE preguntas SET veces_respondida = COALESCE(veces_respondida, 0) + 1 WHERE id_pregunta = $id_pregunta";
         $this->conexion->execute($sql_actualizar_respondida);
 
