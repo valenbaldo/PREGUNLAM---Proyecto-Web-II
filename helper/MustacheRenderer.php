@@ -1,19 +1,28 @@
 <?php
 
-class MustacheRenderer{
+class MustacheRenderer
+{
     private $mustache;
     private $viewsFolder;
+    private $data = [];
 
     public function __construct($partialsPathLoader){
 
         $this->mustache = new Mustache_Engine(
             array(
-            'partials_loader' => new Mustache_Loader_FilesystemLoader( $partialsPathLoader )
-        ));
+                'partials_loader' => new Mustache_Loader_FilesystemLoader( $partialsPathLoader )
+            ));
         $this->viewsFolder = $partialsPathLoader;
     }
 
-    public function render($contentFile , $data = array() ){
+    public function addKey($key, $value)
+    {
+        $this->data[$key] = $value;
+    }
+
+    public function render($contentFile , $contentData = array() ){
+        $data = array_merge($this->data, $contentData);
+
         echo  $this->generateHtml(  $this->viewsFolder . '/' . $contentFile . "Vista.mustache" , $data);
     }
 

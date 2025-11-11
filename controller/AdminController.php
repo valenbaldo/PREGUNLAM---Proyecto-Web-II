@@ -11,23 +11,28 @@ class AdminController
         $this->renderer = $renderer;
     }
 
+
     public function base()
     {
         $this->tienePermisoAdmin();
 
         [$desde, $hasta] = $this->resolverRango();
 
+        $stats = [
+            'usuarios_totales'      => $this->model->contarUsuarios(),
+            'partidas'              => $this->model->contarPartidas(),
+            'preguntas_totales'     => $this->model->contarPreguntas(),
+            'preguntas_creadas'     => $this->model->contarPreguntasCreadas($desde, $hasta),
+            'usuarios_nuevos'       => $this->model->contarUsuariosNuevos($desde, $hasta),
+        ];
+
         $data = [
             'nombreUsuario'          => $_SESSION['nombreUsuario'] ?? 'Administrador',
-            'totalUsuarios'          => $this->model->contarUsuarios(),
-            'totalPartidas'          => $this->model->contarPartidas(),
-            'totalPreguntas'         => $this->model->contarPreguntas(),
-            'totalPreguntasCreadas'  => $this->model->contarPreguntasCreadas($desde, $hasta),
-            'usuariosNuevos'         => $this->model->contarUsuariosNuevos($desde, $hasta),
-            'aciertoPorUsuario'      => $this->model->aciertoPorUsuario(),
-            'usuariosPorPais'        => $this->model->usuariosPorPais(),
-            'usuariosPorSexo'        => $this->model->usuariosPorSexo(),
-            'usuariosPorGrupoEdad'   => $this->model->usuariosPorGrupoEdad()
+            'stats'                  => $stats,
+            'aciertos'               => $this->model->aciertoPorUsuario(),
+            'porPais'                => $this->model->usuariosPorPais(),
+            'porSexo'                => $this->model->usuariosPorSexo(),
+            'porEdad'                => $this->model->usuariosPorGrupoEdad()
         ];
 
         $this->renderer->render("adminPanel", $data);
@@ -41,11 +46,61 @@ class AdminController
         }
     }
 
-    private function resolverRango(): array
+    private function resolverRango()
     {
+        $rango = $_GET['r'] ?? 'month';
         $hoy = new DateTime('today');
-        $desde = isset($_GET['desde']) ? $_GET['desde'] : $hoy->modify('-30 days')->format('Y-m-d');
-        $hasta = isset($_GET['hasta']) ? $_GET['hasta'] : date('Y-m-d');
+        $desde = null;
+        $hasta = date('Y-m-d');
+
+        switch ($rango) {
+            case 'day':
+                $desde = date('Y-m-d');
+                break;
+            case 'week':
+                $desde = $hoy->modify('-7 days')->format('Y-m-d');
+                break;
+            case 'year':
+                $desde = $hoy->modify('first day of January this year')->format('Y-m-d');
+                break;
+            case 'month':
+            default:
+                $desde = $hoy->modify('first day of this month')->format('Y-m-d');
+                break;
+        }
+
+        $this->renderer->addKey('r_' . $rango, true);
+
         return [$desde, $hasta];
+    }
+
+    public function gestionarUsuarios()
+    {
+        $this->tienePermisoAdmin();
+
+        $data = [
+            'usuarios' => $this->model->obtenerUsuariosConRol(),
+            'roles' => $this->model->obtenerRolesDisponibles()
+        ];
+
+        $this->renderer->render("adminUsuarios", $data);
+    }
+
+    public function cambiarRol()
+    {
+        $this->tienePermisoAdmin();
+
+        $idUsuario = (int)($_POST['id_usuario'] ?? 0);
+        $idRolNuevo = (int)($_POST['id_rol'] ?? 0);
+
+        if ($idUsuario > 0 && $idRolNuevo > 0) {
+            $exito = $this->model->cambiarRolUsuario($idUsuario, $idRolNuevo);
+            $msg = $exito ? "Rol actualizado correctamente." : "Error al actualizar el rol o permiso denegado.";
+        } else {
+            $msg = "Datos inválidos para cambiar el rol.";
+        }
+
+        header("Location: /admin/gestionarUsuarios?msg=" . urlencode($msg));
+        exit;
     }
 }

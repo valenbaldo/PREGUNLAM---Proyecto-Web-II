@@ -11,11 +11,11 @@ class LoginModel
     }
 
 
-    public function nuevo($nombre, $apellido, $usuario, $nacimiento, $imagen, $sexo, $mail, $pais, $ciudad, $contraseña, $token, $id_rol_jugador)
+    public function nuevo($nombre, $apellido, $usuario, $nacimiento, $imagen, $sexo, $mail, $pais, $ciudad, $contraseña, $token, $id_rol)
     {
 
-        $sql = "INSERT INTO usuarios (nombre, apellido, usuario, mail, imagen, fecha_nacimiento, contraseña, token, id_rol_jugador)
-                VALUES ('$nombre', '$apellido', '$usuario', '$mail', '$imagen', '$nacimiento', '$contraseña', '$token', '$id_rol_jugador')";
+        $sql = "INSERT INTO usuarios (nombre, apellido, usuario, mail, imagen, fecha_nacimiento, contraseña, token, id_rol)
+                VALUES ('$nombre', '$apellido', '$usuario', '$mail', '$imagen', '$nacimiento', '$contraseña', '$token', '$id_rol')";
         $this->conexion->query($sql);
 
         $data = $this->conexion->query("SELECT id_usuario FROM usuarios WHERE mail = '$mail'");

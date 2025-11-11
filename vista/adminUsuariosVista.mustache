@@ -1,0 +1,107 @@
+<style>
+    :root{
+        --brand:#0b8f72;
+        --ink:#0b0b0b;
+        --muted:#6b7280;
+        --card:#ffffff;
+        --ring:#e5e7eb;
+        --bg:#f3f4f6;
+    }
+    body{ background:var(--bg); }
+
+    .adm-wrap{ max-width:1200px; margin:28px auto 40px; padding:0 16px; }
+    .adm-head{ display:flex; align-items:center; justify-content:space-between; gap:14px; margin-bottom:18px; flex-wrap:wrap; }
+    .adm-title{ font-size:22px; font-weight:900; display:flex; align-items:center; gap:10px; }
+    .adm-title i{ width:28px; height:28px; display:inline-grid; place-items:center; background:var(--brand); color:#fff; border-radius:8px; }
+
+    .btn{ border:none; border-radius:12px; padding:10px 14px; background:#111; color:#fff; cursor:pointer; text-decoration:none; display:inline-flex; align-items:center; gap:8px; }
+    .btn.outline{ background:#fff; color:var(--ink); border:1px solid var(--ring); }
+    .btn.brand{ background:var(--brand); }
+    .btn.small{ padding:7px 11px; border-radius:10px; font-size:14px; }
+
+    .card{ background:var(--card); border:1px solid var(--ring); border-radius:16px; padding:16px; }
+    .card h3{ font-weight:800; font-size:18px; margin-bottom:20px; display:flex; align-items:center; gap:8px; }
+
+    .tbl{ width:100%; border-collapse:collapse; margin-top:10px; }
+    .tbl th,.tbl td{ padding:12px; border-bottom:1px solid var(--ring); font-size:14px; }
+    .tbl th{ background:#f9fafb; text-align:left; color:#111; font-weight:700; text-transform:uppercase; }
+    .tbl td.muted{ color:var(--muted); }
+
+    .status-badge{ padding:4px 8px; border-radius:8px; font-size:12px; font-weight:700; text-transform:capitalize; }
+    .r1{ background:#e0f7fa; color:#006064; } /* Jugador (Cian oscuro) */
+    .r2{ background:#fffde7; color:#ff6f00; } /* Editor (Naranja oscuro) */
+    .r3{ background:#e8f5e9; color:#1b5e20; } /* Administrador (Verde oscuro) */
+
+    .msg-box{ padding:12px 16px; border-radius:10px; background:#e8f5e9; color:#1b5e20; border:1px solid #c8e6c9; margin-bottom:18px; font-weight:600; }
+    .error-msg{ background:#fee8e8; color:#990000; border:1px solid #ffcccc; }
+
+    @media (max-width: 768px) {
+        .tbl th, .tbl td {
+            padding: 8px;
+            font-size: 13px;
+        }
+        .adm-title{ font-size:20px; }
+        .adm-head{ flex-direction: column; align-items: flex-start; }
+    }
+
+
+</style>
+
+<div class="adm-wrap">
+
+    <div class="adm-head">
+        <div class="adm-title">
+            <i>👥</i> <span>Gestión de Roles y Usuarios</span>
+        </div>
+        <a class="btn outline small" href="/admin/base">⬅️ Volver a Estadísticas</a>
+    </div>
+
+    {{#msg}}
+        <div class="msg-box {{#error_flag}}error-msg{{/error_flag}}">{{msg}}</div>
+    {{/msg}}
+
+    <div class="card">
+        <h3>Lista de Usuarios y Roles</h3>
+
+        <table class="tbl">
+            <thead>
+            <tr>
+                <th>ID</th>
+                <th>Usuario</th>
+                <th>Mail</th>
+                <th>Rol Actual</th>
+                <th>Acción</th>
+            </tr>
+            </thead>
+            <tbody>
+            {{#usuarios}}
+                <tr>
+                    <td>{{id_usuario}}</td>
+                    <td>{{usuario}}</td>
+                    <td class="muted">{{mail}}</td>
+                    <td><span class="status-badge r{{id_rol}}">{{rol}}</span></td>
+                    <td>
+                        <form method="POST" action="/admin/cambiarRol" style="display:inline-flex; gap:8px; align-items:center;">
+                            <input type="hidden" name="id_usuario" value="{{id_usuario}}">
+
+                            <select name="id_rol" style="padding:8px; border-radius:8px; border:1px solid var(--ring);">
+                                {{#opciones_rol}}
+                                    <option value="{{id_rol}}" {{#seleccionado}}selected{{/seleccionado}}>{{nombre}}</option>
+                                {{/opciones_rol}}
+                            </select>
+
+                            <button type="submit" class="btn brand small">Guardar</button>
+                        </form>
+                    </td>
+                </tr>
+            {{/usuarios}}
+            {{^usuarios}}
+                <tr><td colspan="5" class="muted" style="text-align:center;">No se encontraron usuarios para gestionar.</td></tr>
+            {{/usuarios}}
+            </tbody>
+        </table>
+
+    </div>
+
+
+</div>
