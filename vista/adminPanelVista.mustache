@@ -1,6 +1,6 @@
 <style>
     :root{
-        --brand:#0b8f72;         /* tu verde */
+        --brand:#0b8f72;
         --ink:#0b0b0b;
         --muted:#6b7280;
         --card:#ffffff;
@@ -10,7 +10,7 @@
     body{ background:var(--bg); }
 
     .adm-wrap{ max-width:1200px; margin:28px auto 40px; padding:0 16px; }
-    .adm-head{ display:flex; align-items:center; justify-content:space-between; gap:14px; margin-bottom:18px; }
+    .adm-head{ display:flex; align-items:center; justify-content:space-between; gap:14px; margin-bottom:18px; flex-wrap:wrap; }
     .adm-title{ font-size:22px; font-weight:900; display:flex; align-items:center; gap:10px; }
     .adm-title i{ width:28px; height:28px; display:inline-grid; place-items:center; background:var(--brand); color:#fff; border-radius:8px; }
 
@@ -24,7 +24,6 @@
     .chip{ padding:6px 10px; border-radius:999px; border:1px solid var(--ring); background:#fff; color:var(--ink); font-size:13px; }
     .chip.active{ background:var(--brand); color:#fff; border-color:var(--brand); }
 
-    /* KPI grid */
     .adm-kpis{ display:grid; grid-template-columns:repeat(4,1fr); gap:14px; margin-bottom:18px; }
     @media (max-width:1000px){ .adm-kpis{ grid-template-columns:repeat(2,1fr);} }
     @media (max-width:640px){ .adm-kpis{ grid-template-columns:1fr;} }
@@ -35,7 +34,6 @@
     .kpi .kpi-label{ font-size:13px; color:var(--muted); margin-bottom:4px; }
     .kpi .kpi-value{ font-weight:900; font-size:26px; line-height:1; }
 
-    /* Tables layout */
     .adm-grid{ display:grid; grid-template-columns:2fr 1fr; gap:14px; }
     @media (max-width:1000px){ .adm-grid{ grid-template-columns:1fr; } }
 
@@ -46,39 +44,37 @@
 
     .card h3{ font-weight:800; font-size:16px; margin-bottom:10px; display:flex; align-items:center; gap:8px; }
     .subcard{ background:var(--card); border:1px solid var(--ring); border-radius:16px; padding:12px; }
-    .stack > * + *{ margin-top:12px; }
+    .stack &gt * + *{ margin-top:12px; }
 
-    /* Print */
     @media print{
         .adm-actions, .chip, .btn{ display:none !important; }
         .adm-wrap{ max-width:none; margin:0; padding:0; }
         body{ background:#fff; }
         .card, .subcard{ border:1px solid #000; }
     }
+
 </style>
 
 <div class="adm-wrap">
 
-    <!-- Header -->
     <div class="adm-head">
         <div class="adm-title">
             <i>📊</i> <span>Panel de Administración</span>
         </div>
 
         <div class="adm-actions">
-            <!-- Filtros de rango (links simples con ?r=...) -->
-            {{! valores posibles: day | week | month | year }}
+            <a class="btn brand small" href="/admin/gestionarUsuarios">👥 Gestión de Usuarios</a>
+
             <a href="?controller=admin&method=base&r=day"   class="chip {{#r_day}}active{{/r_day}}">Hoy</a>
             <a href="?controller=admin&method=base&r=week"  class="chip {{#r_week}}active{{/r_week}}">Semana</a>
             <a href="?controller=admin&method=base&r=month" class="chip {{#r_month}}active{{/r_month}}">Mes</a>
             <a href="?controller=admin&method=base&r=year"  class="chip {{#r_year}}active{{/r_year}}">Año</a>
 
             <button class="btn outline small" onclick="window.print()">🖨️ Imprimir</button>
-            <a class="btn small" href="/login/logout">Cerrar sesión</a>
         </div>
     </div>
 
-    <!-- KPIs -->
+
     <div class="adm-kpis">
         <div class="card kpi">
             <i>👥</i>
@@ -105,17 +101,24 @@
         </div>
 
         <div class="card kpi">
+            <i>➕</i>
+            <div>
+                <div class="kpi-label">Preguntas Creadas (en rango)</div>
+                <div class="kpi-value">{{stats.preguntas_creadas}}</div>
+            </div>
+        </div>
+
+        <div class="card kpi">
             <i>🆕</i>
             <div>
-                <div class="kpi-label">Usuarios Nuevos</div>
+                <div class="kpi-label">Usuarios Nuevos (en rango)</div>
                 <div class="kpi-value">{{stats.usuarios_nuevos}}</div>
             </div>
         </div>
     </div>
+    <div class="adm-kpis"></div>
 
-    <!-- Body: tabla grande + paneles laterales -->
     <div class="adm-grid">
-        <!-- Porcentaje de aciertos por usuario -->
         <div class="card">
             <h3>🎯 Porcentaje de aciertos por usuario</h3>
             <table class="tbl">
@@ -137,7 +140,7 @@
                     </tr>
                 {{/aciertos}}
                 {{^aciertos}}
-                    <tr><td colspan="4" class="muted">Sin datos en el rango seleccionado.</td></tr>
+                    <tr><td colspan="4" class="muted">Sin datos de aciertos para mostrar.</td></tr>
                 {{/aciertos}}
                 </tbody>
             </table>
@@ -146,7 +149,7 @@
         <!-- Columna derecha: 3 mini-tablas apiladas -->
         <div class="stack">
             <div class="subcard">
-                <h3>🌍 Usuarios por País</h3>
+                <h3>🌍 Top 10 Usuarios por País</h3>
                 <table class="tbl">
                     <thead>
                     <tr><th>País</th><th>Cantidad</th></tr>

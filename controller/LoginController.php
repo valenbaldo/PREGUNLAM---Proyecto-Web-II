@@ -134,21 +134,28 @@ class LoginController
         $usuarioEncontrado = $this->model->obtenerUsuario($mail);
 
         if ($usuarioEncontrado && password_verify($contraseñaIntentada, $usuarioEncontrado[0]["contraseña"]) && $usuarioEncontrado[0]["verificado"] == 1) {
+
             $_SESSION['nombreUsuario'] = $usuarioEncontrado[0]["usuario"];
             $_SESSION['imagen'] = $usuarioEncontrado[0]["imagen"];
             $_SESSION['id_usuario'] = $usuarioEncontrado[0]["id_usuario"];
             $_SESSION['id_rol'] = $usuarioEncontrado[0]["id_rol"];
             $_SESSION['esCorrecta'] = false;
-            if ($_SESSION['id_rol'] == 2) {
-                header("Location: /editor");
+
+            $id_rol = $_SESSION['id_rol'];
+
+            if ($id_rol == 3) {
+                header("Location: /admin/base");
+            } elseif ($id_rol == 2) {
+                header("Location: /editor/base");
             } else {
                 header("Location: /home");
             }
             exit;
-        }elseif ($usuarioEncontrado && password_verify($contraseñaIntentada, $usuarioEncontrado[0]["contraseña"]) && $usuarioEncontrado[0]["verificado"] == 0){
+
+        } elseif ($usuarioEncontrado && password_verify($contraseñaIntentada, $usuarioEncontrado[0]["contraseña"]) && $usuarioEncontrado[0]["verificado"] == 0){
             $data["error"] = "Mail no verificado";
             $this->renderer->render("login", $data);
-        }else{
+        } else {
             $data["error"] = "Mail o contraseña incorrectos";
             $this->renderer->render("login", $data);
         }
