@@ -1,0 +1,106 @@
+<style>
+    :root{
+        --brand:#0b8f72;
+        --ink:#0b0b0b;
+        --muted:#6b7280;
+        --card:#ffffff;
+        --ring:#e5e7eb;
+        --bg:#f3f4f6;
+        --danger:#dc3545;
+        --danger-light: #fdf5f5;
+    }
+    body{ background:var(--bg); }
+
+    .adm-wrap{ max-width:1200px; margin:28px auto 40px; padding:0 16px; }
+    .adm-head{ display:flex; align-items:center; justify-content:space-between; gap:14px; margin-bottom:18px; flex-wrap:wrap; }
+    .adm-title{ font-size:22px; font-weight:900; display:flex; align-items:center; gap:10px; }
+    .adm-title i{ width:28px; height:28px; display:inline-grid; place-items:center; background:var(--brand); color:#fff; border-radius:8px; }
+
+
+    .adm-actions{ display:flex; gap:10px; flex-wrap:wrap; align-items:center; }
+    .btn{ border:none; border-radius:12px; padding:10px 14px; background:#111; color:#fff; cursor:pointer; text-decoration:none; display:inline-flex; align-items:center; gap:8px; }
+    .btn.outline{ background:#fff; color:var(--ink); border:1px solid var(--ring); }
+    .btn.brand{ background:var(--brand); }
+    .btn.small{ padding:7px 11px; border-radius:10px; font-size:14px; }
+
+    .btn.danger-outline {
+        background: var(--danger-light);
+        color: var(--danger);
+        border: 1px solid var(--danger);
+    }
+    .btn.danger-outline:hover {
+        background: #f8d7da;
+    }
+
+    .card{ background:var(--card); border:1px solid var(--ring); border-radius:16px; padding:16px; }
+    .card h3{ font-weight:800; font-size:16px; margin-bottom:10px; display:flex; align-items:center; gap:8px; }
+
+    .tbl{ width:100%; border-collapse:collapse; }
+    .tbl th,.tbl td{ padding:10px 12px; border-bottom:1px solid var(--ring); font-size:14px; }
+    .tbl th{ background:#f9fafb; text-align:left; color:#111; font-weight:700; }
+    .tbl td.muted{ color:var(--muted); }
+
+    .notification { padding: 12px; margin-bottom: 15px; border-radius: 8px; background: #eef8f5; color: var(--brand); border: 1px solid var(--brand); font-weight: 600; }
+
+</style>
+
+<div class="adm-wrap">
+    <div class="adm-head">
+        <div class="adm-title">
+            <i style="background:#fee2e2; color:#dc2626;">🔔</i>
+            <span>Gestión de Reportes</span>
+        </div>
+        <div class="adm-actions">
+            <a class="btn outline small" href="/editor/base">⬅️ Volver al Panel</a>
+        </div>
+    </div>
+
+    {{#mensaje}}
+        <div class="notification">{{mensaje}}</div>
+    {{/mensaje}}
+
+    <div class="card">
+        <h3>Reportes Pendientes de Moderación</h3>
+        <table class="tbl">
+            <thead>
+            <tr>
+                <th>ID</th>
+                <th>Pregunta Reportada</th>
+                <th>Reportado por</th>
+                <th>Descripción</th>
+                <th>Fecha</th>
+                <th>Acciones</th>
+            </tr>
+            </thead>
+            <tbody>
+            {{#reportes}}
+                <tr>
+                    <td>{{id_reporte}}</td>
+                    <td>
+                        {{nombre_pregunta}}
+                    </td>
+                    <td>{{reportado_por}}</td>
+                    <td>{{descripcion}}</td>
+                    <td class="muted">{{created_at}}</td>
+                    <td>
+                        <form method="POST" action="/editor/procesarReporte" style="display:inline;">
+                            <input type="hidden" name="id_reporte" value="{{id_reporte}}">
+                            <input type="hidden" name="accion" value="validar">
+                            <button class="btn small brand" type="submit">Validar</button>
+                        </form>
+
+                        <form method="POST" action="/editor/procesarReporte" style="display:inline;">
+                            <input type="hidden" name="id_reporte" value="{{id_reporte}}">
+                            <input type="hidden" name="accion" value="rechazar">
+                            <button class="btn small danger-outline" type="submit">Rechazar</button>
+                        </form>
+                    </td>
+                </tr>
+            {{/reportes}}
+            {{^reportes}}
+                <tr><td colspan="6" class="muted">No hay reportes pendientes de revisión. 🎉</td></tr>
+            {{/reportes}}
+            </tbody>
+        </table>
+    </div>
+</div>

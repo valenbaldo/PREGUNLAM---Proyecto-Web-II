@@ -121,8 +121,9 @@ CREATE TABLE reportes (
                           id_pregunta INT NOT NULL,
                           id_usuario_reporta INT NOT NULL,
                           descripcion TEXT NOT NULL,
-                          estado ENUM('pendiente', 'revisado', 'desestimado') DEFAULT 'pendiente',
+                          estado ENUM('pendiente', 'revisado', 'rechazado') DEFAULT 'pendiente',
                           created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                          resuelto_en TIMESTAMP NULL,
 
                           FOREIGN KEY (id_pregunta) REFERENCES preguntas(id_pregunta) ON DELETE CASCADE,
                           FOREIGN KEY (id_usuario_reporta) REFERENCES usuarios(id_usuario) ON DELETE CASCADE

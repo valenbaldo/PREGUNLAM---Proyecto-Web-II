@@ -14,12 +14,18 @@ class EditorController
     public function base()
     {
         $this->tienePermisoEditor();
+        $msg = $_GET['msg'] ?? null;
+        $error = $_GET['error'] ?? null;
 
         $preguntas = $this->model->obtenerTodasLasPreguntas();
+        $reportes_pendientes = $this->model->contarReportesPendientes();
 
         $data = [
+            'nombreUsuario' => $_SESSION['nombreUsuario'] ?? 'Editor',
             'preguntas' => $preguntas,
-            'nombreUsuario' => $_SESSION['nombreUsuario'] ?? 'Editor'
+            'reportes_pendientes' => $reportes_pendientes,
+            'msg' => $msg,
+            'error' => $error
         ];
 
         $this->renderer->render("editorPanel", $data);
@@ -117,4 +123,58 @@ class EditorController
         header("Location: /editor/base");
         exit;
     }
+    public function gestionarReportes()
+    {
+        $this->tienePermisoEditor();
+
+        $reportes = $this->model->obtenerReportesPendientes();
+
+        $data = [
+            'reportes' => $reportes,
+            'nombreUsuario' => $_SESSION['nombreUsuario'] ?? 'Editor',
+            'mensaje' => $_GET['msg'] ?? null
+        ];
+
+        $this->renderer->render("editorReportes", $data);
+    }
+
+    public function procesarReporte()
+    {
+        $this->tienePermisoEditor();
+
+        $id_reporte = (int)($_POST['id_reporte'] ?? 0);
+        $accion = $_POST['accion'] ?? '';
+        $nuevo_estado = '';
+
+        if ($id_reporte <= 0 || empty($accion)) {
+            $msg = "Error: Datos de reporte inválidos.";
+            header("Location: /editor/gestionarReportes?msg=" . urlencode($msg));
+            exit;
+        }
+
+        switch ($accion) {
+            case 'validar':
+                $nuevo_estado = 'revisado';
+                break;
+            case 'rechazar':
+                $nuevo_estado = 'rechazado';
+                break;
+            default:
+                $msg = "Error: Acción no reconocida.";
+                header("Location: /editor/gestionarReportes?msg=" . urlencode($msg));
+                exit;
+        }
+
+        $exito = $this->model->actualizarEstadoReporte($id_reporte, $nuevo_estado);
+
+        if ($exito) {
+            $msg = "Reporte ID $id_reporte actualizado a '$nuevo_estado' correctamente.";
+        } else {
+            $msg = "Error al actualizar el reporte ID $id_reporte.";
+        }
+
+        header("Location: /editor/gestionarReportes?msg=" . urlencode($msg));
+        exit;
+    }
+
 }
