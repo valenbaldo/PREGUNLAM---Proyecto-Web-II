@@ -14,7 +14,6 @@
     .adm-title{ font-size:22px; font-weight:900; display:flex; align-items:center; gap:10px; }
     .adm-title i{ width:28px; height:28px; display:inline-grid; place-items:center; background:var(--brand); color:#fff; border-radius:8px; }
 
-    /* Filters + actions */
     .adm-actions{ display:flex; gap:10px; flex-wrap:wrap; align-items:center; }
     .btn{ border:none; border-radius:12px; padding:10px 14px; background:#111; color:#fff; cursor:pointer; text-decoration:none; display:inline-flex; align-items:center; gap:8px; }
     .btn.outline{ background:#fff; color:var(--ink); border:1px solid var(--ring); }
@@ -33,6 +32,8 @@
     .kpi i{ width:40px; height:40px; border-radius:12px; display:grid; place-items:center; background:#eef8f5; color:var(--brand); font-size:18px; }
     .kpi .kpi-label{ font-size:13px; color:var(--muted); margin-bottom:4px; }
     .kpi .kpi-value{ font-weight:900; font-size:26px; line-height:1; }
+    /* Estilo para el KPI de Reportes Pendientes */
+    .kpi.reporte i { background: #fee2e2; color: #dc2626; }
 
     .adm-grid{ display:grid; grid-template-columns:2fr 1fr; gap:14px; }
     @media (max-width:1000px){ .adm-grid{ grid-template-columns:1fr; } }
@@ -63,6 +64,7 @@
         </div>
 
         <div class="adm-actions">
+            <a class="btn brand small" href="/admin/gestionarReportes" title="Revisar Reportes Pendientes">🔔 Reportes ({{stats.reportes_pendientes}})</a>
             <a class="btn brand small" href="/admin/gestionarUsuarios">👥 Gestión de Usuarios</a>
 
             <a href="?controller=admin&method=base&r=day"   class="chip {{#r_day}}active{{/r_day}}">Hoy</a>
@@ -92,6 +94,14 @@
             </div>
         </div>
 
+        <div class="card kpi reporte">
+            <i>🔔</i>
+            <div>
+                <div class="kpi-label">Reportes Pendientes</div>
+                <div class="kpi-value">{{stats.reportes_pendientes}}</div>
+            </div>
+        </div>
+
         <div class="card kpi">
             <i>❓</i>
             <div>
@@ -100,6 +110,9 @@
             </div>
         </div>
 
+    </div>
+
+    <div class="adm-kpis" style="grid-template-columns: repeat(2,1fr);">
         <div class="card kpi">
             <i>➕</i>
             <div>
@@ -116,7 +129,6 @@
             </div>
         </div>
     </div>
-    <div class="adm-kpis"></div>
 
     <div class="adm-grid">
         <div class="card">
@@ -146,7 +158,6 @@
             </table>
         </div>
 
-        <!-- Columna derecha: 3 mini-tablas apiladas -->
         <div class="stack">
             <div class="subcard">
                 <h3>🌍 Top 10 Usuarios por País</h3>

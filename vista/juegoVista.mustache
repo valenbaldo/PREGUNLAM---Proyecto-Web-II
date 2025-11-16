@@ -1,1156 +1,1431 @@
 <!doctype html>
 <html lang="es">
 <head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width,initial-scale=1">
-  <title>Partida - PregUnLaM</title>
-  <script src="https://cdn.tailwindcss.com"></script>
-  <style>
-    :root {
-      --primary: linear-gradient(135deg, #48bb78 0%, #38a169 100%);
-      --primary-hover: linear-gradient(135deg, #38a169 0%, #2f855a 100%);
-      --success: linear-gradient(135deg, #48bb78 0%, #38a169 100%);
-      --warning: linear-gradient(135deg, #ed8936 0%, #dd6b20 100%);
-      --danger: linear-gradient(135deg, #f56565 0%, #e53e3e 100%);
-      --surface: rgba(255, 255, 255, 0.95);
-      --surface-hover: rgba(255, 255, 255, 0.98);
-      --glass: rgba(255, 255, 255, 0.25);
-      --text-primary: #1a202c;
-      --text-secondary: #4a5568;
-      --text-muted: #718096;
-      --border: rgba(255, 255, 255, 0.2);
-      --shadow-sm: 0 4px 6px rgba(0, 0, 0, 0.05);
-      --shadow-md: 0 8px 25px rgba(0, 0, 0, 0.1);
-      --shadow-lg: 0 20px 40px rgba(0, 0, 0, 0.15);
-      --shadow-colored: 0 8px 32px rgba(72, 187, 120, 0.3);
-      --radius-sm: 8px;
-      --radius-md: 12px;
-      --radius-lg: 16px;
-      --radius-xl: 20px;
-      --space-xs: 8px;
-      --space-sm: 12px;
-      --space-md: 16px;
-      --space-lg: 24px;
-      --space-xl: 32px;
-      --space-2xl: 48px;
-      --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-      --font-weight-medium: 500;
-      --font-weight-semibold: 600;
-      --font-weight-bold: 700;
-    }
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <title>Partida - PregUnLaM</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        :root {
+            --primary: linear-gradient(135deg, #48bb78 0%, #38a169 100%);
+            --primary-hover: linear-gradient(135deg, #38a169 0%, #2f855a 100%);
+            --success: linear-gradient(135deg, #48bb78 0%, #38a169 100%);
+            --warning: linear-gradient(135deg, #ed8936 0%, #dd6b20 100%);
+            --danger: linear-gradient(135deg, #f56565 0%, #e53e3e 100%);
+            --surface: rgba(255, 255, 255, 0.95);
+            --surface-hover: rgba(255, 255, 255, 0.98);
+            --glass: rgba(255, 255, 255, 0.25);
+            --text-primary: #1a202c;
+            --text-secondary: #4a5568;
+            --text-muted: #718096;
+            --border: rgba(255, 255, 255, 0.2);
+            --shadow-sm: 0 4px 6px rgba(0, 0, 0, 0.05);
+            --shadow-md: 0 8px 25px rgba(0, 0, 0, 0.1);
+            --shadow-lg: 0 20px 40px rgba(0, 0, 0, 0.15);
+            --shadow-colored: 0 8px 32px rgba(72, 187, 120, 0.3);
+            --radius-sm: 8px;
+            --radius-md: 12px;
+            --radius-lg: 16px;
+            --radius-xl: 20px;
+            --space-xs: 8px;
+            --space-sm: 12px;
+            --space-md: 16px;
+            --space-lg: 24px;
+            --space-xl: 32px;
+            --space-2xl: 48px;
+            --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            --font-weight-medium: 500;
+            --font-weight-semibold: 600;
+            --font-weight-bold: 700;
+        }
 
-    * {
-      box-sizing: border-box;
-    }
+        * {
+            box-sizing: border-box;
+        }
 
-    body {
-      background: #ffffff;
-      height: 100vh;
-      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
-      margin: 0;
-      padding: 0;
-      position: relative;
-      overflow: hidden;
-      display: flex;
-      flex-direction: column;
-    }
+        body {
+            background: #ffffff;
+            height: 100vh;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            margin: 0;
+            padding: 0;
+            position: relative;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
 
-    .game-container {
-      flex: 1;
-      display: flex;
-      flex-direction: column;
-      padding: 8px;
-      position: relative;
-      z-index: 2;
-      box-sizing: border-box;
-      min-height: 0;
-    }
+        .game-container {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            padding: 8px;
+            position: relative;
+            z-index: 2;
+            box-sizing: border-box;
+            min-height: 0;
+        }
 
-    .game-card {
-      background: rgba(255, 255, 255, 0.98);
-      backdrop-filter: blur(20px) saturate(180%);
-      border-radius: 12px;
-      box-shadow: 0 4px 24px rgba(72, 187, 120, 0.08);
-      padding: 12px;
-      border: 1px solid rgba(72, 187, 120, 0.1);
-      position: relative;
-      overflow: hidden;
-      flex: 1;
-      display: flex;
-      flex-direction: column;
-      min-height: 0;
-      box-sizing: border-box;
-    }
+        .game-card {
+            background: rgba(255, 255, 255, 0.98);
+            backdrop-filter: blur(20px) saturate(180%);
+            border-radius: 12px;
+            box-shadow: 0 4px 24px rgba(72, 187, 120, 0.08);
+            padding: 12px;
+            border: 1px solid rgba(72, 187, 120, 0.1);
+            position: relative;
+            overflow: hidden;
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            min-height: 0;
+            box-sizing: border-box;
+        }
 
-    .game-card::before {
-      content: '';
-      position: absolute;
-      top: 0;
-      left: 0;
-      right: 0;
-      height: 4px;
-      background: var(--primary);
-      border-radius: var(--radius-xl) var(--radius-xl) 0 0;
-    }
+        .game-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: var(--primary);
+            border-radius: var(--radius-xl) var(--radius-xl) 0 0;
+        }
 
-    .game-header {
-      display: grid;
-      grid-template-columns: 1fr auto;
-      gap: 12px;
-      align-items: start;
-      margin-bottom: 8px;
-      padding-bottom: 8px;
-      border-bottom: 2px solid rgba(72, 187, 120, 0.1);
-      position: relative;
-      flex-shrink: 0;
-    }
+        .game-header {
+            display: grid;
+            grid-template-columns: 1fr auto;
+            gap: 12px;
+            align-items: start;
+            margin-bottom: 8px;
+            padding-bottom: 8px;
+            border-bottom: 2px solid rgba(72, 187, 120, 0.1);
+            position: relative;
+            flex-shrink: 0;
+        }
 
-    .player-info {
-      display: flex;
-      flex-direction: column;
-      gap: var(--space-sm);
-    }
+        .player-info {
+            display: flex;
+            flex-direction: column;
+            gap: var(--space-sm);
+        }
 
-    .player-info h2 {
-      font-size: 1.25rem;
-      font-weight: var(--font-weight-bold);
-      color: var(--text-primary);
-      margin: 0;
-      background: var(--primary);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-      background-clip: text;
-      letter-spacing: -0.025em;
-      line-height: 1.1;
-    }
+        .player-info h2 {
+            font-size: 1.25rem;
+            font-weight: var(--font-weight-bold);
+            color: var(--text-primary);
+            margin: 0;
+            background: var(--primary);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            letter-spacing: -0.025em;
+            line-height: 1.1;
+        }
 
-    .username {
-      color: var(--text-secondary);
-      font-size: 1rem;
-      font-weight: var(--font-weight-medium);
-      display: flex;
-      align-items: center;
-      gap: var(--space-xs);
-    }
+        .username {
+            color: var(--text-secondary);
+            font-size: 1rem;
+            font-weight: var(--font-weight-medium);
+            display: flex;
+            align-items: center;
+            gap: var(--space-xs);
+        }
 
-    .nivel-badge {
-      display: inline-flex;
-      align-items: center;
-      gap: var(--space-xs);
-      padding: var(--space-sm) var(--space-md);
-      border-radius: var(--radius-xl);
-      font-size: 0.875rem;
-      font-weight: var(--font-weight-semibold);
-      box-shadow: var(--shadow-sm);
-      transition: var(--transition);
-      backdrop-filter: blur(10px);
-    }
+        .nivel-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: var(--space-xs);
+            padding: var(--space-sm) var(--space-md);
+            border-radius: var(--radius-xl);
+            font-size: 0.875rem;
+            font-weight: var(--font-weight-semibold);
+            box-shadow: var(--shadow-sm);
+            transition: var(--transition);
+            backdrop-filter: blur(10px);
+        }
 
-    .score-display {
-      display: flex;
-      flex-direction: column;
-      align-items: flex-end;
-      gap: var(--space-xs);
-      padding: var(--space-lg);
-      background: var(--glass);
-      border-radius: var(--radius-lg);
-      backdrop-filter: blur(10px);
-      border: 1px solid var(--border);
-    }
+        .score-display {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-end;
+            gap: var(--space-xs);
+            padding: var(--space-lg);
+            background: var(--glass);
+            border-radius: var(--radius-lg);
+            backdrop-filter: blur(10px);
+            border: 1px solid var(--border);
+        }
 
-    .score-label {
-      color: var(--text-muted);
-      font-size: 0.875rem;
-      font-weight: var(--font-weight-medium);
-      letter-spacing: 0.025em;
-    }
+        .score-label {
+            color: var(--text-muted);
+            font-size: 0.875rem;
+            font-weight: var(--font-weight-medium);
+            letter-spacing: 0.025em;
+        }
 
-    .score-value {
-      font-size: 1.5rem;
-      font-weight: var(--font-weight-bold);
-      background: var(--primary);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-      background-clip: text;
-      line-height: 1;
-      letter-spacing: -0.05em;
-    }
+        .score-value {
+            font-size: 1.5rem;
+            font-weight: var(--font-weight-bold);
+            background: var(--primary);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            line-height: 1;
+            letter-spacing: -0.05em;
+        }
 
-    .game-content {
-      display: grid;
-      grid-template-columns: 250px 1fr;
-      gap: 12px;
-      align-items: stretch;
-      flex: 1;
-      min-height: 0;
-      height: 100%;
-      overflow: hidden;
-    }
+        .game-content {
+            display: grid;
+            grid-template-columns: 250px 1fr;
+            gap: 12px;
+            align-items: stretch;
+            flex: 1;
+            min-height: 0;
+            height: 100%;
+            overflow: hidden;
+        }
 
-    .category-selector {
-      position: static;
-      display: flex;
-      flex-direction: column;
-      gap: 8px;
-      height: 100%;
-      overflow: hidden;
-    }
+        .category-selector {
+            position: static;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            height: 100%;
+            overflow: hidden;
+        }
 
-    .category-button {
-      width: 100%;
-      height: 80px;
-      background: var(--primary);
-      border: none;
-      border-radius: 8px;
-      box-shadow: var(--shadow-colored);
-      cursor: pointer;
-      transition: var(--transition);
-      color: white;
-      font-weight: var(--font-weight-semibold);
-      font-size: 0.9rem;
-      position: relative;
-      overflow: hidden;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      gap: 4px;
-      border: 2px solid transparent;
-    }
+        .category-button {
+            width: 100%;
+            height: 80px;
+            background: var(--primary);
+            border: none;
+            border-radius: 8px;
+            box-shadow: var(--shadow-colored);
+            cursor: pointer;
+            transition: var(--transition);
+            color: white;
+            font-weight: var(--font-weight-semibold);
+            font-size: 0.9rem;
+            position: relative;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 4px;
+            border: 2px solid transparent;
+        }
 
-    .category-button::before {
-      content: '';
-      position: absolute;
-      top: 0;
-      left: 0;
-      right: 0;
-      bottom: 0;
-      background: linear-gradient(45deg, transparent 30%, rgba(255,255,255,0.15) 50%, transparent 70%);
-      transform: translateX(-100%);
-      transition: transform 0.6s ease;
-    }
+        .category-button::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(45deg, transparent 30%, rgba(255,255,255,0.15) 50%, transparent 70%);
+            transform: translateX(-100%);
+            transition: transform 0.6s ease;
+        }
 
-    .category-button:hover {
-      transform: translateY(-4px) scale(1.02);
-      box-shadow: 0 20px 40px rgba(72, 187, 120, 0.4);
-      background: var(--primary-hover);
-    }
+        .category-button:hover {
+            transform: translateY(-4px) scale(1.02);
+            box-shadow: 0 20px 40px rgba(72, 187, 120, 0.4);
+            background: var(--primary-hover);
+        }
 
-    .category-button:hover::before {
-      transform: translateX(100%);
-    }
+        .category-button:hover::before {
+            transform: translateX(100%);
+        }
 
-    .category-button:active {
-      transform: translateY(-2px) scale(1.01);
-    }
+        .category-button:active {
+            transform: translateY(-2px) scale(1.01);
+        }
 
-    .category-button:disabled {
-      background: linear-gradient(135deg, #a0aec0, #718096);
-      cursor: not-allowed;
-      transform: none;
-      box-shadow: var(--shadow-sm);
-      opacity: 0.8;
-    }
+        .category-button:disabled {
+            background: linear-gradient(135deg, #a0aec0, #718096);
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: var(--shadow-sm);
+            opacity: 0.8;
+        }
 
-    .category-button:disabled::before {
-      display: none;
-    }
+        .category-button:disabled::before {
+            display: none;
+        }
 
-    .category-button:disabled:hover {
-      transform: none;
-      box-shadow: var(--shadow-sm);
-    }
+        .category-button:disabled:hover {
+            transform: none;
+            box-shadow: var(--shadow-sm);
+        }
 
-    .category-icon {
-      font-size: 1.5rem;
-      filter: drop-shadow(0 2px 4px rgba(0,0,0,0.2));
-      animation: float 4s ease-in-out infinite;
-    }
+        .category-icon {
+            font-size: 1.5rem;
+            filter: drop-shadow(0 2px 4px rgba(0,0,0,0.2));
+            animation: float 4s ease-in-out infinite;
+        }
 
-    .category-text {
-      text-align: center;
-      line-height: 1.4;
-      letter-spacing: 0.025em;
-      text-shadow: 0 1px 2px rgba(0,0,0,0.2);
-    }
+        .category-text {
+            text-align: center;
+            line-height: 1.4;
+            letter-spacing: 0.025em;
+            text-shadow: 0 1px 2px rgba(0,0,0,0.2);
+        }
 
-    @keyframes float {
-      0%, 100% { transform: translateY(0px) rotate(0deg); }
-      33% { transform: translateY(-6px) rotate(-1deg); }
-      66% { transform: translateY(-3px) rotate(1deg); }
-    }
+        @keyframes float {
+            0%, 100% { transform: translateY(0px) rotate(0deg); }
+            33% { transform: translateY(-6px) rotate(-1deg); }
+            66% { transform: translateY(-3px) rotate(1deg); }
+        }
 
-    .category-button.loading .category-icon {
-      animation: spin 1s linear infinite;
-    }
+        .category-button.loading .category-icon {
+            animation: spin 1s linear infinite;
+        }
 
-    @keyframes spin {
-      from { transform: rotate(0deg); }
-      to { transform: rotate(360deg); }
-    }
+        @keyframes spin {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
 
-    .question-area {
-      background: rgba(255, 255, 255, 0.95);
-      backdrop-filter: blur(10px);
-      border-radius: 8px;
-      padding: 12px;
-      box-shadow: 0 4px 16px rgba(72, 187, 120, 0.06);
-      border: 1px solid rgba(72, 187, 120, 0.1);
-      display: flex;
-      flex-direction: column;
-      position: relative;
-      flex: 1;
-      min-height: 0;
-      height: 100%;
-      overflow: hidden;
-    }
+        .question-area {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 8px;
+            padding: 12px;
+            box-shadow: 0 4px 16px rgba(72, 187, 120, 0.06);
+            border: 1px solid rgba(72, 187, 120, 0.1);
+            display: flex;
+            flex-direction: column;
+            position: relative;
+            flex: 1;
+            min-height: 0;
+            height: 100%;
+            overflow: hidden;
+        }
 
-    .question-placeholder {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      flex: 1;
-      text-align: center;
-      color: var(--text-muted);
-      font-size: 1rem;
-      position: relative;
-      min-height: 100px;
-    }
+        .question-placeholder {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            flex: 1;
+            text-align: center;
+            color: var(--text-muted);
+            font-size: 1rem;
+            position: relative;
+            min-height: 100px;
+        }
 
-    .placeholder-icon {
-      font-size: 2rem;
-      margin-bottom: 8px;
-      opacity: 0.7;
-      z-index: 1;
-      position: relative;
-      animation: pulse 2s ease-in-out infinite alternate;
-    }
+        .placeholder-icon {
+            font-size: 2rem;
+            margin-bottom: 8px;
+            opacity: 0.7;
+            z-index: 1;
+            position: relative;
+            animation: pulse 2s ease-in-out infinite alternate;
+        }
 
-    @keyframes pulse {
-      from { transform: scale(1); }
-      to { transform: scale(1.05); }
-    }
+        @keyframes pulse {
+            from { transform: scale(1); }
+            to { transform: scale(1.05); }
+        }
 
-    .placeholder-text {
-      font-weight: var(--font-weight-medium);
-      line-height: 1.6;
-      z-index: 1;
-      position: relative;
-    }
+        .placeholder-text {
+            font-weight: var(--font-weight-medium);
+            line-height: 1.6;
+            z-index: 1;
+            position: relative;
+        }
 
-    .category-info {
-      color: var(--text-secondary);
-      font-size: 0.875rem;
-      font-weight: var(--font-weight-medium);
-      margin-bottom: var(--space-lg);
-      padding: var(--space-sm) var(--space-md);
-      background: rgba(72, 187, 120, 0.1);
-      border-radius: var(--radius-sm);
-      display: inline-block;
-      border-left: 4px solid #48bb78;
-    }
+        .category-info {
+            color: var(--text-secondary);
+            font-size: 0.875rem;
+            font-weight: var(--font-weight-medium);
+            margin-bottom: var(--space-lg);
+            padding: var(--space-sm) var(--space-md);
+            background: rgba(72, 187, 120, 0.1);
+            border-radius: var(--radius-sm);
+            display: inline-block;
+            border-left: 4px solid #48bb78;
+        }
 
-    .question-box {
-      background: white;
-      border-radius: 8px;
-      padding: 12px;
-      box-shadow: var(--shadow-md);
-      border: 1px solid rgba(72, 187, 120, 0.1);
-      animation: fadeInUp 0.6s ease-out;
-      position: relative;
-      flex: 1;
-      display: flex;
-      flex-direction: column;
-      min-height: 0;
-      overflow-y: auto;
-    }
+        .question-box {
+            background: white;
+            border-radius: 8px;
+            padding: 12px;
+            box-shadow: var(--shadow-md);
+            border: 1px solid rgba(72, 187, 120, 0.1);
+            animation: fadeInUp 0.6s ease-out;
+            position: relative;
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            min-height: 0;
+            overflow-y: auto;
+        }
 
-    .question-box::before {
-      content: '';
-      position: absolute;
-      top: 0;
-      left: 0;
-      right: 0;
-      height: 4px;
-      background: var(--primary);
-      border-radius: var(--radius-lg) var(--radius-lg) 0 0;
-    }
+        .question-box::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: var(--primary);
+            border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+        }
 
-    @keyframes fadeInUp {
-      from {
-        opacity: 0;
-        transform: translateY(20px);
-      }
-      to {
-        opacity: 1;
-        transform: translateY(0);
-      }
-    }
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
 
-    .question-text {
-      font-size: 1rem;
-      font-weight: var(--font-weight-semibold);
-      color: var(--text-primary);
-      margin-bottom: 8px;
-      line-height: 1.4;
-      letter-spacing: -0.025em;
-    }
+        .question-text {
+            font-size: 1rem;
+            font-weight: var(--font-weight-semibold);
+            color: var(--text-primary);
+            margin-bottom: 8px;
+            line-height: 1.4;
+            letter-spacing: -0.025em;
+        }
 
-    .response-button {
-      display: block;
-      width: 100%;
-      text-align: left;
-      padding: 6px 8px;
-      border: 2px solid #e2e8f0;
-      border-radius: 6px;
-      margin: 4px 0;
-      background: white;
-      cursor: pointer;
-      transition: var(--transition);
-      font-size: 0.85rem;
-      font-weight: var(--font-weight-medium);
-      position: relative;
-      overflow: hidden;
-      box-shadow: var(--shadow-sm);
-    }
+        .response-button {
+            display: block;
+            width: 100%;
+            text-align: left;
+            padding: 6px 8px;
+            border: 2px solid #e2e8f0;
+            border-radius: 6px;
+            margin: 4px 0;
+            background: white;
+            cursor: pointer;
+            transition: var(--transition);
+            font-size: 0.85rem;
+            font-weight: var(--font-weight-medium);
+            position: relative;
+            overflow: hidden;
+            box-shadow: var(--shadow-sm);
+        }
 
-    .response-button::before {
-      content: '';
-      position: absolute;
-      top: 0;
-      left: -100%;
-      width: 100%;
-      height: 100%;
-      background: linear-gradient(90deg, transparent, rgba(72, 187, 120, 0.1), transparent);
-      transition: var(--transition);
-    }
+        .response-button::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(72, 187, 120, 0.1), transparent);
+            transition: var(--transition);
+        }
 
-    .response-button:hover {
-      border-color: #48bb78;
-      background: #f7fafc;
-      transform: translateX(4px);
-      box-shadow: var(--shadow-md);
-    }
+        .response-button:hover {
+            border-color: #48bb78;
+            background: #f7fafc;
+            transform: translateX(4px);
+            box-shadow: var(--shadow-md);
+        }
 
-    .response-button:hover::before {
-      left: 100%;
-    }
+        .response-button:hover::before {
+            left: 100%;
+        }
 
-    .response-button:disabled {
-      cursor: not-allowed;
-      opacity: 0.7;
-    }
+        .response-button:disabled {
+            cursor: not-allowed;
+            opacity: 0.7;
+        }
 
-    .response-button.correct {
-      background: linear-gradient(135deg, #f0fff4, #c6f6d5) !important;
-      border-color: #48bb78 !important;
-      color: #22543d;
-      box-shadow: 0 4px 20px rgba(72, 187, 120, 0.3);
-      animation: correctPulse 0.6s ease-out;
-    }
+        .response-button.correct {
+            background: linear-gradient(135deg, #f0fff4, #c6f6d5) !important;
+            border-color: #48bb78 !important;
+            color: #22543d;
+            box-shadow: 0 4px 20px rgba(72, 187, 120, 0.3);
+            animation: correctPulse 0.6s ease-out;
+        }
 
-    .response-button.incorrect {
-      background: linear-gradient(135deg, #fed7d7, #feb2b2) !important;
-      border-color: #f56565 !important;
-      color: #742a2a;
-      box-shadow: 0 4px 20px rgba(245, 101, 101, 0.3);
-      animation: incorrectShake 0.6s ease-out;
-    }
+        .response-button.incorrect {
+            background: linear-gradient(135deg, #fed7d7, #feb2b2) !important;
+            border-color: #f56565 !important;
+            color: #742a2a;
+            box-shadow: 0 4px 20px rgba(245, 101, 101, 0.3);
+            animation: incorrectShake 0.6s ease-out;
+        }
 
-    @keyframes correctPulse {
-      0% { transform: scale(1); }
-      50% { transform: scale(1.02); }
-      100% { transform: scale(1); }
-    }
+        @keyframes correctPulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.02); }
+            100% { transform: scale(1); }
+        }
 
-    @keyframes incorrectShake {
-      0%, 100% { transform: translateX(0); }
-      25% { transform: translateX(-4px); }
-      75% { transform: translateX(4px); }
-    }
+        @keyframes incorrectShake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-4px); }
+            75% { transform: translateX(4px); }
+        }
 
-    .message-area {
-      margin-top: 6px;
-      padding: 6px 8px;
-      border-radius: 6px;
-      font-weight: var(--font-weight-medium);
-      text-align: center;
-      min-height: 30px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      line-height: 1.3;
-      font-size: 0.8rem;
-      flex-shrink: 0;
-    }
+        .message-area {
+            margin-top: 6px;
+            padding: 6px 8px;
+            border-radius: 6px;
+            font-weight: var(--font-weight-medium);
+            text-align: center;
+            min-height: 30px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            line-height: 1.3;
+            font-size: 0.8rem;
+            flex-shrink: 0;
+        }
 
-    .back-button {
-      margin-top: 8px;
-      padding: 6px 8px;
-      background: var(--glass);
-      border: 2px solid var(--border);
-      border-radius: 6px;
-      color: var(--text-secondary);
-      font-weight: var(--font-weight-medium);
-      cursor: pointer;
-      transition: var(--transition);
-      backdrop-filter: blur(10px);
-      display: inline-flex;
-      align-items: center;
-      gap: 4px;
-      font-size: 0.8rem;
-      flex-shrink: 0;
-    }
+        .back-button {
+            margin-top: 8px;
+            padding: 6px 8px;
+            background: var(--glass);
+            border: 2px solid var(--border);
+            border-radius: 6px;
+            color: var(--text-secondary);
+            font-weight: var(--font-weight-medium);
+            cursor: pointer;
+            transition: var(--transition);
+            backdrop-filter: blur(10px);
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            font-size: 0.8rem;
+            flex-shrink: 0;
+        }
 
-    .back-button:hover {
-      background: var(--surface-hover);
-      transform: translateY(-2px);
-      box-shadow: var(--shadow-sm);
-      border-color: rgba(113, 128, 150, 0.3);
-    }
+        .back-button:hover {
+            background: var(--surface-hover);
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-sm);
+            border-color: rgba(113, 128, 150, 0.3);
+        }
 
-    .hidden {
-      display: none !important;
-    }
+        .hidden {
+            display: none !important;
+        }
 
-    @media (max-width: 1240px) {
-      .game-container {
-        padding: var(--space-md);
-      }
-    }
-    
-    @media (max-width: 968px) {
-      .game-container {
-        padding: var(--space-sm);
-      }
-      
-      .game-content {
-        grid-template-columns: 1fr;
-        gap: var(--space-lg);
-      }
-      
-      .category-selector {
-        position: static;
-        order: 2;
-      }
-      
-      .question-area {
-        order: 1;
-      }
-      
-      .game-header {
-        grid-template-columns: 1fr;
-        gap: var(--space-md);
-        text-align: center;
-        margin-bottom: var(--space-md);
-        padding-bottom: var(--space-sm);
-      }
-      
-      .score-display {
-        align-items: center;
-      }
-      
-      .game-card {
-        padding: var(--space-md);
-      }
-      
-      .question-placeholder {
-        min-height: 150px;
-      }
-    }
+        @media (max-width: 1240px) {
+            .game-container {
+                padding: var(--space-md);
+            }
+        }
 
-    @media (max-width: 640px) {
-      .game-container {
-        padding: var(--space-xs);
-      }
-      
-      .game-card {
-        padding: var(--space-sm);
-        border-radius: var(--radius-md);
-      }
-      
-      .category-button {
-        height: 120px;
-      }
-      
-      .category-icon {
-        font-size: 2rem;
-      }
-      
-      .placeholder-icon {
-        font-size: 2.5rem;
-      }
-      
-      .question-text {
-        font-size: 1.125rem;
-      }
-      
-      .player-info h2 {
-        font-size: 1.5rem;
-      }
-      
-      .score-value {
-        font-size: 1.75rem;
-      }
-      
-      .question-placeholder {
-        min-height: 120px;
-      }
-    }
+        @media (max-width: 968px) {
+            .game-container {
+                padding: var(--space-sm);
+            }
 
-    .timer-container {
-      position: relative;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      width: 60px;
-      height: 60px;
-      margin: 0 auto 20px;
-    }
+            .game-content {
+                grid-template-columns: 1fr;
+                gap: var(--space-lg);
+            }
 
-    .timer-circle {
-      width: 60px;
-      height: 60px;
-      border-radius: 50%;
-      background: conic-gradient(from 0deg, #48bb78, #48bb78 var(--progress), transparent var(--progress));
-      padding: 4px;
-      position: relative;
-      transition: all 0.1s linear;
-    }
+            .category-selector {
+                position: static;
+                order: 2;
+            }
 
-    .timer-circle.warning {
-      background: conic-gradient(from 0deg, #ed8936, #ed8936 var(--progress), transparent var(--progress));
-      animation: timerPulse 1s ease-in-out infinite;
-    }
+            .question-area {
+                order: 1;
+            }
 
-    .timer-circle.danger {
-      background: conic-gradient(from 0deg, #f56565, #f56565 var(--progress), transparent var(--progress));
-      animation: timerPulse 0.5s ease-in-out infinite;
-    }
+            .game-header {
+                grid-template-columns: 1fr;
+                gap: var(--space-md);
+                text-align: center;
+                margin-bottom: var(--space-md);
+                padding-bottom: var(--space-sm);
+            }
 
-    .timer-inner {
-      width: 100%;
-      height: 100%;
-      background: white;
-      border-radius: 50%;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-weight: bold;
-      font-size: 1.2rem;
-      color: var(--text-primary);
-      box-shadow: inset 0 2px 4px rgba(0,0,0,0.1);
-    }
+            .score-display {
+                align-items: center;
+            }
 
-    @keyframes timerPulse {
-      0%, 100% { transform: scale(1); }
-      50% { transform: scale(1.05); }
-    }
+            .game-card {
+                padding: var(--space-md);
+            }
 
-    .timer-hidden {
-      display: none;
-    }
-  </style>
+            .question-placeholder {
+                min-height: 150px;
+            }
+        }
+
+        @media (max-width: 640px) {
+            .game-container {
+                padding: var(--space-xs);
+            }
+
+            .game-card {
+                padding: var(--space-sm);
+                border-radius: var(--radius-md);
+            }
+
+            .category-button {
+                height: 120px;
+            }
+
+            .category-icon {
+                font-size: 2rem;
+            }
+
+            .placeholder-icon {
+                font-size: 2.5rem;
+            }
+
+            .question-text {
+                font-size: 1.125rem;
+            }
+
+            .player-info h2 {
+                font-size: 1.5rem;
+            }
+
+            .score-value {
+                font-size: 1.75rem;
+            }
+
+            .question-placeholder {
+                min-height: 120px;
+            }
+        }
+
+        .timer-container {
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 60px;
+            height: 60px;
+            margin: 0 auto 20px;
+        }
+
+        .timer-circle {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            background: conic-gradient(from 0deg, #48bb78, #48bb78 var(--progress), transparent var(--progress));
+            padding: 4px;
+            position: relative;
+            transition: all 0.1s linear;
+        }
+
+        .timer-circle.warning {
+            background: conic-gradient(from 0deg, #ed8936, #ed8936 var(--progress), transparent var(--progress));
+            animation: timerPulse 1s ease-in-out infinite;
+        }
+
+        .timer-circle.danger {
+            background: conic-gradient(from 0deg, #f56565, #f56565 var(--progress), transparent var(--progress));
+            animation: timerPulse 0.5s ease-in-out infinite;
+        }
+
+        .timer-inner {
+            width: 100%;
+            height: 100%;
+            background: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 1.2rem;
+            color: var(--text-primary);
+            box-shadow: inset 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        @keyframes timerPulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+        }
+
+        .timer-hidden {
+            display: none;
+        }
+        #modal-reporte {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            /* Fondo semitransparente oscuro */
+            background-color: rgba(0, 0, 0, 0.7);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 2000; /* Asegura que esté por encima de todos los elementos, incluyendo el .game-card */
+        }
+
+        /* Contenedor del contenido del reporte (caja visible) */
+        #modal-reporte .card-reporte {
+            background: var(--surface);
+            /* Usamos el mismo estilo de tarjeta que ya tienes, pero con un nombre diferente si es necesario */
+            padding: var(--space-lg);
+            border-radius: var(--radius-md);
+            box-shadow: var(--shadow-lg);
+            max-width: 400px;
+            width: 90%;
+            position: relative;
+            animation: fadeInScale 0.3s ease-out;
+        }
+
+        @keyframes fadeInScale {
+            from {
+                opacity: 0;
+                transform: scale(0.9);
+            }
+            to {
+                opacity: 1;
+                transform: scale(1);
+            }
+        }
+
+        /* Título dentro del modal */
+        #modal-reporte h4 {
+            margin: 0 0 var(--space-md) 0;
+            font-size: 1.1rem;
+            font-weight: var(--font-weight-bold);
+            color: var(--text-primary);
+        }
+
+        /* Área de texto para la descripción */
+        #modal-reporte textarea {
+            width: 100%;
+            padding: var(--space-sm);
+            border: 1px solid var(--text-muted);
+            border-radius: var(--radius-sm);
+            resize: vertical;
+            margin-bottom: var(--space-sm);
+            box-sizing: border-box;
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+            transition: var(--transition);
+        }
+
+        #modal-reporte textarea:focus {
+            outline: none;
+            border-color: #48bb78; /* Color primario al enfocar */
+            box-shadow: 0 0 0 3px rgba(72, 187, 120, 0.3);
+        }
+
+        /* Grupo de botones */
+        #modal-reporte .btn-group {
+            display: flex;
+            justify-content: flex-end;
+            gap: var(--space-sm);
+            margin-top: var(--space-md);
+        }
+
+        /* Estilos de botón reutilizados (Si los defines de forma global) */
+        /* Asumo que ya tienes estilos para .btn, .btn.brand, etc. Si no, necesitarías definirlos.
+           Por ejemplo, podrías usar la clase existente .back-button como base para el botón Cancelar.
+        */
+
+        #btn-cerrar-reporte {
+            /* Estilo de botón 'outline' */
+            background: var(--glass);
+            border: 2px solid var(--border);
+            color: var(--text-secondary);
+        }
+
+        #btn-enviar-reporte {
+            /* Estilo de botón 'brand' (principal) */
+            background: var(--danger); /* Usamos el color de peligro para el reporte */
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            border-radius: var(--radius-sm);
+            font-weight: var(--font-weight-semibold);
+            cursor: pointer;
+            transition: var(--transition);
+        }
+
+        #btn-enviar-reporte:hover {
+            background: var(--danger); /* Puedes usar un hover más oscuro si lo tienes */
+            opacity: 0.9;
+        }
+
+        /* Contenedor de mensajes de respuesta (éxito/error) */
+        .reporte-msg {
+            padding: var(--space-sm);
+            border-radius: var(--radius-sm);
+            font-weight: var(--font-weight-medium);
+            text-align: center;
+            line-height: 1.3;
+            font-size: 0.85rem;
+        }
+
+        .reporte-msg.success {
+            background: rgba(72, 187, 120, 0.15); /* verde suave */
+            color: #2f855a; /* verde oscuro */
+        }
+
+        .reporte-msg.error {
+            background: rgba(245, 101, 101, 0.15); /* rojo suave */
+            color: #c53030; /* rojo oscuro */
+        }
+
+        /* El botón de abrir reporte debe ser visible */
+        #btn-abrir-reporte {
+            /* Puedes darle un estilo similar al back-button o a un botón pequeño de acción */
+            background: var(--glass);
+            border: 2px solid var(--border);
+            border-radius: 6px;
+            color: var(--text-secondary);
+            font-weight: var(--font-weight-medium);
+            cursor: pointer;
+            transition: var(--transition);
+            backdrop-filter: blur(10px);
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            font-size: 0.8rem;
+            padding: 6px 8px;
+            margin-top: 8px; /* Para separarlo si va cerca de la pregunta */
+        }
+
+        #btn-abrir-reporte:hover {
+            background: var(--surface-hover);
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-sm);
+            border-color: rgba(113, 128, 150, 0.3);
+        }
+    </style>
 </head>
 <body class="bg-gray-100 min-h-screen">
-  <div class="game-container">
+<div class="game-container">
     <div class="game-card">
-      <div class="game-header" id="gameHeader" data-id="{{id_juego}}">
-        <div class="player-info">
-          <h2>Partida #{{id_juego}}</h2>
-          <div class="username">
-            Hola, <strong>{{nombreUsuario}}</strong>
-          </div>
-          {{#nivel_info}}
-          <div class="nivel-badge" id="nivelInfo" style="">
-            ⭐ Nivel:  {{mensaje}}
-          </div>
-          {{/nivel_info}}
-        </div>
-        <div class="score-display">
-          <div class="score-label">Puntaje Actual</div>
-          <div class="score-value" id="puntaje">{{puntaje}}</div>
-        </div>
-      </div>
-
-      <div class="game-content">
-        <div class="category-selector">
-          <button id="btnCategoria" class="category-button">
-            <div class="category-icon">🎲</div>
-            <div class="category-text">Obtener Categoría</div>
-          </button>
-        </div>
-        
-        <div class="question-area">
-          <div id="categoria" class="category-info" style="display: none;"></div>
-          <div id="timer" class="timer-container timer-hidden">
-            <div id="timerCircle" class="timer-circle" style="--progress: 100%;">
-              <div id="timerDisplay" class="timer-inner">10</div>
+        <div class="game-header" id="gameHeader" data-id="{{id_juego}}">
+            <div class="player-info">
+                <h2>Partida #{{id_juego}}</h2>
+                <div class="username">
+                    Hola, <strong>{{nombreUsuario}}</strong>
+                </div>
+                {{#nivel_info}}
+                    <div class="nivel-badge" id="nivelInfo" style="">
+                        ⭐ Nivel:  {{mensaje}}
+                    </div>
+                {{/nivel_info}}
             </div>
-          </div>
-          <div id="preguntaBox" class="question-box hidden">
-            <div id="preguntaTexto" class="question-text"></div>
-            <div id="opciones"></div>
-          </div>
-          <div id="questionPlaceholder" class="question-placeholder">
-            <div class="placeholder-text">
-              Presiona el botón para obtener una categoría<br>
-              <small style="color: var(--text-muted); font-size: 0.9rem;">Las preguntas aparecerán aquí después</small>
+            <div class="score-display">
+                <div class="score-label">Puntaje Actual</div>
+                <div class="score-value" id="puntaje">{{puntaje}}</div>
             </div>
-          </div>
-          <div id="mensaje" class="message-area"></div>
         </div>
-      </div>
 
-      <div class="mt-6">
-        <button id="btn-volver" class="back-button">
-          <span>⬅</span>
-          Volver al lobby
-        </button>
-      </div>
+        <div class="game-content">
+            <div class="category-selector">
+                <button id="btnCategoria" class="category-button">
+                    <div class="category-icon">🎲</div>
+                    <div class="category-text">Obtener Categoría</div>
+                </button>
+            </div>
+
+            <div class="question-area">
+                <div id="categoria" class="category-info" style="display: none;"></div>
+                <div id="timer" class="timer-container timer-hidden">
+                    <div id="timerCircle" class="timer-circle" style="--progress: 100%;">
+                        <div id="timerDisplay" class="timer-inner">10</div>
+                    </div>
+                </div>
+                <div id="preguntaBox" class="question-box hidden">
+                    <div style="display: flex; justify-content: flex-end; margin-bottom: 8px;">
+                        <button type="button" class="btn outline small" id="btn-abrir-reporte">
+                            🚨 Reportar Pregunta
+                        </button>
+                    </div>
+
+                    <div id="preguntaTexto" class="question-text"></div>
+                    <div id="opciones"></div>
+                </div>
+                <div id="questionPlaceholder" class="question-placeholder">
+                    <div class="placeholder-text">
+                        Presiona el botón para obtener una categoría<br>
+                        <small style="color: var(--text-muted); font-size: 0.9rem;">Las preguntas aparecerán aquí después</small>
+                    </div>
+                </div>
+                <div id="mensaje" class="message-area"></div>
+            </div>
+        </div>
+
+        <div class="mt-6">
+            <button id="btn-volver" class="back-button">
+                <span>⬅</span>
+                Volver al lobby
+            </button>
+        </div>
     </div>
-  </div>
+</div>
+
+<div id="modal-reporte" style="display:none;">
+    <div class="card-reporte">
+        <h4>Reportar: ¿Por qué crees que esta pregunta es incorrecta o inadecuada?</h4>
+
+        <form id="form-reporte">
+            <input type="hidden" name="id_pregunta" id="input-id-pregunta" value="">
+
+            <textarea name="descripcion" rows="4" placeholder="Describe brevemente el problema (mínimo 10 caracteres): error en la respuesta, contenido ofensivo, etc." required></textarea>
+
+            <div id="reporte-mensaje" class="reporte-msg"></div>
+
+            <div class="btn-group">
+                <button type="button" class="btn outline small" id="btn-cerrar-reporte">Cancelar</button>
+                <button type="submit" class="btn brand small" id="btn-enviar-reporte">Enviar Reporte</button>
+            </div>
+        </form>
+    </div>
+</div>
+
 
 <script>
-(function(){
-  let idJuego = 0;
-  let preguntaActual = null;
-  let isWaitingResponse = false;
-  
-  const gameHeader = document.getElementById('gameHeader');
-  if (gameHeader) idJuego = parseInt(gameHeader.getAttribute('data-id')||'0',10) || 0;
+    (function(){
+        let idJuego = 0;
+        let preguntaActual = null;
+        let isWaitingResponse = false;
 
-  const btnCategoria = document.getElementById('btnCategoria');
-  const mensajeEl = document.getElementById('mensaje');
-  const preguntaBox = document.getElementById('preguntaBox');
-  const preguntaTexto = document.getElementById('preguntaTexto');
-  const opcionesEl = document.getElementById('opciones');
-  const puntajeEl = document.getElementById('puntaje');
-  const btnVolver = document.getElementById('btn-volver');
-  const questionPlaceholder = document.getElementById('questionPlaceholder');
-  const timerContainer = document.getElementById('timer');
-  const timerCircle = document.getElementById('timerCircle');
-  const timerDisplay = document.getElementById('timerDisplay');
+        const gameHeader = document.getElementById('gameHeader');
+        if (gameHeader) idJuego = parseInt(gameHeader.getAttribute('data-id')||'0',10) || 0;
 
-  let timerInterval = null;
-  let timeLeft = 10;
-  let preguntaStartTime = null;
+        const btnCategoria = document.getElementById('btnCategoria');
+        const mensajeEl = document.getElementById('mensaje');
+        const preguntaBox = document.getElementById('preguntaBox');
+        const preguntaTexto = document.getElementById('preguntaTexto');
+        const opcionesEl = document.getElementById('opciones');
+        const puntajeEl = document.getElementById('puntaje');
+        const btnVolver = document.getElementById('btn-volver');
+        const questionPlaceholder = document.getElementById('questionPlaceholder');
+        const timerContainer = document.getElementById('timer');
+        const timerCircle = document.getElementById('timerCircle');
+        const timerDisplay = document.getElementById('timerDisplay');
+        const btnAbrirReporte = document.getElementById('btn-abrir-reporte');
+        const modalReporte = document.getElementById('modal-reporte');
+        const btnCerrarReporte = document.getElementById('btn-cerrar-reporte');
+        const formReporte = document.getElementById('form-reporte');
+        const reporteMensaje = document.getElementById('reporte-mensaje');
+        const inputIdPregunta = document.getElementById('input-id-pregunta');
+        const btnEnviarReporte = document.getElementById('btn-enviar-reporte');
 
-  const categorias = [
-    'Ingeniería e Investigaciones Tecnológicas',
-    'Humanidades y Ciencias Sociales', 
-    'Ciencias Económicas',
-    'Derecho y Ciencia Política',
-    'Ciencias de la Salud'
-  ];
+        let timerInterval = null;
+        let timeLeft = 10;
+        let tiempoRestanteReporte = 10;
+        let preguntaStartTime = null;
 
-  let partidaActiva = true;
+        const categorias = [
+            'Ingeniería e Investigaciones Tecnológicas',
+            'Humanidades y Ciencias Sociales',
+            'Ciencias Económicas',
+            'Derecho y Ciencia Política',
+            'Ciencias de la Salud'
+        ];
 
-  function limpiarSessionStorage() {
-    sessionStorage.removeItem('partidaAbandonadaPorRecarga');
-    sessionStorage.removeItem('idJuegoAbandonado');
-  }
+        let partidaActiva = true;
 
-  function marcarNavegacionIntencional() {
-    window.isNavigatingAway = true;
-    partidaActiva = false;
-  }
+        function limpiarSessionStorage() {
+            sessionStorage.removeItem('partidaAbandonadaPorRecarga');
+            sessionStorage.removeItem('idJuegoAbandonado');
+        }
+        function abrirModalReporte() {
+            if (!preguntaActual || !isWaitingResponse) {
+                mensajeEl.textContent = 'Debes tener una pregunta activa para reportar.';
+                return;
+            }
+            detenerTemporizador();
 
-  function iniciarTemporizador() {
-    if (timerInterval) clearInterval(timerInterval);
-    
-    timeLeft = 10;
-    preguntaStartTime = Date.now();
-    timerContainer.classList.remove('timer-hidden');
-    timerDisplay.textContent = timeLeft;
-    timerCircle.className = 'timer-circle';
-    timerCircle.style.setProperty('--progress', '100%');
-    
-    timerInterval = setInterval(() => {
-      timeLeft--;
-      const progress = (timeLeft / 10) * 100;
-      timerCircle.style.setProperty('--progress', `${progress}%`);
-      timerDisplay.textContent = timeLeft;
-      
-      if (timeLeft <= 3) {
-        timerCircle.className = 'timer-circle danger';
-      } else if (timeLeft <= 5) {
-        timerCircle.className = 'timer-circle warning';
-      }
-      
-      if (timeLeft <= 0) {
-        clearInterval(timerInterval);
-        tiempoAgotado();
-      }
-    }, 1000);
-  }
+            inputIdPregunta.value = preguntaActual.id_pregunta;
 
-  function detenerTemporizador() {
-    if (timerInterval) {
-      clearInterval(timerInterval);
-      timerInterval = null;
-    }
-    timerContainer.classList.add('timer-hidden');
-  }
+            modalReporte.style.display = 'flex';
+            formReporte.reset();
+            reporteMensaje.textContent = '';
+            reporteMensaje.className = 'reporte-msg';
+        }
 
-  function tiempoAgotado() {
-    if (!isWaitingResponse || !preguntaActual) return;
-    
-    Array.from(opcionesEl.children).forEach(btn => btn.disabled = true);
-    mensajeEl.textContent = '⏰ ¡Tiempo agotado! Respuesta incorrecta.';
-    mensajeEl.style.background = '#fed7d7';
-    mensajeEl.style.color = '#742a2a';
-    mensajeEl.style.border = '1px solid #f56565';
-    
-    responderAutomaticamente();
-  }
+        function cerrarModalReporte() {
+            modalReporte.style.display = 'none';
+            formReporte.reset();
 
-  async function responderAutomaticamente() {
-    const tiempoTranscurrido = Date.now() - preguntaStartTime;
-    
-    try {
-      const r2 = await fetchJson('index.php?controller=juego&method=ajaxResponder', { 
-        id_juego: idJuego, 
-        id_pregunta: preguntaActual.id_pregunta, 
-        opcion: 'TIMEOUT',
-        tiempo_respuesta: Math.round(tiempoTranscurrido / 1000)
-      });
-      
-      if (r2 && r2.success) {
-        const result = r2.result || {};
-        
-        Array.from(opcionesEl.children).forEach(btn => {
-          if (btn.dataset.opt === result.correcta) {
-            btn.classList.add('correct');
-          }
+            if (partidaActiva && isWaitingResponse) {
+                iniciarTemporizador(tiempoRestanteReporte);
+            }
+        }
+
+        async function enviarReporte(e) {
+            e.preventDefault();
+
+            btnEnviarReporte.disabled = true;
+            reporteMensaje.textContent = 'Enviando reporte...';
+            reporteMensaje.className = 'reporte-msg';
+
+            const formData = new FormData(formReporte);
+
+            const descripcionReporte = formData.get('descripcion');
+
+            if (!descripcionReporte || descripcionReporte.length < 10) {
+                reporteMensaje.className = 'reporte-msg error';
+                reporteMensaje.textContent = 'La descripción debe tener al menos 10 caracteres.';
+                btnEnviarReporte.disabled = false;
+                return;
+            }
+
+            try {
+                const res = await fetchJson('index.php?controller=reporte&method=ajaxReportar', {
+                    id_pregunta: formData.get('id_pregunta'),
+                    descripcion: descripcionReporte
+                });
+
+                btnEnviarReporte.disabled = false;
+
+                if (res && res.success) {
+                    reporteMensaje.className = 'reporte-msg success';
+                    reporteMensaje.textContent = res.message;
+
+                    detenerTemporizador();
+                    partidaActiva = false;
+                    isWaitingResponse = false;
+
+                    preguntaBox.classList.add('hidden');
+                    if (questionPlaceholder) questionPlaceholder.style.display = 'flex';
+                    btnCategoria.disabled = true;
+                    btnCategoria.querySelector('.category-text').textContent = 'Partida terminada';
+
+                    mensajeEl.className = 'message-area';
+                    mensajeEl.style.background = '#c6f6d5';
+                    mensajeEl.style.color = '#22543d';
+                    mensajeEl.style.border = '1px solid #48bb78';
+                    mensajeEl.innerHTML = `<strong>¡Reporte enviado con éxito!</strong><br><small>La partida ha finalizado. Serás redirigido...</small>`;
+
+                    setTimeout(() => {
+                        marcarNavegacionIntencional();
+                        window.location.href = '/juego/resultadoJuego';
+                    }, 3000);
+
+                } else {
+                    reporteMensaje.className = 'reporte-msg error';
+                    reporteMensaje.textContent = res.error || 'Error desconocido al enviar el reporte.';
+                }
+            } catch (error) {
+                console.error('Error al enviar reporte:', error);
+                btnEnviarReporte.disabled = false;
+                reporteMensaje.className = 'reporte-msg error';
+                reporteMensaje.textContent = 'Error de conexión con el servidor de reportes.';
+            }
+        }
+
+        function marcarNavegacionIntencional() {
+            window.isNavigatingAway = true;
+            partidaActiva = false;
+        }
+
+        function iniciarTemporizador(tiempoInicial = 10) {
+            if (timerInterval) clearInterval(timerInterval);
+
+            timeLeft = tiempoInicial;
+            preguntaStartTime = Date.now() - ((10 - timeLeft) * 1000);
+
+            timerContainer.classList.remove('timer-hidden');
+            timerDisplay.textContent = timeLeft;
+            timerCircle.className = 'timer-circle';
+            timerCircle.style.setProperty('--progress', `${(timeLeft / 10) * 100}%`);
+
+            timerInterval = setInterval(() => {
+                timeLeft--;
+                const progress = (timeLeft / 10) * 100;
+                timerCircle.style.setProperty('--progress', `${progress}%`);
+                timerDisplay.textContent = timeLeft;
+
+                if (timeLeft <= 3) {
+                    timerCircle.className = 'timer-circle danger';
+                } else if (timeLeft <= 5) {
+                    timerCircle.className = 'timer-circle warning';
+                }
+
+                if (timeLeft <= 0) {
+                    clearInterval(timerInterval);
+                    tiempoAgotado();
+                }
+            }, 1000);
+        }
+
+        function detenerTemporizador() {
+            if (timerInterval) {
+                clearInterval(timerInterval);
+                timerInterval = null;
+            }
+            const tiempoTranscurrido = (Date.now() - preguntaStartTime) / 1000;
+            tiempoRestanteReporte = Math.max(0, 10 - Math.floor(tiempoTranscurrido));
+            timerContainer.classList.add('timer-hidden');
+        }
+
+        function tiempoAgotado() {
+            if (!isWaitingResponse || !preguntaActual) return;
+
+            Array.from(opcionesEl.children).forEach(btn => btn.disabled = true);
+            mensajeEl.textContent = '⏰ ¡Tiempo agotado! Respuesta incorrecta.';
+            mensajeEl.style.background = '#fed7d7';
+            mensajeEl.style.color = '#742a2a';
+            mensajeEl.style.border = '1px solid #f56565';
+
+            responderAutomaticamente();
+        }
+
+        async function responderAutomaticamente() {
+            const tiempoTranscurrido = Date.now() - preguntaStartTime;
+
+            try {
+                const r2 = await fetchJson('index.php?controller=juego&method=ajaxResponder', {
+                    id_juego: idJuego,
+                    id_pregunta: preguntaActual.id_pregunta,
+                    opcion: 'TIMEOUT',
+                    tiempo_respuesta: Math.round(tiempoTranscurrido / 1000)
+                });
+
+                if (r2 && r2.success) {
+                    const result = r2.result || {};
+
+                    Array.from(opcionesEl.children).forEach(btn => {
+                        if (btn.dataset.opt === result.correcta) {
+                            btn.classList.add('correct');
+                        }
+                    });
+
+                    if (result.puntaje !== undefined) {
+                        puntajeEl.textContent = result.puntaje;
+                    }
+
+                    if (r2.finalize === true || r2.game_over === true) {
+                        partidaActiva = false;
+                        mensajeEl.innerHTML = r2.mensaje ||
+                                ` <strong>¡Partida terminada!</strong> Se agotó el tiempo.</strong><br><small style="color: #666;">Serás redirigido a los resultados...</small>`;
+
+                        btnCategoria.disabled = true;
+                        btnCategoria.querySelector('.category-text').textContent = 'Partida terminada';
+
+                        setTimeout(() => {
+                            marcarNavegacionIntencional();
+                            window.location.href = '/juego/resultadoJuego';
+                        }, 3000);
+                    }
+                }
+            } catch (error) {
+                mensajeEl.textContent = 'Error de conexión. La partida ha terminado.';
+            }
+        }
+
+        window.addEventListener('load', () => {
+            limpiarSessionStorage();
+
+            const abandonadaPorRecarga = sessionStorage.getItem('partidaAbandonadaPorRecarga');
+            const idJuegoAbandonado = sessionStorage.getItem('idJuegoAbandonado');
+
+            if (abandonadaPorRecarga === 'true' && idJuegoAbandonado) {
+                sessionStorage.removeItem('partidaAbandonadaPorRecarga');
+                sessionStorage.removeItem('idJuegoAbandonado');
+
+                marcarNavegacionIntencional();
+
+                setTimeout(() => {
+                    window.location.href = '/juego/resultadoJuego';
+                }, 500);
+                return;
+            }
+
+            verificarEstadoJuego();
+            aplicarEstiloNivelInicial();
         });
-        
-        if (result.puntaje !== undefined) {
-          puntajeEl.textContent = result.puntaje;
-        }
-        
-        if (r2.finalize === true || r2.game_over === true) {
-          partidaActiva = false;
-          mensajeEl.innerHTML = r2.mensaje || 
-            ` <strong>¡Partida terminada!</strong> Se agotó el tiempo.</strong><br><small style="color: #666;">Serás redirigido a los resultados...</small>`;
-          
-          btnCategoria.disabled = true;
-          btnCategoria.querySelector('.category-text').textContent = 'Partida terminada';
-          
-          setTimeout(() => {
-            marcarNavegacionIntencional();
-            window.location.href = '/juego/resultadoJuego';
-          }, 3000);
-        }
-      }
-    } catch (error) {
-      mensajeEl.textContent = 'Error de conexión. La partida ha terminado.';
-    }
-  }
 
-  window.addEventListener('load', () => {
-    limpiarSessionStorage();
-    
-    const abandonadaPorRecarga = sessionStorage.getItem('partidaAbandonadaPorRecarga');
-    const idJuegoAbandonado = sessionStorage.getItem('idJuegoAbandonado');
-    
-    if (abandonadaPorRecarga === 'true' && idJuegoAbandonado) {
-      sessionStorage.removeItem('partidaAbandonadaPorRecarga');
-      sessionStorage.removeItem('idJuegoAbandonado');
-      
-      marcarNavegacionIntencional();
-      
-      setTimeout(() => {
-        window.location.href = '/juego/resultadoJuego';
-      }, 500);
-      return;
-    }
-    
-    verificarEstadoJuego();
-    aplicarEstiloNivelInicial();
-  });
+        window.addEventListener('beforeunload', (e) => {
+            if (idJuego && partidaActiva && !window.isNavigatingAway) {
+                sessionStorage.setItem('partidaAbandonadaPorRecarga', 'true');
+                sessionStorage.setItem('idJuegoAbandonado', idJuego);
 
-  window.addEventListener('beforeunload', (e) => {
-    if (idJuego && partidaActiva && !window.isNavigatingAway) {
-      sessionStorage.setItem('partidaAbandonadaPorRecarga', 'true');
-      sessionStorage.setItem('idJuegoAbandonado', idJuego);
-      
-      const mensaje = 'Si recargas o cierras la página, perderás la partida actual y tu puntaje.';
-      e.preventDefault();
-      e.returnValue = mensaje;
-      
-      navigator.sendBeacon('index.php?controller=juego&method=abandonarPartida', new FormData());
-      
-      return mensaje;
-    }
-  });
+                const mensaje = 'Si recargas o cierras la página, perderás la partida actual y tu puntaje.';
+                e.preventDefault();
+                e.returnValue = mensaje;
 
-  if (btnVolver) {
-    btnVolver.addEventListener('click', () => {
-      const mensaje = ' Si vuelves al lobby, perderás la partida actual y tu puntaje.\n\n¿Estás seguro de que quieres abandonar?';
-      if (confirm(mensaje)) {
-        marcarNavegacionIntencional();
-        fetch('index.php?controller=juego&method=abandonarPartida', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' }
-        }).then(() => {
-          window.location.href = '/home';
-        }).catch(() => {
-          window.location.href = '/home';
+                navigator.sendBeacon('index.php?controller=juego&method=abandonarPartida', new FormData());
+
+                return mensaje;
+            }
         });
-      }
-    });
-  }
 
-  async function fetchJson(route, body){
-    const res = await fetch(route, {
-      method:'POST',
-      credentials:'same-origin',
-      headers:{'Content-Type':'application/x-www-form-urlencoded','X-Requested-With':'XMLHttpRequest'},
-      body: new URLSearchParams(body).toString()
-    });
-    const text = await res.text();
-    try { 
-      return JSON.parse(text); 
-    } catch(e){ 
-      console.error('Error parsing JSON:', text);
-      return { success:false, error: 'Error de comunicación con el servidor', __rawStatus: res.status, __rawBody: text }; 
-    }
-  }
-
-  async function obtenerIdJuegoServidor(){
-    const r = await fetchJson('index.php?controller=juego&method=ajaxGetJuego', {});
-    
-    if (r && r.success && r.data && r.data.id_juego) {
-      idJuego = parseInt(r.data.id_juego,10);
-      if (gameHeader) gameHeader.setAttribute('data-id', idJuego);
-      limpiarSessionStorage();
-      partidaActiva = true;
-      return true;
-    }
-    return false;
-  }
-
-  async function verificarEstadoJuego() {
-    if (!idJuego) {
-      const ok = await obtenerIdJuegoServidor();
-      if (!ok) return;
-    }
-    
-    try {
-      const res = await fetchJson('index.php?controller=juego&method=ajaxGetEstadoJuego', { id_juego: idJuego });
-      if (res && res.success && res.data) {
-        if (res.data.pregunta_pendiente) {
-          preguntaActual = res.data.pregunta_pendiente;
-          mostrarPregunta(preguntaActual);
-          isWaitingResponse = true;
-          btnCategoria.disabled = true;
-          btnCategoria.querySelector('.category-text').textContent = 'Responde la pregunta actual';
-          if (questionPlaceholder) questionPlaceholder.style.display = 'none';
+        if (btnVolver) {
+            btnVolver.addEventListener('click', () => {
+                const mensaje = ' Si vuelves al lobby, perderás la partida actual y tu puntaje.\n\n¿Estás seguro de que quieres abandonar?';
+                if (confirm(mensaje)) {
+                    marcarNavegacionIntencional();
+                    fetch('index.php?controller=juego&method=abandonarPartida', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' }
+                    }).then(() => {
+                        window.location.href = '/home';
+                    }).catch(() => {
+                        window.location.href = '/home';
+                    });
+                }
+            });
         }
-      }
-    } catch (error) {
-      console.error('Error verificando estado:', error);
-    }
-  }
 
-  async function seleccionarCategoria() {
-    if (isWaitingResponse) {
-      return;
-    }
-
-    if (!idJuego) {
-      const ok = await obtenerIdJuegoServidor();
-      if (!ok) { 
-        mensajeEl.textContent = 'Error: No hay partida activa';
-        return; 
-      }
-    }
-
-    btnCategoria.disabled = true;
-    btnCategoria.querySelector('.category-text').textContent = '🎲 Seleccionando...';
-
-    try {
-      const categoriaSeleccionadaLocal = categorias[Math.floor(Math.random() * categorias.length)];
-      
-      setTimeout(async () => {        
-        const res = await obtenerPregunta();
-        
-        btnCategoria.classList.remove('loading');
-        if (res) {
-          btnCategoria.querySelector('.category-text').textContent = 'Respondé la pregunta actual';
-          isWaitingResponse = true;
-        } else {
-          btnCategoria.disabled = false;
-          btnCategoria.querySelector('.category-text').textContent = 'Obtener Categoría';
-          mensajeEl.textContent = 'Error al obtener pregunta. Intenta de nuevo.';
+        async function fetchJson(route, body){
+            const res = await fetch(route, {
+                method:'POST',
+                credentials:'same-origin',
+                headers:{'Content-Type':'application/x-www-form-urlencoded','X-Requested-With':'XMLHttpRequest'},
+                body: new URLSearchParams(body).toString()
+            });
+            const text = await res.text();
+            try {
+                return JSON.parse(text);
+            } catch(e){
+                console.error('Error parsing JSON:', text);
+                return { success:false, error: 'Error de comunicación con el servidor', __rawStatus: res.status, __rawBody: text };
+            }
         }
-      }, 1200);
-      
-    } catch (error) {
-      btnCategoria.disabled = false;
-      btnCategoria.classList.remove('loading');
-      btnCategoria.querySelector('.category-text').textContent = 'Obtener Categoría';
-      mensajeEl.textContent = 'Error inesperado. Intenta de nuevo.';
-    }
-  }
 
-  async function obtenerPregunta() {
-    const res = await fetchJson('index.php?controller=juego&method=ajaxRuleta', { id_juego: idJuego });
-    
-    if (!res || !res.success) {
-      if (res && res.error && res.error.includes('Has visto todas las preguntas')) {
-        mensajeEl.textContent = 'Reutilizando preguntas anteriores...';
-        
-        const newRes = await fetchJson('index.php?controller=juego&method=ajaxRuleta', { id_juego: idJuego });
-        
-        if (newRes && newRes.success && newRes.data && newRes.data.pregunta) {
-          preguntaActual = newRes.data.pregunta;
-          mostrarPregunta(preguntaActual);
-          mensajeEl.textContent = '';
-          return true;
-        } else {
-          mensajeEl.textContent = 'No hay preguntas disponibles: ' + (newRes?.error || 'Error desconocido');
-          return false;
+        async function obtenerIdJuegoServidor(){
+            const r = await fetchJson('index.php?controller=juego&method=ajaxGetJuego', {});
+
+            if (r && r.success && r.data && r.data.id_juego) {
+                idJuego = parseInt(r.data.id_juego,10);
+                if (gameHeader) gameHeader.setAttribute('data-id', idJuego);
+                limpiarSessionStorage();
+                partidaActiva = true;
+                return true;
+            }
+            return false;
         }
-      } else {
-        mensajeEl.textContent = 'Error al obtener pregunta: ' + (res?.error || 'Error desconocido');
-        return false;
-      }
-    }
-    
-    if (!res.data || !res.data.pregunta) {
-      mensajeEl.textContent = 'Error: Datos de pregunta inválidos';
-      return false;
-    }
-    
-    preguntaActual = res.data.pregunta;
-    mostrarPregunta(preguntaActual);
-    return true;
-  }
 
-  function mostrarPregunta(pregunta) {
-    if (questionPlaceholder) questionPlaceholder.style.display = 'none';
-    
-    preguntaTexto.textContent = pregunta.pregunta;
-    
-    if (pregunta.categoria) {
-      const categoriaEl = document.getElementById('categoria');
-      if (categoriaEl) {
-        categoriaEl.textContent = `Categoría: ${pregunta.categoria}`;
-        categoriaEl.style.display = 'block';
-      }
-    }
-    
-    opcionesEl.innerHTML = '';
-    ['A','B','C','D'].forEach(k=>{
-      const btn = document.createElement('button');
-      btn.textContent = k + ') ' + (pregunta.opciones[k]||'');
-      btn.dataset.opt = k;
-      btn.className = 'response-button';
-      btn.addEventListener('click', responderPregunta);
-      opcionesEl.appendChild(btn);
-    });
-    preguntaBox.classList.remove('hidden');
-    mensajeEl.textContent = '';
-    
-    iniciarTemporizador();
-  }
+        async function verificarEstadoJuego() {
+            if (!idJuego) {
+                const ok = await obtenerIdJuegoServidor();
+                if (!ok) return;
+            }
 
-  async function responderPregunta(e) {
-    if (!isWaitingResponse || !preguntaActual) return;
-
-    detenerTemporizador();
-    const opcionSeleccionada = e.currentTarget.dataset.opt;
-    const tiempoTranscurrido = Date.now() - preguntaStartTime;
-    
-    Array.from(opcionesEl.children).forEach(b => b.disabled = true);
-    e.currentTarget.style.transform = 'scale(0.98)';
-    mensajeEl.textContent = 'Enviando respuesta...';
-    mensajeEl.style.background = '';
-    mensajeEl.style.color = '';
-    mensajeEl.style.border = '';
-    
-    try {
-      const r2 = await fetchJson('index.php?controller=juego&method=ajaxResponder', { 
-        id_juego: idJuego, 
-        id_pregunta: preguntaActual.id_pregunta, 
-        opcion: opcionSeleccionada,
-        tiempo_respuesta: Math.round(tiempoTranscurrido / 1000)
-      });
-      
-      if (!r2 || !r2.success) { 
-        mensajeEl.textContent = 'Error al procesar respuesta. Intenta de nuevo.';
-        Array.from(opcionesEl.children).forEach(b => b.disabled = false);
-        e.currentTarget.style.transform = '';
-        return; 
-      }
-      
-      const result = r2.result || {};
-      
-      Array.from(opcionesEl.children).forEach(btn => {
-        if (btn.dataset.opt === result.correcta) {
-          btn.classList.add('correct');
-        } else if (btn.dataset.opt === opcionSeleccionada && !result.correct) {
-          btn.classList.add('incorrect');
+            try {
+                const res = await fetchJson('index.php?controller=juego&method=ajaxGetEstadoJuego', { id_juego: idJuego });
+                if (res && res.success && res.data) {
+                    if (res.data.pregunta_pendiente) {
+                        preguntaActual = res.data.pregunta_pendiente;
+                        mostrarPregunta(preguntaActual);
+                        isWaitingResponse = true;
+                        btnCategoria.disabled = true;
+                        btnCategoria.querySelector('.category-text').textContent = 'Responde la pregunta actual';
+                        if (questionPlaceholder) questionPlaceholder.style.display = 'none';
+                    }
+                }
+            } catch (error) {
+                console.error('Error verificando estado:', error);
+            }
         }
-      });
-      
-      if (result.puntaje !== undefined) {
-        puntajeEl.textContent = result.puntaje;
-      }
-      
-      if (result.correct) {
-        mensajeEl.style.background = '';
-        mensajeEl.style.color = '';
-        mensajeEl.style.border = '';
-        mensajeEl.textContent = ' ¡Respuesta correcta! +1 punto';
-      }
-      
-      if (r2.finalize === true || r2.game_over === true) {
-        detenerTemporizador();
-        partidaActiva = false;
-        mensajeEl.style.background = '';
-        mensajeEl.style.color = '';
-        mensajeEl.style.border = '';
-        mensajeEl.innerHTML = r2.mensaje || 
-          ` <strong>¡Partida terminada!</strong> Respuesta incorrecta.</strong><br><small style="color: #666;">Serás redirigido a los resultados...</small>`;
-        
-        btnCategoria.disabled = true;
-        btnCategoria.querySelector('.category-text').textContent = 'Partida terminada';
-        
-        setTimeout(() => {
-          marcarNavegacionIntencional();
-          window.location.href = '/juego/resultadoJuego';
-        }, 3000);
-        return;
-      }
-      
-      if (result.correct === true) {
-        setTimeout(() => {
-          detenerTemporizador();
-          preguntaBox.classList.add('hidden');
-          const categoriaEl = document.getElementById('categoria');
-          if (categoriaEl) categoriaEl.style.display = 'none';
-          if (questionPlaceholder) questionPlaceholder.style.display = 'flex';
-          mensajeEl.textContent = '';
-          preguntaActual = null;
-          isWaitingResponse = false;
-          btnCategoria.disabled = false;
-          btnCategoria.querySelector('.category-text').textContent = 'Obtener Categoría';
-        }, 3000);
-      }
-      
-    } catch (error) {
-      mensajeEl.textContent = 'Error de conexión. Intenta de nuevo.';
-      Array.from(opcionesEl.children).forEach(b => b.disabled = false);
-      e.currentTarget.style.transform = '';
-    }
-  }
 
-  btnCategoria.addEventListener('click', seleccionarCategoria);
-})();
+        async function seleccionarCategoria() {
+            if (isWaitingResponse) {
+                return;
+            }
+
+            if (!idJuego) {
+                const ok = await obtenerIdJuegoServidor();
+                if (!ok) {
+                    mensajeEl.textContent = 'Error: No hay partida activa';
+                    return;
+                }
+            }
+
+            btnCategoria.disabled = true;
+            btnCategoria.querySelector('.category-text').textContent = '🎲 Seleccionando...';
+
+            try {
+                const categoriaSeleccionadaLocal = categorias[Math.floor(Math.random() * categorias.length)];
+
+                setTimeout(async () => {
+                    const res = await obtenerPregunta();
+
+                    btnCategoria.classList.remove('loading');
+                    if (res) {
+                        btnCategoria.querySelector('.category-text').textContent = 'Respondé la pregunta actual';
+                        isWaitingResponse = true;
+                    } else {
+                        btnCategoria.disabled = false;
+                        btnCategoria.querySelector('.category-text').textContent = 'Obtener Categoría';
+                        mensajeEl.textContent = 'Error al obtener pregunta. Intenta de nuevo.';
+                    }
+                }, 1200);
+
+            } catch (error) {
+                btnCategoria.disabled = false;
+                btnCategoria.classList.remove('loading');
+                btnCategoria.querySelector('.category-text').textContent = 'Obtener Categoría';
+                mensajeEl.textContent = 'Error inesperado. Intenta de nuevo.';
+            }
+        }
+
+        async function obtenerPregunta() {
+            const res = await fetchJson('index.php?controller=juego&method=ajaxRuleta', { id_juego: idJuego });
+
+            if (!res || !res.success) {
+                if (res && res.error && res.error.includes('Has visto todas las preguntas')) {
+                    mensajeEl.textContent = 'Reutilizando preguntas anteriores...';
+
+                    const newRes = await fetchJson('index.php?controller=juego&method=ajaxRuleta', { id_juego: idJuego });
+
+                    if (newRes && newRes.success && newRes.data && newRes.data.pregunta) {
+                        preguntaActual = newRes.data.pregunta;
+                        mostrarPregunta(preguntaActual);
+                        mensajeEl.textContent = '';
+                        return true;
+                    } else {
+                        mensajeEl.textContent = 'No hay preguntas disponibles: ' + (newRes?.error || 'Error desconocido');
+                        return false;
+                    }
+                } else {
+                    mensajeEl.textContent = 'Error al obtener pregunta: ' + (res?.error || 'Error desconocido');
+                    return false;
+                }
+            }
+
+            if (!res.data || !res.data.pregunta) {
+                mensajeEl.textContent = 'Error: Datos de pregunta inválidos';
+                return false;
+            }
+
+            preguntaActual = res.data.pregunta;
+            mostrarPregunta(preguntaActual);
+            return true;
+        }
+
+        function mostrarPregunta(pregunta) {
+            if (questionPlaceholder) questionPlaceholder.style.display = 'none';
+
+            preguntaTexto.textContent = pregunta.pregunta;
+
+            if (pregunta.categoria) {
+                const categoriaEl = document.getElementById('categoria');
+                if (categoriaEl) {
+                    categoriaEl.textContent = `Categoría: ${pregunta.categoria}`;
+                    categoriaEl.style.display = 'block';
+                }
+            }
+
+            opcionesEl.innerHTML = '';
+            ['A','B','C','D'].forEach(k=>{
+                const btn = document.createElement('button');
+                btn.textContent = k + ') ' + (pregunta.opciones[k]||'');
+                btn.dataset.opt = k;
+                btn.className = 'response-button';
+                btn.addEventListener('click', responderPregunta);
+                opcionesEl.appendChild(btn);
+            });
+            preguntaBox.classList.remove('hidden');
+            mensajeEl.textContent = '';
+
+            iniciarTemporizador();
+        }
+
+        async function responderPregunta(e) {
+            if (!isWaitingResponse || !preguntaActual) return;
+
+            detenerTemporizador();
+            const opcionSeleccionada = e.currentTarget.dataset.opt;
+            const tiempoTranscurrido = Date.now() - preguntaStartTime;
+
+            Array.from(opcionesEl.children).forEach(b => b.disabled = true);
+            e.currentTarget.style.transform = 'scale(0.98)';
+            mensajeEl.textContent = 'Enviando respuesta...';
+            mensajeEl.style.background = '';
+            mensajeEl.style.color = '';
+            mensajeEl.style.border = '';
+
+            try {
+                const r2 = await fetchJson('index.php?controller=juego&method=ajaxResponder', {
+                    id_juego: idJuego,
+                    id_pregunta: preguntaActual.id_pregunta,
+                    opcion: opcionSeleccionada,
+                    tiempo_respuesta: Math.round(tiempoTranscurrido / 1000)
+                });
+
+                if (!r2 || !r2.success) {
+                    mensajeEl.textContent = 'Error al procesar respuesta. Intenta de nuevo.';
+                    Array.from(opcionesEl.children).forEach(b => b.disabled = false);
+                    e.currentTarget.style.transform = '';
+                    return;
+                }
+
+                const result = r2.result || {};
+
+                Array.from(opcionesEl.children).forEach(btn => {
+                    if (btn.dataset.opt === result.correcta) {
+                        btn.classList.add('correct');
+                    } else if (btn.dataset.opt === opcionSeleccionada && !result.correct) {
+                        btn.classList.add('incorrect');
+                    }
+                });
+
+                if (result.puntaje !== undefined) {
+                    puntajeEl.textContent = result.puntaje;
+                }
+
+                if (result.correct) {
+                    mensajeEl.style.background = '';
+                    mensajeEl.style.color = '';
+                    mensajeEl.style.border = '';
+                    mensajeEl.textContent = ' ¡Respuesta correcta! +1 punto';
+                }
+
+                if (r2.finalize === true || r2.game_over === true) {
+                    detenerTemporizador();
+                    partidaActiva = false;
+                    mensajeEl.style.background = '';
+                    mensajeEl.style.color = '';
+                    mensajeEl.style.border = '';
+                    mensajeEl.innerHTML = r2.mensaje ||
+                            ` <strong>¡Partida terminada!</strong> Respuesta incorrecta.</strong><br><small style="color: #666;">Serás redirigido a los resultados...</small>`;
+
+                    btnCategoria.disabled = true;
+                    btnCategoria.querySelector('.category-text').textContent = 'Partida terminada';
+
+                    setTimeout(() => {
+                        marcarNavegacionIntencional();
+                        window.location.href = '/juego/resultadoJuego';
+                    }, 3000);
+                    return;
+                }
+
+                if (result.correct === true) {
+                    setTimeout(() => {
+                        detenerTemporizador();
+                        preguntaBox.classList.add('hidden');
+                        const categoriaEl = document.getElementById('categoria');
+                        if (categoriaEl) categoriaEl.style.display = 'none';
+                        if (questionPlaceholder) questionPlaceholder.style.display = 'flex';
+                        mensajeEl.textContent = '';
+                        preguntaActual = null;
+                        isWaitingResponse = false;
+                        btnCategoria.disabled = false;
+                        btnCategoria.querySelector('.category-text').textContent = 'Obtener Categoría';
+                    }, 3000);
+                }
+
+            } catch (error) {
+                mensajeEl.textContent = 'Error de conexión. Intenta de nuevo.';
+                Array.from(opcionesEl.children).forEach(b => b.disabled = false);
+                e.currentTarget.style.transform = '';
+            }
+        }
+
+        btnCategoria.addEventListener('click', seleccionarCategoria);
+        if (btnAbrirReporte && modalReporte) {
+            btnAbrirReporte.addEventListener('click', abrirModalReporte);
+            btnCerrarReporte.addEventListener('click', cerrarModalReporte);
+            formReporte.addEventListener('submit', enviarReporte);
+        }
+    })();
 </script>
 </body>
 </html>

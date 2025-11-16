@@ -2,12 +2,15 @@
 
 class AdminController
 {
-    private $model;
+    private $adminModel;
+
+    private $reporteModel;
     private $renderer;
 
-    public function __construct($model, $renderer)
+    public function __construct($adminModel, $reporteModel, $renderer)
     {
-        $this->model = $model;
+        $this->reporteModel = $reporteModel;
+        $this->adminModel = $adminModel;
         $this->renderer = $renderer;
     }
 
@@ -19,20 +22,21 @@ class AdminController
         [$desde, $hasta] = $this->resolverRango();
 
         $stats = [
-            'usuarios_totales'      => $this->model->contarUsuarios(),
-            'partidas'              => $this->model->contarPartidas(),
-            'preguntas_totales'     => $this->model->contarPreguntas(),
-            'preguntas_creadas'     => $this->model->contarPreguntasCreadas($desde, $hasta),
-            'usuarios_nuevos'       => $this->model->contarUsuariosNuevos($desde, $hasta),
+            'usuarios_totales'      => $this->adminModel->contarUsuarios(),
+            'partidas'              => $this->adminModel->contarPartidas(),
+            'preguntas_totales'     => $this->adminModel->contarPreguntas(),
+            'preguntas_creadas'     => $this->adminModel->contarPreguntasCreadas($desde, $hasta),
+            'usuarios_nuevos'       => $this->adminModel->contarUsuariosNuevos($desde, $hasta),
+            'reportes_pendientes'   => $this->reporteModel->contarReportesPendientes(),
         ];
 
         $data = [
             'nombreUsuario'          => $_SESSION['nombreUsuario'] ?? 'Administrador',
             'stats'                  => $stats,
-            'aciertos'               => $this->model->aciertoPorUsuario(),
-            'porPais'                => $this->model->usuariosPorPais(),
-            'porSexo'                => $this->model->usuariosPorSexo(),
-            'porEdad'                => $this->model->usuariosPorGrupoEdad()
+            'aciertos'               => $this->adminModel->aciertoPorUsuario(),
+            'porPais'                => $this->adminModel->usuariosPorPais(),
+            'porSexo'                => $this->adminModel->usuariosPorSexo(),
+            'porEdad'                => $this->adminModel->usuariosPorGrupoEdad()
         ];
 
         $this->renderer->render("adminPanel", $data);
@@ -78,8 +82,8 @@ class AdminController
     {
         $this->tienePermisoAdmin();
 
-        $usuarios = $this->model->obtenerUsuariosConRol();
-        $rolesDisponibles = $this->model->obtenerRolesDisponibles();
+        $usuarios = $this->adminModel->obtenerUsuariosConRol();
+        $rolesDisponibles = $this->adminModel->obtenerRolesDisponibles();
 
         foreach ($usuarios as &$usuario) {
             $opcionesRol = [];
@@ -116,7 +120,7 @@ class AdminController
         $idRolNuevo = (int)($_POST['id_rol'] ?? 0);
 
         if ($idUsuario > 0 && $idRolNuevo > 0) {
-            $exito = $this->model->cambiarRolUsuario($idUsuario, $idRolNuevo);
+            $exito = $this->adminModel->cambiarRolUsuario($idUsuario, $idRolNuevo);
             $msg = $exito ? "Rol actualizado correctamente." : "Error al actualizar el rol o permiso denegado.";
         } else {
             $msg = "Datos inválidos para cambiar el rol.";
@@ -124,5 +128,18 @@ class AdminController
 
         header("Location: /admin/gestionarUsuarios?msg=" . urlencode($msg));
         exit;
+    }
+    public function gestionarReportes()
+    {
+        $this->tienePermisoAdmin();
+
+        $reportes = $this->reporteModel->obtenerReportesPendientes();
+
+        $data = [
+            'reportes' => $reportes,
+            'nombreUsuario' => $_SESSION['nombreUsuario'] ?? 'Administrador',
+        ];
+
+        $this->renderer->render("adminReportes", $data);
     }
 }
