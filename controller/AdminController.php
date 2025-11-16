@@ -78,9 +78,31 @@ class AdminController
     {
         $this->tienePermisoAdmin();
 
+        $usuarios = $this->model->obtenerUsuariosConRol();
+        $rolesDisponibles = $this->model->obtenerRolesDisponibles();
+
+        foreach ($usuarios as &$usuario) {
+            $opcionesRol = [];
+
+            foreach ($rolesDisponibles as $rol) {
+                $rolOpcion = [
+                    'id_rol' => $rol['id_rol'],
+                    'nombre' => $rol['nombre'],
+                ];
+
+                if ($rol['id_rol'] == $usuario['id_rol']) {
+                    $rolOpcion['seleccionado'] = true;
+                }
+
+                $opcionesRol[] = $rolOpcion;
+            }
+
+            $usuario['opciones_rol'] = $opcionesRol;
+        }
+
         $data = [
-            'usuarios' => $this->model->obtenerUsuariosConRol(),
-            'roles' => $this->model->obtenerRolesDisponibles()
+            'usuarios' => $usuarios,
+            'roles' => $rolesDisponibles
         ];
 
         $this->renderer->render("adminUsuarios", $data);
