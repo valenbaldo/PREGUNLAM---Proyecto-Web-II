@@ -114,4 +114,43 @@ class EditorModel
 
         return $result;
     }
+    public function obtenerReportesPendientes()
+    {
+        $sql = "SELECT 
+                r.id_reporte,
+                r.id_pregunta,
+                r.descripcion,
+                r.estado,
+                r.created_at,
+                p.pregunta AS nombre_pregunta,
+                u.usuario AS reportado_por 
+            FROM 
+                reportes r
+            JOIN 
+                preguntas p ON r.id_pregunta = p.id_pregunta
+            JOIN 
+                usuarios u ON r.id_usuario_reporta = u.id_usuario
+            WHERE 
+                r.estado = 'pendiente'
+            ORDER BY 
+                r.created_at DESC";
+
+        return $this->conexion->query($sql);
+    }
+    public function actualizarEstadoReporte(int $id_reporte, string $nuevo_estado)
+    {
+        $id = intval($id_reporte);
+        $estado = $nuevo_estado;
+
+        $sql = "UPDATE reportes SET estado = '$estado', resuelto_en = NOW() WHERE id_reporte = $id";
+
+        return $this->conexion->execute($sql);
+    }
+    public function contarReportesPendientes()
+    {
+        $sql = "SELECT COUNT(*) AS total FROM reportes WHERE estado = 'pendiente'";
+        $resultado = $this->conexion->query($sql);
+
+        return $resultado[0]['total'] ?? 0;
+    }
 }

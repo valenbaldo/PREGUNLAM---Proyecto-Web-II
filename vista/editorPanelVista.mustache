@@ -1,6 +1,6 @@
 <style>
     :root{
-        --brand:#0b8f72;      /* verde PregUnLaM */
+        --brand:#0b8f72;
         --ink:#0b0b0b;
         --muted:#6b7280;
         --ring:#e5e7eb;
@@ -9,7 +9,7 @@
     }
 
     .editor-wrap{
-        max-width: 1280px;            /* ⬅ más ancho */
+        max-width: 1280px;
         margin: 32px auto;
         padding: 0;
         background:#fff;
@@ -19,7 +19,6 @@
         overflow:hidden;
     }
 
-    /* Topbar */
     .editor-top{
         display:flex; align-items:center; justify-content:space-between;
         gap:16px; padding:18px 20px;
@@ -41,26 +40,22 @@
     .btn-create{ background:var(--brand); color:#fff; }
     .btn-create:hover{ box-shadow:0 0 0 3px #0b8f7230; }
 
-    /* Table */
     .editor-table{ width:100%; border-collapse:separate; border-spacing:0; }
     .editor-table thead th{
         position: sticky; top:58px; /* debajo del topbar */
         background:#fbfbfb; border-bottom:1px solid var(--ring);
         color:#111; font-weight:800; font-size:13px; text-transform:uppercase; letter-spacing:.02em;
     }
-    /* ⬇ más aire vertical */
     .editor-table th, .editor-table td{ padding:16px 18px; text-align:left; }
 
-    /* ⬇ separadores más visibles */
     .editor-table tbody tr{ border-bottom:1.5px solid #e3e8ef; }
     .editor-table tbody tr:first-child{ border-top:1.5px solid #e3e8ef; }
 
     .editor-table tbody tr:nth-child(odd){ background:#fcfcfd; }
     .editor-table tbody tr:hover{ background:#f6fffb; }
 
-    /* Cols */
     .col-id{ width:80px; color:#374151; font-variant-numeric: tabular-nums; }
-    .col-preg{ max-width:700px; } /* un toque más ancho por el nuevo layout */
+    .col-preg{ max-width:700px; }
     .col-preg .preg-text{
         display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden;
     }
@@ -93,10 +88,8 @@
         background:#fff5f6; box-shadow:0 0 0 3px #f8d7da;
     }
 
-    /* Empty state */
     .rk-empty{ padding:36px; text-align:center; color:var(--muted); }
 
-    /* Mobile */
     @media (max-width: 860px){
         .col-cat{ display:none; }
         .col-corr{ width:110px; }
@@ -114,6 +107,14 @@
             <span class="dot"></span> Panel de edición de preguntas
         </div>
         <div class="editor-actions">
+            <a class="btn btn-del"
+               href="/editor/gestionarReportes"
+               style="background: #fff5f6; border-color: #f1c3c6; color: var(--danger);">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                    <path d="M12 21a2 2 0 0 0 2-2H10a2 2 0 0 0 2 2Zm7.5-6.5V9a7.5 7.5 0 0 0-15 0v5.5l-2.5 3h20l-2.5-3Z" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+                Reportes ({{reportes_pendientes}})
+            </a>
             <a class="btn btn-create" href="/editor/crearPregunta">
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true">
                     <path d="M12 5v14M5 12h14" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
