@@ -251,10 +251,9 @@ class JuegoController
                 $nivelNuevo = $infoNivelNuevo['nivel'];
 
                 $cambioNivel = $this->determinarCambioNivel($nivelAnterior, $nivelNuevo);
-                
-                $mensajeFinal = $esTimeout ? 'Se agotó el tiempo de respuesta (10 segundos)' : 'Respuesta incorrecta';
 
-                // Guardar en sesión para mostrar en la vista de resultados
+                $mensajeFinal = $esTimeout ? 'Se agotó el tiempo de respuesta (10 segundos)' : 'Respuesta incorrecta';
+                
                 $_SESSION['nivel_anterior'] = $nivelAnterior;
                 $_SESSION['nivel_nuevo'] = $nivelNuevo;
                 $_SESSION['cambio_nivel'] = $cambioNivel;
@@ -268,11 +267,8 @@ class JuegoController
                 ]);
                 exit;
             }
-
-            // Si la respuesta es correcta - NO actualizar nivel durante partida
             $_SESSION['esCorrecta'] = true;
 
-            // Devolver el resultado con puntaje actualizado (sin nivel)
             $res['puntaje'] = $puntajeActual;
 
             echo json_encode(['success'=>true,'result'=>$res,'finalize'=>false]);
@@ -368,7 +364,6 @@ class JuegoController
     }
 
     private function determinarCambioNivel($nivelAnterior, $nivelNuevo) {
-        // Mapeo de niveles a números para comparar
         $niveles = ['facil' => 1, 'intermedia' => 2, 'dificil' => 3];
 
         $valorAnterior = $niveles[$nivelAnterior] ?? 1;
@@ -384,7 +379,6 @@ class JuegoController
     }
 
     private function obtenerNivelSinPartidaActual($id_usuario, $id_juego_actual) {
-        // Obtener nivel excluyendo las respuestas de la partida actual
         return $this->usuarioModel->obtenerInfoCompleteNivelExcluyendoJuego($id_usuario, $id_juego_actual);
     }
 

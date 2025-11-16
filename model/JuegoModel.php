@@ -123,7 +123,7 @@ class JuegoModel
         }
 
         $pregunta = $this->obtenerPreguntaPorNivel($id_usuario, $nivel_usuario, $id_juego);
-        
+
         if (!$pregunta) {
             return ['error' => '🎉 ¡Felicitaciones! Has visto todas las preguntas disponibles para tu nivel.'];
         }
@@ -137,11 +137,11 @@ class JuegoModel
         $id_usuario = intval($id_usuario);
         $id_pregunta = intval($id_pregunta);
         $tiempo_respuesta = intval($tiempo_respuesta);
-        
+
         if ($tiempo_respuesta > 10) {
             return ['error' => 'Tiempo de respuesta excedido'];
         }
-        
+
         $esTimeout = empty($opcion);
         if (!$esTimeout) {
             $opcion = strtoupper(substr($opcion, 0, 1));
@@ -163,7 +163,7 @@ class JuegoModel
         }
         $correct = strtoupper($r[0]['es_correcta']);
         $id_respuesta = $r[0]['id_respuesta'];
-        
+
         if ($esTimeout) {
             $isCorrect = 0;
             $opcion_final = 'TIMEOUT';
@@ -171,22 +171,22 @@ class JuegoModel
             $isCorrect = ($opcion === $correct) ? 1 : 0;
             $opcion_final = $opcion;
         }
-        
+
         $checkOpc = $this->conexion->query("SHOW COLUMNS FROM juego_preguntas LIKE 'opcion_elegida'");
         $checkTiempo = $this->conexion->query("SHOW COLUMNS FROM juego_preguntas LIKE 'tiempo_respuesta'");
 
         $updateQuery = "UPDATE juego_preguntas SET es_correcta = $isCorrect, id_respuesta_elegida = $id_respuesta";
-        
+
         if ($checkOpc && count($checkOpc)) {
             $updateQuery .= ", opcion_elegida = '" . addslashes($opcion_final) . "'";
         }
-        
+
         if ($checkTiempo && count($checkTiempo)) {
             $updateQuery .= ", tiempo_respuesta = $tiempo_respuesta";
         }
-        
+
         $updateQuery .= " WHERE id_juego = $id_juego AND id_pregunta = $id_pregunta AND id_usuario = $id_usuario";
-        
+
         $this->conexion->execute($updateQuery);
         $sql_actualizar_respondida = "UPDATE preguntas SET veces_respondida = COALESCE(veces_respondida, 0) + 1 WHERE id_pregunta = $id_pregunta";
         $this->conexion->execute($sql_actualizar_respondida);
@@ -249,16 +249,16 @@ class JuegoModel
         $id_juego = intval($id_juego);
         $id_usuario = intval($id_usuario);
         $id_pregunta = intval($id_pregunta);
-        
+
         $exists = $this->conexion->query("SELECT COUNT(*) as count FROM juego_preguntas WHERE id_juego = $id_juego AND id_pregunta = $id_pregunta AND id_usuario = $id_usuario");
-        
+
         if ($exists && isset($exists[0]['count']) && $exists[0]['count'] > 0) {
             return;
         }
-        
+
         $sql = "INSERT INTO juego_preguntas (id_juego, id_pregunta, id_usuario, id_respuesta_elegida, es_correcta, usada_trampita, creado_en) 
                 VALUES ($id_juego, $id_pregunta, $id_usuario, NULL, 0, 0, NOW())";
-        
+
         $this->conexion->execute($sql);
     }
 
@@ -273,7 +273,7 @@ class JuegoModel
     {
         $id_juego = intval($id_juego);
         $id_usuario = intval($id_usuario);
-        
+
         $preguntasPendientes = $this->conexion->query("
             SELECT jp.id_pregunta, p.pregunta, c.nombre as categoria,
                    r.a, r.b, r.c, r.d, r.es_correcta
@@ -287,7 +287,7 @@ class JuegoModel
             ORDER BY jp.id_juego_pregunta DESC 
             LIMIT 1
         ");
-        
+
         if ($preguntasPendientes && count($preguntasPendientes) > 0) {
             $p = $preguntasPendientes[0];
             return [
@@ -305,7 +305,7 @@ class JuegoModel
                 ]
             ];
         }
-        
+
         return ['pregunta_pendiente' => null];
     }
 
@@ -313,7 +313,7 @@ class JuegoModel
     {
         $id_juego = intval($id_juego);
         $id_usuario = intval($id_usuario);
-        
+
         $resultado = $this->conexion->query("
             SELECT COUNT(*) as count 
             FROM juego_preguntas 
@@ -321,7 +321,7 @@ class JuegoModel
             AND id_usuario = $id_usuario
             AND id_respuesta_elegida IS NULL
         ");
-        
+
         return $resultado && isset($resultado[0]['count']) && $resultado[0]['count'] > 0;
     }
 
@@ -329,7 +329,7 @@ class JuegoModel
     {
         $id_juego = intval($id_juego);
         $id_usuario = intval($id_usuario);
-        
+
         $resultado = $this->conexion->query("
             SELECT jp.id_juego_pregunta, jp.id_pregunta, jp.id_respuesta_elegida, 
                    jp.es_correcta, p.pregunta, jp.creado_en
@@ -340,7 +340,7 @@ class JuegoModel
             ORDER BY jp.id_juego_pregunta DESC
             LIMIT 5
         ");
-        
+
         return $resultado ?: [];
     }
 
@@ -348,7 +348,7 @@ class JuegoModel
     {
         $id_juego = intval($id_juego);
         $id_usuario = intval($id_usuario);
-        
+
         $resultado = $this->conexion->query("
             SELECT 
                 COUNT(*) as total_respondidas,
@@ -358,17 +358,17 @@ class JuegoModel
             AND id_usuario = $id_usuario
             AND id_respuesta_elegida IS NOT NULL
         ");
-        
+
         if (!$resultado || !$resultado[0]) {
             return ['aciertos' => 0, 'total' => 0];
         }
-        
+
         return [
             'aciertos' => intval($resultado[0]['total_aciertos']),
             'total' => intval($resultado[0]['total_respondidas'])
         ];
     }
-    
+
     public function resetearPreguntasVistas($id_juego, $id_usuario)
     {
         return true;

@@ -1,0 +1,78 @@
+<style>
+    :root{
+        --brand:#0b8f72;
+        --ink:#0b0b0b;
+        --muted:#6b7280;
+        --card:#ffffff;
+        --ring:#e5e7eb;
+        --bg:#f3f4f6;
+    }
+    body{ background:var(--bg); }
+
+
+    .adm-wrap{ max-width:1200px; margin:28px auto 40px; padding:0 16px; }
+    .adm-head{ display:flex; align-items:center; justify-content:space-between; gap:14px; margin-bottom:18px; flex-wrap:wrap; }
+    .adm-title{ font-size:22px; font-weight:900; display:flex; align-items:center; gap:10px; }
+    .adm-title i{ width:28px; height:28px; display:inline-grid; place-items:center; background:var(--brand); color:#fff; border-radius:8px; }
+
+
+    .adm-actions{ display:flex; gap:10px; flex-wrap:wrap; align-items:center; }
+    .btn{ border:none; border-radius:12px; padding:10px 14px; background:#111; color:#fff; cursor:pointer; text-decoration:none; display:inline-flex; align-items:center; gap:8px; }
+    .btn.outline{ background:#fff; color:var(--ink); border:1px solid var(--ring); }
+    .btn.brand{ background:var(--brand); }
+    .btn.small{ padding:7px 11px; border-radius:10px; font-size:14px; }
+
+
+    .card{ background:var(--card); border:1px solid var(--ring); border-radius:16px; padding:16px; }
+    .card h3{ font-weight:800; font-size:16px; margin-bottom:10px; display:flex; align-items:center; gap:8px; }
+
+
+    .tbl{ width:100%; border-collapse:collapse; }
+    .tbl th,.tbl td{ padding:10px 12px; border-bottom:1px solid var(--ring); font-size:14px; }
+    .tbl th{ background:#f9fafb; text-align:left; color:#111; font-weight:700; }
+    .tbl td.muted{ color:var(--muted); }
+
+</style>
+
+<div class="adm-wrap">
+    <div class="adm-head">
+        <div class="adm-title">
+            <i style="background:#fee2e2; color:#dc2626;">🔔</i>
+            <span>Reportes</span>
+        </div>
+        <div class="adm-actions">
+            <a class="btn outline small" href="/admin/base">⬅️ Volver al Panel</a>
+        </div>
+    </div>
+
+    <div class="card">
+        <h3>Reportes Pendientes</h3>
+        <table class="tbl">
+            <thead>
+            <tr>
+                <th>ID</th>
+                <th>Pregunta Reportada</th>
+                <th>Reportado por</th>
+                <th>Descripción</th>
+                <th>Fecha</th>
+            </tr>
+            </thead>
+            <tbody>
+            {{#reportes}}
+                <tr>
+                    <td>{{id_reporte}}</td>
+                    <td>
+                        <a href="/editor/editarPregunta?id={{id_pregunta}}">{{nombre_pregunta}}</a>
+                    </td>
+                    <td>{{reportado_por}}</td>
+                    <td>{{descripcion}}</td>
+                    <td class="muted">{{created_at}}</td>
+                </tr>
+            {{/reportes}}
+            {{^reportes}}
+                <tr><td colspan="6" class="muted">No hay reportes pendientes de revisión. 🎉</td></tr>
+            {{/reportes}}
+            </tbody>
+        </table>
+    </div>
+</div>

@@ -27,17 +27,57 @@ class MyConexion
                 return [];
             }
         } else {
-            // Para INSERT, UPDATE, DELETE que no devuelven resultados
             return true;
         }
     }
 
-    public function execute($sql){
-        $result = $this->conexion->query($sql);
-        if ($this->conexion->error) {
-            error_log("Error MySQL en execute(): " . $this->conexion->error . " - SQL: " . $sql);
-            return false;
+    public function execute($sql, $params = [])
+    {
+        if (empty($params)) {
+            $result = $this->conexion->query($sql);
+        } else {
+            $stmt = $this->conexion->prepare($sql);
+
+            if ($stmt === false) {
+                error_log("Error MySQL en prepare(): " . $this->conexion->error . " - SQL: " . $sql);
+                return false;
+            }
+
+            $tipos = '';
+            foreach ($params as $param) {
+                if (is_int($param)) {
+                    $tipos .= 'i';
+                } elseif (is_float($param)) {
+                    $tipos .= 'd';
+                } else {
+                    $tipos .= 's';
+                }
+            }
+
+            $bind_params = array_merge([$tipos], $params);
+            call_user_func_array([$stmt, 'bind_param'], $this->refValues($bind_params));
+
+            $result = $stmt->execute();
+
+            if ($stmt->error) {
+                error_log("Error MySQL en execute() stmt: " . $stmt->error . " - SQL: " . $sql);
+                $stmt->close();
+                return false;
+            }
+
+            $stmt->close();
         }
         return true;
+    }
+    private function refValues($arr)
+    {
+        if (strnatcmp(phpversion(), '5.3') >= 0) {
+            $refs = [];
+            foreach ($arr as $key => $value) {
+                $refs[$key] = &$arr[$key];
+            }
+            return $refs;
+        }
+        return $arr;
     }
 }
