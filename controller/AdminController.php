@@ -3,7 +3,6 @@
 class AdminController
 {
     private $adminModel;
-
     private $reporteModel;
     private $renderer;
 
@@ -19,9 +18,8 @@ class AdminController
     {
         $this->tienePermisoAdmin();
 
-        // Simplificado - sin rangos de tiempo específicos
-        $desde = date('Y-01-01'); // Inicio del año actual
-        $hasta = date('Y-m-d');   // Fecha actual
+        $desde = date('Y-01-01');
+        $hasta = date('Y-m-d');
 
         $stats = [
             'usuarios_totales'      => $this->adminModel->contarUsuarios(),
@@ -32,16 +30,13 @@ class AdminController
             'reportes_pendientes'   => $this->reporteModel->contarReportesPendientes(),
         ];
 
-        // Obtener filtros de la URL
         $year = $_GET['year'] ?? date('Y');
         $categoria = $_GET['categoria'] ?? null;
 
-        // Datos para gráficos
         $partidasPorMes = $this->adminModel->partidasPorMes($year, $categoria);
         $preguntasPorCategoria = $this->adminModel->preguntasPorCategoria($desde, $hasta);
         $categorias = $this->adminModel->obtenerCategorias();
 
-        // Marcar categorías y años seleccionados para los selectores
         foreach ($categorias as &$cat) {
             $cat['selected'] = ($categoria == $cat['categoria']);
         }
@@ -53,7 +48,6 @@ class AdminController
             'porPais'                => $this->adminModel->usuariosPorPais(),
             'porSexo'                => $this->adminModel->usuariosPorSexo(),
             'porEdad'                => $this->adminModel->usuariosPorGrupoEdad(),
-            // Datos para gráficos
             'partidasPorMes'         => $partidasPorMes,
             'preguntasPorCategoria'  => $preguntasPorCategoria,
             'rendimientoPorCategoria'=> $this->adminModel->rendimientoPorCategoria(),
@@ -62,7 +56,6 @@ class AdminController
             'categoriaSeleccionada'  => $categoria,
             'year2024Selected'       => ($year == '2024'),
             'year2025Selected'       => ($year == '2025'),
-            // JSON para JavaScript
             'partidasPorMesJson'     => json_encode($partidasPorMes),
             'preguntasCategoriaJson' => json_encode($preguntasPorCategoria)
         ];
@@ -174,8 +167,6 @@ class AdminController
     public function descargarPDF()
     {
         $this->tienePermisoAdmin();
-
-        // Obtener los mismos datos que en el método base
         [$desde, $hasta] = $this->resolverRango();
 
         $stats = [
@@ -187,11 +178,9 @@ class AdminController
             'reportes_pendientes'   => $this->reporteModel->contarReportesPendientes(),
         ];
 
-        // Obtener filtros de la URL para PDF
         $year = $_GET['year'] ?? date('Y');
         $categoria = $_GET['categoria'] ?? null;
 
-        // Datos para gráficos en PDF
         $partidasPorMes = $this->adminModel->partidasPorMes($year, $categoria);
         $preguntasPorCategoria = $this->adminModel->preguntasPorCategoria($desde, $hasta);
 
@@ -202,7 +191,6 @@ class AdminController
             'porPais'                => $this->adminModel->usuariosPorPais(),
             'porSexo'                => $this->adminModel->usuariosPorSexo(),
             'porEdad'                => $this->adminModel->usuariosPorGrupoEdad(),
-            // Nuevos datos para gráficos en PDF
             'partidasPorMes'         => $partidasPorMes,
             'preguntasPorCategoria'  => $preguntasPorCategoria,
             'rendimientoPorCategoria'=> $this->adminModel->rendimientoPorCategoria(),
@@ -210,12 +198,9 @@ class AdminController
             'periodo'                => $this->obtenerNombrePeriodo(),
             'yearSeleccionado'       => $year,
             'categoriaSeleccionada'  => $categoria,
-            // JSON para JavaScript
             'partidasPorMesJson'     => json_encode($partidasPorMes),
             'preguntasCategoriaJson' => json_encode($preguntasPorCategoria)
         ];
-
-        // Renderizar vista especial para PDF
         $this->renderer->renderStandalone("adminPanelPDF", $data);
     }
 

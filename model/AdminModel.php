@@ -54,7 +54,6 @@ class AdminModel
         ";
         return $this->conexion->query($sql) ?? [];
     }
-
     public function usuariosPorPais()
     {
         $sql = "
@@ -124,16 +123,12 @@ class AdminModel
         return $this->conexion->execute($sql);
     }
 
-    // Nuevos métodos para gráficos y filtros
-
-
     public function partidasPorMes($year = null, $categoria = null)
     {
         $year = $year ?? date('Y');
         $mesActual = (int)date('m');
-        $mesInicio = $mesActual - 5; // Últimos 6 meses
+        $mesInicio = $mesActual - 5;
 
-        // Si el mes de inicio es negativo, ajustar el año
         if ($mesInicio <= 0) {
             $mesInicio += 12;
             $yearInicio = $year - 1;
@@ -164,29 +159,24 @@ class AdminModel
 
         $resultado = $this->conexion->query($sql) ?? [];
 
-        $mesesEnEspanol = [
+        $meses = [
             1 => 'Enero', 2 => 'Febrero', 3 => 'Marzo', 4 => 'Abril',
             5 => 'Mayo', 6 => 'Junio', 7 => 'Julio', 8 => 'Agosto',
             9 => 'Septiembre', 10 => 'Octubre', 11 => 'Noviembre', 12 => 'Diciembre'
         ];
-
-        // Crear array con datos para los últimos 6 meses
         $cantidadPorMes = [];
         foreach ($resultado as $fila) {
             $cantidadPorMes[$fila['mes']] = $fila['cantidad'];
         }
-
-        // Construir respuesta con últimos 6 meses
         $datos = [];
         for ($i = $mesInicio; $i <= $mesActual; $i++) {
             $mesNumero = ($i <= 0) ? $i + 12 : $i;
             $datos[] = [
                 'mes' => $mesNumero,
-                'nombre_mes' => $mesesEnEspanol[$mesNumero],
+                'nombre_mes' => $meses[$mesNumero],
                 'cantidad' => $cantidadPorMes[$mesNumero] ?? 0
             ];
         }
-
         return $datos;
     }
 

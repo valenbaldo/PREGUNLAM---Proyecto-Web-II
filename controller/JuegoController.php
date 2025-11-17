@@ -3,7 +3,6 @@
 class JuegoController
 {
     private $juegoModel;
-
     private $usuarioModel;
     private $renderer;
 
@@ -39,7 +38,6 @@ class JuegoController
         }
 
         $id_juego = $_SESSION['id_juego'];
-
         $infoNivel = $this->usuarioModel->obtenerInfoCompleteNivel($id_usuario);
         $datosPregunta = $this->juegoModel->obtenerPreguntaPorNivel($id_usuario, $infoNivel['nivel'], $id_juego);
 
@@ -100,7 +98,6 @@ class JuegoController
         header('Location: /juego/resultadoJuego');
         exit();
     }
-
     public function resultadoJuego(){
         $this->estalogeado();
         $nombreUsuario = $_SESSION['nombreUsuario'];
@@ -136,7 +133,6 @@ class JuegoController
         ];
         $this->renderer->render("resultadoJuego", $data);
     }
-
     public function abandonarPartida(){
         $this->estalogeado();
         $id_usuario = $_SESSION['id_usuario'];
@@ -280,7 +276,6 @@ class JuegoController
             exit;
         }
     }
-
     public function ajaxGetJuego()
     {
         if (session_status() === PHP_SESSION_NONE) session_start();
@@ -299,7 +294,7 @@ class JuegoController
         }
 
         if (!empty($sess['id_juego_session'])) {
-            echo json_encode(['success'=>true,'data'=>['id_juego' => (int)$sess['id_juego_session']],'session'=>$sess]);
+            echo json_encode(['success'=>true,'data'=>['id_juego' => $sess['id_juego_session']],'session'=>$sess]);
             exit;
         }
 
@@ -307,8 +302,8 @@ class JuegoController
         $res = $this->juegoModel->obtenerJuegoActivo($idUsuario);
 
         echo json_encode([
-            'success' => (bool)$res,
-            'data' => $res ? ['id_juego' => (int)$res['id_juego']] : null,
+            'success' => $res,
+            'data' => $res ? ['id_juego' => $res['id_juego']] : null,
             'session' => $sess,
             'db_result' => $res ?: null
         ]);
