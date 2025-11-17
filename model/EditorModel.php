@@ -17,12 +17,12 @@ class EditorModel
 
     public function obtenerTodasLasPreguntas(){
         $sql = "
-            SELECT p.id_pregunta, p.pregunta, c.nombre AS categoria, r.es_correcta
-            FROM preguntas p
-            JOIN categorias c ON p.id_categoria = c.id_categoria
-            JOIN respuestas r ON p.id_pregunta = r.id_pregunta
-            ORDER BY p.id_pregunta DESC
-        ";
+        SELECT DISTINCT p.id_pregunta, p.pregunta, c.nombre AS categoria, r.es_correcta
+        FROM preguntas p
+        JOIN categorias c ON p.id_categoria = c.id_categoria
+        JOIN respuestas r ON p.id_pregunta = r.id_pregunta
+        ORDER BY p.id_pregunta DESC
+    ";
         return $this->conexion->query($sql) ?? [];
     }
 
