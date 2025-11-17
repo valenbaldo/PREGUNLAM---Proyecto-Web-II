@@ -11,16 +11,15 @@ class ReporteModel
 
     public function crearReporte($idPregunta, $idUsuario, $descripcion)
     {
+
+        $desc_escapada = addslashes($descripcion);
+        $id_pregunta = intval($idPregunta);
+        $id_usuario = intval($idUsuario);
+
         $sql = "INSERT INTO reportes (id_pregunta, id_usuario_reporta, descripcion, estado)
-                VALUES (?, ?, ?, 'pendiente')";
+            VALUES ($id_pregunta, $id_usuario, '$desc_escapada', 'pendiente')";
 
-        $params = [
-            $idPregunta,
-            $idUsuario,
-            $descripcion
-        ];
-
-        return $this->database->execute($sql, $params);
+        return $this->database->execute($sql);
     }
     public function contarReportesPendientes()
     {

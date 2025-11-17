@@ -37,7 +37,7 @@ class ReporteController
 
             $exito = $this->reporteModel->crearReporte($idPregunta, $user, $descripcion);
 
-            if ($exito) {
+            if ($exito !== false) {
                 echo json_encode(['success'=>true,'message'=>'¡Gracias! El reporte ha sido enviado y será revisado.']);
             } else {
                 http_response_code(500);
