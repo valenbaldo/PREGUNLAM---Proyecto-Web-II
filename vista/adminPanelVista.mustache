@@ -203,12 +203,14 @@ function aplicarFiltroPartidas() {
 
 // Configurar gráficos
 document.addEventListener('DOMContentLoaded', function() {
+
+
     // Gráfico de Partidas por Mes
     const partidasMesData = {{{partidasPorMesJson}}};
     if (partidasMesData && partidasMesData.length > 0) {
         const ctxPartidas = document.getElementById('partidasMesChart').getContext('2d');
         new Chart(ctxPartidas, {
-            type: 'line',
+            type: 'bar',
             data: {
                 labels: partidasMesData.map(item => item.nombre_mes || `Mes ${item.mes}`),
                 datasets: [{
@@ -231,6 +233,11 @@ document.addEventListener('DOMContentLoaded', function() {
                 scales: {
                     y: { 
                         beginAtZero: true,
+                        min: 0,
+                        max: 30,
+                        ticks: {
+                            stepSize: 2
+                        },
                         grid: { color: '#f3f4f6' }
                     },
                     x: {

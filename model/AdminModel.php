@@ -125,29 +125,69 @@ class AdminModel
     }
 
     // Nuevos métodos para gráficos y filtros
+
+
     public function partidasPorMes($year = null, $categoria = null)
     {
         $year = $year ?? date('Y');
-        $whereClause = "WHERE YEAR(j.iniciado_en) = $year";
-        
+        $mesActual = (int)date('m');
+        $mesInicio = $mesActual - 5; // Últimos 6 meses
+
+        // Si el mes de inicio es negativo, ajustar el año
+        if ($mesInicio <= 0) {
+            $mesInicio += 12;
+            $yearInicio = $year - 1;
+        } else {
+            $yearInicio = $year;
+        }
+
+        $whereClause = "WHERE (YEAR(j.iniciado_en) = $year AND MONTH(j.iniciado_en) >= $mesInicio) 
+                   OR (YEAR(j.iniciado_en) = $yearInicio AND MONTH(j.iniciado_en) >= $mesInicio AND YEAR(j.iniciado_en) < $year)";
+
         if ($categoria) {
             $whereClause .= " AND c.nombre = '$categoria'";
         }
 
         $sql = "
-            SELECT 
-                MONTH(j.iniciado_en) as mes,
-                MONTHNAME(j.iniciado_en) as nombre_mes,
-                COUNT(DISTINCT j.id_juego) as cantidad
-            FROM juegos j
-            LEFT JOIN juego_preguntas jp ON j.id_juego = jp.id_juego
-            LEFT JOIN preguntas p ON jp.id_pregunta = p.id_pregunta
-            LEFT JOIN categorias c ON p.id_categoria = c.id_categoria
-            $whereClause
-            GROUP BY MONTH(j.iniciado_en), MONTHNAME(j.iniciado_en)
-            ORDER BY mes
-        ";
-        return $this->conexion->query($sql) ?? [];
+        SELECT 
+            MONTH(j.iniciado_en) as mes,
+            MONTHNAME(j.iniciado_en) as nombre_mes,
+            COUNT(DISTINCT j.id_juego) as cantidad
+        FROM juegos j
+        LEFT JOIN juego_preguntas jp ON j.id_juego = jp.id_juego
+        LEFT JOIN preguntas p ON jp.id_pregunta = p.id_pregunta
+        LEFT JOIN categorias c ON p.id_categoria = c.id_categoria
+        $whereClause
+        GROUP BY MONTH(j.iniciado_en), MONTHNAME(j.iniciado_en)
+        ORDER BY j.iniciado_en
+    ";
+
+        $resultado = $this->conexion->query($sql) ?? [];
+
+        $mesesEnEspanol = [
+            1 => 'Enero', 2 => 'Febrero', 3 => 'Marzo', 4 => 'Abril',
+            5 => 'Mayo', 6 => 'Junio', 7 => 'Julio', 8 => 'Agosto',
+            9 => 'Septiembre', 10 => 'Octubre', 11 => 'Noviembre', 12 => 'Diciembre'
+        ];
+
+        // Crear array con datos para los últimos 6 meses
+        $cantidadPorMes = [];
+        foreach ($resultado as $fila) {
+            $cantidadPorMes[$fila['mes']] = $fila['cantidad'];
+        }
+
+        // Construir respuesta con últimos 6 meses
+        $datos = [];
+        for ($i = $mesInicio; $i <= $mesActual; $i++) {
+            $mesNumero = ($i <= 0) ? $i + 12 : $i;
+            $datos[] = [
+                'mes' => $mesNumero,
+                'nombre_mes' => $mesesEnEspanol[$mesNumero],
+                'cantidad' => $cantidadPorMes[$mesNumero] ?? 0
+            ];
+        }
+
+        return $datos;
     }
 
     public function preguntasPorCategoria($desde = null, $hasta = null)
