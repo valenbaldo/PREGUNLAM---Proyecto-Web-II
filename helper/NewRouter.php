@@ -16,7 +16,6 @@ class NewRouter
         $this->defaultMethod = $defaultMethod;
     }
 
-
     public function executeController($controllerParam, $methodParam)
     {
         $controller = $this->getControllerFrom($controllerParam);
