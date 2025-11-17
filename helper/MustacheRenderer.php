@@ -32,4 +32,10 @@ class MustacheRenderer
         $contentAsString .= file_get_contents($this->viewsFolder . '/footer.mustache');
         return $this->mustache->render($contentAsString, $data);
     }
+
+    public function renderStandalone($contentFile, $contentData = array()) {
+        $data = array_merge($this->data, $contentData);
+        $contentAsString = file_get_contents($this->viewsFolder . '/' . $contentFile . "Vista.mustache");
+        echo $this->mustache->render($contentAsString, $data);
+    }
 }
