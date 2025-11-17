@@ -44,8 +44,6 @@
 </style>
 
 <div class="home-wrap">
-
-    <!-- HERO -->
     <div class="hero">
         <div class="hero-text">
             <div class="hero-title">Bienvenido a <strong>PregUnLaM</strong>, {{nombreUsuario}}!</div>
@@ -53,18 +51,12 @@
         </div>
         <img class="avatar" src="{{imagen}}" alt="Imagen de perfil">
     </div>
-
-    <!-- ACTIONS -->
     <div class="actions">
         <a href="?controller=juego&method=base" class="btn btn-primary">🎮 Jugar ahora</a>
         <a href="?controller=usuario&method=ranking" class="btn btn-outline">🏆 Ver ranking</a>
         <a href="?controller=usuario&method=base" class="btn btn-outline">👤 Mi perfil</a>
-        <!-- si usás PerfilController, cambiá por: ?controller=perfil&method=base -->
     </div>
-
-    <!-- CONTENIDO -->
     <div class="grid">
-        <!-- Ranking preview -->
         <div class="card">
             <div class="card-title">
                 <h3>🏆 Top jugadores</h3>
@@ -106,8 +98,6 @@
             <div class="spacer"></div>
             <a href="?controller=usuario&method=ranking" class="btn btn-outline">🔎 Ver todos</a>
         </div>
-
-        <!-- Tarjeta lateral -->
         <div class="card">
             <div class="card-title">
                 <h3>🎯 Consejos rápidos</h3>
