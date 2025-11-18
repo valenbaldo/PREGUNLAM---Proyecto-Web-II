@@ -294,7 +294,7 @@ class JuegoController
         }
 
         if (!empty($sess['id_juego_session'])) {
-            echo json_encode(['success'=>true,'data'=>['id_juego' => $sess['id_juego_session']],'session'=>$sess]);
+            echo json_encode(['success'=>true,'data'=>['id_juego' => (int)$sess['id_juego_session']],'session'=>$sess]);
             exit;
         }
 
@@ -302,8 +302,8 @@ class JuegoController
         $res = $this->juegoModel->obtenerJuegoActivo($idUsuario);
 
         echo json_encode([
-            'success' => $res,
-            'data' => $res ? ['id_juego' => $res['id_juego']] : null,
+            'success' => (bool)$res,
+            'data' => $res ? ['id_juego' => (int)$res['id_juego']] : null,
             'session' => $sess,
             'db_result' => $res ?: null
         ]);
