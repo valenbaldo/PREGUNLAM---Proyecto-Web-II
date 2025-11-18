@@ -109,7 +109,7 @@ class JuegoModel
     }
 
 
-    public function girarRuleta($id_juego, $id_usuario, $nivel_usuario = 'facil')
+    public function girarRuleta(int $id_juego, int $id_usuario, string $nivel_usuario = 'facil')
     {
         $id_juego = intval($id_juego);
         $id_usuario = intval($id_usuario);
@@ -131,7 +131,7 @@ class JuegoModel
         return ['pregunta' => $pregunta];
     }
 
-    public function procesarRespuesta($id_juego,$id_usuario,$id_pregunta,$opcion,$tiempo_respuesta = 0)
+    public function procesarRespuesta(int $id_juego, int $id_usuario, int $id_pregunta, string $opcion, int $tiempo_respuesta = 0)
     {
         $id_juego = intval($id_juego);
         $id_usuario = intval($id_usuario);
@@ -200,9 +200,9 @@ class JuegoModel
         $puntaje = $this->obtenerPuntajeJuego($id_juego);
 
         return [
-            'correct' => $isCorrect,
+            'correct' => (bool)$isCorrect,
             'correcta' => $correct,
-            'puntaje' => $puntaje
+            'puntaje' => (int)$puntaje
         ];
     }
 
