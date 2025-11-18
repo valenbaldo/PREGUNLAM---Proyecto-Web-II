@@ -127,8 +127,15 @@ class AdminController
 
         $data = [
             'usuarios' => $usuarios,
-            'roles' => $rolesDisponibles
+            'roles' => $rolesDisponibles,
+            'msg' => $_SESSION['msg'] ?? null,
+            'error_flag' => $_SESSION['error_flag'] ?? false
         ];
+
+        if (isset($_SESSION['msg'])) {
+            unset($_SESSION['msg']);
+            unset($_SESSION['error_flag']);
+        }
 
         $this->renderer->render("adminUsuarios", $data);
     }
@@ -142,12 +149,14 @@ class AdminController
 
         if ($idUsuario > 0 && $idRolNuevo > 0) {
             $exito = $this->adminModel->cambiarRolUsuario($idUsuario, $idRolNuevo);
-            $msg = $exito ? "Rol actualizado correctamente." : "Error al actualizar el rol o permiso denegado.";
+            $_SESSION['msg'] = $exito ? "Rol actualizado correctamente." : "Error al actualizar el rol o permiso denegado.";
+            $_SESSION['error_flag'] = !$exito;
         } else {
-            $msg = "Datos inválidos para cambiar el rol.";
+            $_SESSION['msg'] = "Datos inválidos para cambiar el rol.";
+            $_SESSION['error_flag'] = true;
         }
 
-        header("Location: /admin/gestionarUsuarios?msg=" . urlencode($msg));
+        header("Location: /admin/gestionarUsuarios");
         exit;
     }
     public function gestionarReportes()
