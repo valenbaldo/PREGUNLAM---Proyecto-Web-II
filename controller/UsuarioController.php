@@ -7,9 +7,11 @@ class UsuarioController
 
     public function __construct($model, $renderer)
     {
-        $this->model = $model;
+        $this->model   = $model;
         $this->renderer = $renderer;
     }
+
+
     public function base()
     {
         $this->estalogeado();
@@ -27,33 +29,85 @@ class UsuarioController
 
         $stats = $this->model->obtenerStats($idUsuario);
 
+        $scheme = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') ? 'https' : 'http';
+        $host   = $_SERVER['HTTP_HOST'] ?? 'localhost:8080';
+
+
+        $perfilUrl = $scheme . '://' . $host . '/home?controller=usuario&method=ver&id=' . $idUsuario;
+
+
+        $qrSrc = 'https://api.qrserver.com/v1/create-qr-code/?size=200x200&data='
+            . urlencode($perfilUrl);
+
         $data = [
-            'usuario' => $usuario,
-            'stats'   => $stats,
-            'logueado'=> true
+            'usuario'    => $usuario,
+            'stats'      => $stats,
+            'logueado'   => true,
+            'perfil_url' => $perfilUrl,
+            'qr_src'     => $qrSrc,
+            'es_publico' => false,
         ];
 
 
         $this->renderer->render("perfil", $data);
     }
+
+    public function ver()
+    {
+        $idUsuario = isset($_GET['id']) ? (int)$_GET['id'] : 0;
+        if ($idUsuario <= 0) {
+            header("Location: /home");
+            exit;
+        }
+
+        $usuario = $this->model->obtenerDatosPorId($idUsuario);
+        if (!$usuario) {
+            header("Location: /home");
+            exit;
+        }
+
+        $stats = $this->model->obtenerStats($idUsuario);
+
+        $scheme = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') ? 'https' : 'http';
+        $host   = $_SERVER['HTTP_HOST'] ?? 'localhost:8080';
+        $perfilUrl = $scheme . '://' . $host . '/home?controller=usuario&method=ver&id=' . $idUsuario;
+
+        $qrSrc = 'https://api.qrserver.com/v1/create-qr-code/?size=200x200&data='
+            . urlencode($perfilUrl);
+
+        $data = [
+            'usuario'    => $usuario,
+            'stats'      => $stats,
+            'perfil_url' => $perfilUrl,
+            'qr_src'     => $qrSrc,
+            'es_publico' => true,
+            'logueado'   => isset($_SESSION['id_usuario']),
+        ];
+
+        $this->renderer->render("perfil", $data);
+    }
+
     public function editarPerfil()
     {
         $this->renderer->render("editar_perfil");
     }
-    public function verEstadisticas() {
+
+    public function verEstadisticas()
+    {
         $this->estalogeado();
         $idUsuario = $_SESSION['id_usuario'];
 
-        $historial = $this->model->obtenerPartidas($idUsuario);
+        $historial    = $this->model->obtenerPartidas($idUsuario);
         $puntajeTotal = $this->model->obtenerPuntajeTotal($idUsuario);
 
         $data = [
-            'historial' => $historial,
-            'puntaje_total_acumulado' => $puntajeTotal,
+            'historial'                 => $historial,
+            'puntaje_total_acumulado'   => $puntajeTotal,
         ];
 
         $this->renderer->render("estadisticas", $data);
     }
+
     public function ranking()
     {
         $topJugadores = $this->model->obtenerRankingPorAverage(10);
@@ -75,9 +129,8 @@ class UsuarioController
         $this->renderer->render("ranking", $data);
     }
 
-
-
-    public function estalogeado(){
+    public function estalogeado()
+    {
         if (!isset($_SESSION['id_usuario'])) {
             header("Location: /login");
             exit;
