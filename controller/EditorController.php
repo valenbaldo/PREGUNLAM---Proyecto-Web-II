@@ -14,19 +14,23 @@ class EditorController
     public function base()
     {
         $this->tienePermisoEditor();
-        $msg = $_GET['msg'] ?? null;
-        $error = $_GET['error'] ?? null;
-
-        $preguntas = $this->model->obtenerTodasLasPreguntas();
-        $reportes_pendientes = $this->model->contarReportesPendientes();
 
         $data = [
             'nombreUsuario' => $_SESSION['nombreUsuario'] ?? 'Editor',
-            'preguntas' => $preguntas,
-            'reportes_pendientes' => $reportes_pendientes,
-            'msg' => $msg,
-            'error' => $error
+            'preguntas' => $this->model->obtenerTodasLasPreguntas(),
+            'reportes_pendientes' => $this->model->contarReportesPendientes()
         ];
+
+        if(!empty($_SESSION['msg'])){
+            $data['msg'] = $_SESSION['msg'];
+            unset($_SESSION['msg']);
+        } else {
+            $data['msg'] = null;
+        }
+        if (!empty($_SESSION['error'])) {
+            $data['error'] = $_SESSION['error'];
+            unset($_SESSION['error']);
+        }
 
         $this->renderer->render("editorPanel", $data);
     }
@@ -51,6 +55,7 @@ class EditorController
         $this->tienePermisoEditor();
 
         $datos = $_POST;
+        $id_usuario = $_SESSION['id_usuario'];
 
         if (empty($datos['pregunta']) || empty($datos['respuesta_correcta'])) {
             $datos['error'] = "Todos los campos son obligatorios.";
@@ -58,10 +63,11 @@ class EditorController
             return;
         }
 
-        $resultado = $this->model->guardar($datos);
+        $resultado = $this->model->guardar($datos, $id_usuario);
 
         if ($resultado) {
-            header("Location: /editor/base?msg=Pregunta creada exitosamente");
+            $_SESSION['msg'] = "Pregunta creada exitosamente!!";
+            header("Location: /editor/base");
         } else {
             $datos['error'] = "Error al guardar la pregunta en la base de datos.";
             $this->renderer->render("editorCrear", $datos);
@@ -75,13 +81,15 @@ class EditorController
         $idPregunta = ($_GET['id'] ?? 0);
 
         if ($idPregunta <= 0) {
-            header("Location: /editor/base?error=ID de pregunta inválido");
+            $_SESSION['error'] = "ID de pregunta inválido";
+            header("Location: /editor/base");
             exit;
         }
         $pregunta = $this->model->obtenerPreguntaCompleta($idPregunta);
 
         if (!$pregunta) {
-            header("Location: /editor/base?error=Pregunta no encontrada");
+            $_SESSION['error'] = "Pregunta no encontrada";
+            header("Location: /editor/base");
             exit;
         }
         $pregunta['categorias'] = $this->model->obtenerCategorias();
@@ -95,15 +103,18 @@ class EditorController
         $datos = $_POST;
 
         if (empty($datos['id_pregunta'])) {
-            header("Location: /editor/base?error=Falta ID para actualizar");
+            $_SESSION['error'] = "Falta ID para actualizar";
+            header("Location: /editor/base");
             exit;
         }
         $resultado = $this->model->actualizar($datos);
 
         if ($resultado) {
-            header("Location: /editor/base?msg=Pregunta actualizada exitosamente");
+            $_SESSION['msg'] = "Pregunta actualizada exitosamente!!";
+            header("Location: /editor/base");
         } else {
-            header("Location: /editor/base?error=Error al actualizar la pregunta");
+            $_SESSION['error'] = "Error al actualizar la pregunta";
+            header("Location: /editor/base");
         }
         exit;
     }
@@ -115,9 +126,11 @@ class EditorController
         if ($idPregunta > 0) {
             $resultado = $this->model->eliminar($idPregunta);
             if ($resultado) {
-                header("Location: /editor/base?msg=Pregunta eliminada exitosamente");
+                $_SESSION['msg'] = "Pregunta eliminada exitosamente";
+                header("Location: /editor/base");
             } else {
-                header("Location: /editor/base?error=Error al eliminar la pregunta");
+                $_SESSION['error'] = "Error al eliminar la pregunta";
+                header("Location: /editor/base");
             }
         }
         header("Location: /editor/base");
@@ -148,7 +161,8 @@ class EditorController
 
         if ($id_reporte <= 0 || empty($accion)) {
             $msg = "Error: Datos de reporte inválidos.";
-            header("Location: /editor/gestionarReportes?msg=" . urlencode($msg));
+            $_SESSION['msg'] = $msg;
+            header("Location: /editor/gestionarReportes");
             exit;
         }
 
@@ -161,7 +175,8 @@ class EditorController
                 break;
             default:
                 $msg = "Error: Acción no reconocida.";
-                header("Location: /editor/gestionarReportes?msg=" . urlencode($msg));
+                $_SESSION['msg'] = $msg;
+                header("Location: /editor/gestionarReportes");
                 exit;
         }
 
@@ -173,7 +188,8 @@ class EditorController
             $msg = "Error al actualizar el reporte ID $id_reporte.";
         }
 
-        header("Location: /editor/gestionarReportes?msg=" . urlencode($msg));
+        $_SESSION['msg'] = $msg;
+        header("Location: /editor/gestionarReportes");
         exit;
     }
 

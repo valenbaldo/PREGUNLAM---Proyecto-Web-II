@@ -43,15 +43,15 @@ class EditorModel
         return ($resultado && isset($resultado[0])) ? $resultado[0] : null;
     }
 
-    public function guardar($datos)
+    public function guardar($datos, $id_usuario)
     {
         $pregunta = addslashes($datos['pregunta']);
         $id_categoria = (int)$datos['id_categoria'];
         $correcta = strtoupper(substr($datos['respuesta_correcta'], 0, 1));
 
         $sql_pregunta = "
-            INSERT INTO preguntas (pregunta, id_categoria, veces_respondida, veces_acertada)
-            VALUES ('$pregunta', $id_categoria, 0, 0)
+            INSERT INTO preguntas (pregunta, id_usuario, id_categoria, veces_respondida, veces_acertada)
+            VALUES ('$pregunta', $id_usuario, $id_categoria, 0, 0)
         ";
         $this->conexion->execute($sql_pregunta);
 
@@ -72,7 +72,9 @@ class EditorModel
                 '$correcta'
             )
         ";
-        return $this->conexion->execute($sql_respuestas);
+        $this->conexion->execute($sql_respuestas);
+
+        return true;
     }
 
     public function actualizar($datos)
@@ -82,14 +84,15 @@ class EditorModel
         $id_categoria = $datos['id_categoria'];
         $correcta = strtoupper(substr($datos['respuesta_correcta'], 0, 1));
 
-        $sql_pregunta = "
+        try{
+            $sql_pregunta = "
             UPDATE preguntas 
             SET pregunta = '$pregunta', id_categoria = $id_categoria
             WHERE id_pregunta = $id
         ";
-        $this->conexion->execute($sql_pregunta);
+            $this->conexion->execute($sql_pregunta);
 
-        $sql_respuestas = "
+            $sql_respuestas = "
             UPDATE respuestas 
             SET a = '" . addslashes($datos['a']) . "',
                 b = '" . addslashes($datos['b']) . "',
@@ -98,7 +101,14 @@ class EditorModel
                 es_correcta = '$correcta'
             WHERE id_pregunta = $id
         ";
-        return $this->conexion->execute($sql_respuestas);
+            $this->conexion->execute($sql_respuestas);
+            return true;
+        }
+        catch(Exception $e){
+            return false;
+        }
+
+
     }
 
 
@@ -106,13 +116,18 @@ class EditorModel
     {
         $id = $id_pregunta;
 
-        $this->conexion->execute("DELETE FROM juego_preguntas WHERE id_pregunta = $id");
+        try{
+            $this->conexion->execute("DELETE FROM juego_preguntas WHERE id_pregunta = $id");
 
-        $this->conexion->execute("DELETE FROM respuestas WHERE id_pregunta = $id");
+            $this->conexion->execute("DELETE FROM respuestas WHERE id_pregunta = $id");
 
-        $result = $this->conexion->execute("DELETE FROM preguntas WHERE id_pregunta = $id");
+            $this->conexion->execute("DELETE FROM preguntas WHERE id_pregunta = $id");
 
-        return $result;
+            return true;
+        }
+        catch(Exception $e){
+            return false;
+        }
     }
     public function obtenerReportesPendientes()
     {
@@ -135,22 +150,42 @@ class EditorModel
             ORDER BY 
                 r.created_at DESC";
 
-        return $this->conexion->query($sql);
+        try{
+            $this->conexion->query($sql);
+            return true;
+        }
+        catch(Exception $e){
+            return false;
+        }
     }
     public function actualizarEstadoReporte(int $id_reporte, string $nuevo_estado)
     {
         $id = intval($id_reporte);
         $estado = $nuevo_estado;
 
-        $sql = "UPDATE reportes SET estado = '$estado', resuelto_en = NOW() WHERE id_reporte = $id";
+        try{
+            $sql = "UPDATE reportes SET estado = '$estado', resuelto_en = NOW() WHERE id_reporte = $id";
 
-        return $this->conexion->execute($sql);
+            $this->conexion->execute($sql);
+
+            return true;
+        }
+        catch(Exception $e){
+            return false;
+        }
+
     }
     public function contarReportesPendientes()
     {
-        $sql = "SELECT COUNT(*) AS total FROM reportes WHERE estado = 'pendiente'";
-        $resultado = $this->conexion->query($sql);
+        try{
+            $sql = "SELECT COUNT(*) AS total FROM reportes WHERE estado = 'pendiente'";
+            $resultado = $this->conexion->query($sql);
 
-        return $resultado[0]['total'] ?? 0;
+            return $resultado[0]['total'] ?? 0;
+        }
+        catch(Exception $e){
+            return null;
+        }
+
     }
 }

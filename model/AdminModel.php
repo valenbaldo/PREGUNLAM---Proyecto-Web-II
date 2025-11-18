@@ -114,14 +114,17 @@ class AdminModel
     {
         $id_usuario_target = $id_usuario;
         $id_rol_a_asignar = $id_rol_nuevo;
-        $ID_ROL_ADMIN = 3;
+        try {
+            $sql = "UPDATE usuarios SET id_rol = $id_rol_a_asignar WHERE id_usuario = $id_usuario_target";
 
-        if ($id_rol_a_asignar !== $ID_ROL_ADMIN && $id_usuario_target === ($_SESSION['id_usuario'] ?? null)) {
+            $this->conexion->execute($sql);
+
+            return true;
+        }
+        catch (Exception $e) {
             return false;
         }
-        $sql = "UPDATE usuarios SET id_rol = $id_rol_a_asignar WHERE id_usuario = $id_usuario_target";
 
-        return $this->conexion->execute($sql);
     }
 
     // Nuevos métodos para gráficos y filtros

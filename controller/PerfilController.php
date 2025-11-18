@@ -12,16 +12,18 @@ class PerfilController
     public function base() {
         $idUsuario = $_SESSION['id_usuario'] ?? null;
         if (!$idUsuario) {
-            header("Location: ?controller=home&method=base");
+            header("Location: /home");
             exit;
         }
 
         $usuario = $this->model->obtenerPerfil((int)$idUsuario);
         $stats   = $this->model->obtenerStats((int)$idUsuario);
 
-        $this->renderer->render("perfil", [
+        $data = [
             'usuario' => $usuario,
             'stats'   => $stats,
-        ]);
+        ];
+
+        $this->renderer->render("perfil", $data);
     }
 }
