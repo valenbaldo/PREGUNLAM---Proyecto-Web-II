@@ -35,7 +35,6 @@
     .kpi i{ width:40px; height:40px; border-radius:12px; display:grid; place-items:center; background:#eef8f5; color:var(--brand); font-size:18px; }
     .kpi .kpi-label{ font-size:11px; color:var(--muted); margin-bottom:1px; }
     .kpi .kpi-value{ font-weight:900; font-size:20px; line-height:1; }
-    /* Estilo para el KPI de Reportes Pendientes */
     .kpi.reporte i { background: #fee2e2; color: #dc2626; }
 
     .main-content{ display:grid; grid-template-columns:1fr 1fr 1fr; gap:6px; flex:1; min-height:0; }
@@ -132,9 +131,7 @@
 
     </div>
 
-    <!-- Contenido principal del dashboard -->
     <div class="main-content">
-        <!-- Gráfico 1: Partidas por Mes -->
         <div class="card chart-item">
             <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
                 <h3 style="margin:0; font-size:16px;">📊 Partidas por Mes</h3>
@@ -147,16 +144,14 @@
                 <canvas id="partidasMesChart"></canvas>
             </div>
         </div>
-        
-        <!-- Gráfico 2: Preguntas por Categoría -->
+
         <div class="card chart-item">
             <h3 style="font-size:16px;">🎨 Preguntas por Categoría</h3>
             <div class="chart-container">
                 <canvas id="preguntasCategoriaChart"></canvas>
             </div>
         </div>
-        
-        <!-- Tabla: Rendimiento por Categoría -->
+
         <div class="card chart-item">
             <h3 style="font-size:16px;">🏆 Rendimiento por Categoría</h3>
             <table class="tbl">
@@ -191,7 +186,7 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 <script>
-// Función para aplicar filtro solo a partidas por mes
+
 function aplicarFiltroPartidas() {
     const year = document.getElementById('yearSelector').value;
     
@@ -201,11 +196,8 @@ function aplicarFiltroPartidas() {
     window.location.href = url;
 }
 
-// Configurar gráficos
 document.addEventListener('DOMContentLoaded', function() {
 
-
-    // Gráfico de Partidas por Mes
     const partidasMesData = {{{partidasPorMesJson}}};
     if (partidasMesData && partidasMesData.length > 0) {
         const ctxPartidas = document.getElementById('partidasMesChart').getContext('2d');
@@ -248,7 +240,6 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
-    // Gráfico de Preguntas por Categoría
     const preguntasCategoriaData = {{{preguntasCategoriaJson}}};
     if (preguntasCategoriaData && preguntasCategoriaData.length > 0) {
         const ctxCategorias = document.getElementById('preguntasCategoriaChart').getContext('2d');
@@ -281,17 +272,14 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 
 function descargarPDF() {
-    // Mostrar indicador de carga
     const boton = event.target;
     const textoOriginal = boton.innerHTML;
     boton.innerHTML = '⏳ Generando PDF...';
     boton.disabled = true;
 
     try {
-        // Capturar toda la sección principal visible SIN ocultar elementos
         const mainContent = document.querySelector('.adm-wrap');
-        
-        // Generar PDF directamente desde la página visible
+
         html2canvas(mainContent, {
             scale: 1.2,
             useCORS: true,
@@ -310,12 +298,11 @@ function descargarPDF() {
             const pdfWidth = pdf.internal.pageSize.getWidth();
             const pdfHeight = pdf.internal.pageSize.getHeight();
             
-            const imgWidth = pdfWidth - 20; // Margen de 10mm a cada lado
+            const imgWidth = pdfWidth - 20;
             const imgHeight = (canvas.height * imgWidth) / canvas.width;
-            
-            // Si el contenido es más alto que una página, dividir en páginas
+
             let yPosition = 0;
-            const pageHeight = pdfHeight - 20; // Margen superior e inferior
+            const pageHeight = pdfHeight - 20;
             
             while (yPosition < imgHeight) {
                 pdf.addImage(imgData, 'PNG', 10, 10 - yPosition, imgWidth, imgHeight);
@@ -325,13 +312,11 @@ function descargarPDF() {
                     pdf.addPage();
                 }
             }
-            
-            // Descargar PDF directamente
+
             const fecha = new Date().toISOString().split('T')[0];
             const year = document.getElementById('yearSelector').value || 'todos';
             pdf.save(`reporte-admin-${year}-${fecha}.pdf`);
-            
-            // Mostrar mensaje de éxito
+
             boton.innerHTML = '✅ PDF Descargado';
             setTimeout(() => {
                 boton.innerHTML = textoOriginal;

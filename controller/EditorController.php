@@ -155,7 +155,7 @@ class EditorController
     {
         $this->tienePermisoEditor();
 
-        $id_reporte = (int)($_POST['id_reporte'] ?? 0);
+        $id_reporte = $_POST['id_reporte'] ?? 0;
         $accion = $_POST['accion'] ?? '';
         $nuevo_estado = '';
 

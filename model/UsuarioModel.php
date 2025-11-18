@@ -164,7 +164,6 @@ class UsuarioModel
         $total = $data[0]['total_respondidas'];
         $ratio = $aciertos / $total;
 
-        // Algoritmo simple basado en ratio
         if ($ratio >= 0.7) {
             $nivel = 'dificil';
             $mensaje = 'Experto - Preguntas desafiantes';

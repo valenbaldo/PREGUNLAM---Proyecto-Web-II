@@ -8,7 +8,6 @@ class EditorModel
     {
         $this->conexion = $conexion;
     }
-
     public function obtenerCategorias()
     {
         $sql = "SELECT id_categoria, nombre FROM categorias ORDER BY nombre ASC";
