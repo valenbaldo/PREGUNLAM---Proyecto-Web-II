@@ -317,3 +317,8 @@ ALTER TABLE juego_preguntas
 
 ALTER TABLE preguntas
     ADD COLUMN created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP;
+
+-- Agreguen esto a sus preguntas si no tenian el timestamp para las preguntas q ya tenian
+-- sino no les va a andar bien el orden por fecha de creacion
+
+UPDATE preguntas SET created_at = CURRENT_TIMESTAMP WHERE created_at IS NULL;
