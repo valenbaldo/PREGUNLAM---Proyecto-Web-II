@@ -144,9 +144,9 @@ class LoginController
             $id_rol = $_SESSION['id_rol'];
 
             if ($id_rol == 3) {
-                header("Location: /admin/base");
+                header("Location: /admin");
             } elseif ($id_rol == 2) {
-                header("Location: /editor/base");
+                header("Location: /editor");
             } else {
                 header("Location: /home");
             }
