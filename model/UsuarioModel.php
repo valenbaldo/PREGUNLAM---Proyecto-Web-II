@@ -188,23 +188,29 @@ class UsuarioModel
     public function obtenerRankingPorAverage($limite)
     {
         $sql = "
-        SELECT u.usuario, 
-               u.imagen,
-               COUNT(DISTINCT j.id_juego) AS partidas_jugadas,
-               SUM(jp.es_correcta) AS total_aciertos,
-               COALESCE(
-                   SUM(jp.es_correcta) / COUNT(DISTINCT j.id_juego), 
-                   0
-               ) AS average_aciertos_por_partida,
-               SUM(j.puntaje) AS puntaje_total_acumulado
+        SELECT 
+            u.id_usuario,                        
+            u.usuario, 
+            u.imagen,
+            COUNT(DISTINCT j.id_juego) AS partidas_jugadas,
+            SUM(jp.es_correcta) AS total_aciertos,
+            COALESCE(
+                SUM(jp.es_correcta) / COUNT(DISTINCT j.id_juego), 
+                0
+            ) AS average_aciertos_por_partida,
+            SUM(j.puntaje) AS puntaje_total_acumulado
         FROM usuarios u
         JOIN juegos j ON u.id_usuario = j.id_usuario
         JOIN juego_preguntas jp ON j.id_juego = jp.id_juego
         WHERE j.estado IN ('finalizado', 'perdido') 
           AND jp.id_respuesta_elegida IS NOT NULL
-        GROUP BY u.id_usuario, u.usuario, u.imagen
-        ORDER BY average_aciertos_por_partida DESC, puntaje_total_acumulado DESC 
-        
+        GROUP BY 
+            u.id_usuario,                         
+            u.usuario, 
+            u.imagen
+        ORDER BY 
+            average_aciertos_por_partida DESC, 
+            puntaje_total_acumulado DESC 
         LIMIT {$limite}";
 
         return $this->conexion->query($sql) ?? [];

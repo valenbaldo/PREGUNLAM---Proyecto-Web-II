@@ -5,8 +5,22 @@
     .rk-table th, .rk-table td { padding:12px; border-bottom:1px solid #e5e7eb; text-align:left; }
     .rk-table th { background:#f8f9fa; }
     .rk-pos { font-weight:800; width:60px; }
+
     .rk-user { display:flex; align-items:center; gap:10px; }
     .rk-user img { width:36px; height:36px; border-radius:999px; object-fit:cover; border:1px solid #e5e7eb; }
+
+    /* link del usuario */
+    .rk-user-link {
+        display:inline-flex;
+        align-items:center;
+        gap:10px;
+        color:#111;
+        text-decoration:none;
+    }
+    .rk-user-link:hover {
+        text-decoration:underline;
+    }
+
     .rk-empty { padding:18px; text-align:center; color:#666; }
     .btn { display:inline-block; padding:10px 14px; border:none; border-radius:12px; background:#111; color:#fff; text-decoration:none; }
 </style>
@@ -20,7 +34,8 @@
             <tr>
                 <th>#</th>
                 <th>Usuario</th>
-                <th>Average de Aciertos</th> <th>Partidas</th>
+                <th>Average de Aciertos</th>
+                <th>Partidas</th>
             </tr>
             </thead>
             <tbody>
@@ -29,16 +44,20 @@
                     <td class="rk-pos">{{pos}}</td>
                     <td>
                         <div class="rk-user">
+                            <a class="rk-user-link" href="?controller=usuario&method=ver&id={{id_usuario}}">
                             <img src="{{imagen}}" alt="avatar">
-                            <div>{{usuario}}</div>
+                            <span>{{usuario}}</span>
+                            </a>
                         </div>
                     </td>
-                    <td>{{average_formateado}}</td> <td>{{partidas_jugadas}}</td>
+                    <td>{{average_formateado}}</td>
+                    <td>{{partidas_jugadas}}</td>
                 </tr>
             {{/ranking}}
             </tbody>
         </table>
     {{/has_ranking}}
+
     <div style="margin-top:16px">
         <a class="btn" href="/home">⬅ Volver</a>
     </div>
