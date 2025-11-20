@@ -36,9 +36,14 @@
                 {{usuario.email}} · Nac.: {{usuario.fecha_nacimiento}}
             </div>
 
+            {{#es_publico}}
+                <div class="pf-actions">
+                    <a class="btn" href="/usuario/ranking">⬅ Volver</a>
+                </div>
+            {{/es_publico}}
             {{^es_publico}}
                 <div class="pf-actions">
-                    <a class="btn" href="?controller=home&method=base">⬅ Volver</a>
+                    <a class="btn" href="/home">⬅ Volver</a>
                 </div>
             {{/es_publico}}
         </div>
@@ -78,4 +83,5 @@
             <div class="pf-qr-url">{{perfil_url}}</div>
         </div>
     </div>
+
 </div>

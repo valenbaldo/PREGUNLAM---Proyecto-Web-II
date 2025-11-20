@@ -38,7 +38,9 @@ class LoginController
         move_uploaded_file($_FILES["imagen"]["tmp_name"], $rutaImagen);
         $imagen = "/imagenes/" . $_POST['usuario'] . ".png";
         $id_rol_jugador = 1;
-        if ($_POST["contraseña"]===$_POST["confirmarContraseña"]){
+        $existeMail = $this->model->obtenerUsuario($_POST["mail"]);
+        $existeUsuario = $this->model->obtenerUsuario($_POST["usuario"]);
+        if ($_POST["contraseña"]===$_POST["confirmarContraseña"] && !$existeMail){
             $this->model->nuevo($_POST["nombre"], $_POST["apellido"], $_POST["usuario"], $_POST["nacimiento"], $imagen, $_POST["sexo"], $_POST["mail"], $ubicacion["address"]["country"], $ubicacion["address"]["state_district"], $hash, $token, $id_rol_jugador);
 
             $this->confirmacionDeUsuario($_POST["mail"], $token);
@@ -144,9 +146,9 @@ class LoginController
             $id_rol = $_SESSION['id_rol'];
 
             if ($id_rol == 3) {
-                header("Location: /admin/base");
+                header("Location: /admin");
             } elseif ($id_rol == 2) {
-                header("Location: /editor/base");
+                header("Location: /editor");
             } else {
                 header("Location: /home");
             }
@@ -169,10 +171,22 @@ class LoginController
         $this->redirectToIndex();
     }
 
+
+    public function existeMail($mail){
+        $existeMail = $this->model->obtenerUsuario($_POST["mail"]);
+        if ($existeMail) {
+            return true;
+        }else{
+            return false;
+        }
+    }
+
     public function redirectToIndex()
     {
         header("Location: /login");
         exit;
     }
+
+
 
 }
