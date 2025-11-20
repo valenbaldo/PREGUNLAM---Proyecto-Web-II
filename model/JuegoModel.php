@@ -16,7 +16,8 @@ class JuegoModel
         $result = $this->conexion->query("SELECT LAST_INSERT_ID() as id_juego");
         return $result[0]['id_juego'];
     }
-    public function obtenerPreguntaPorNivel($id_usuario, $nivel_usuario, $id_juego = null)
+
+    public function obtenerPreguntaPorNivel($id_usuario, $nivel_usuario, $id_juego = null, $idCategoria = null)
     {
         $id_usuario = intval($id_usuario);
         if (is_string($nivel_usuario)) {
@@ -29,6 +30,9 @@ class JuegoModel
         } else {
             $nivel_usuario = intval($nivel_usuario);
         }
+
+        $idCategoria = $idCategoria !== null ? intval($idCategoria) : null;
+
         $filtro_excluir_historicas = "
         SELECT jp.id_pregunta 
         FROM juego_preguntas jp 
@@ -55,7 +59,13 @@ class JuegoModel
                 SELECT jp2.id_pregunta 
                 FROM juego_preguntas jp2 
                 WHERE jp2.id_juego = $id_juego AND jp2.id_respuesta_elegida IS NULL
-            )
+            )";
+
+        if ($idCategoria !== null) {
+            $sql .= " AND p.id_categoria = $idCategoria ";
+        }
+
+        $sql .= "
 
             HAVING (
                 (dificultad_ratio >= 0.7 AND $nivel_usuario <= 2) OR
@@ -78,8 +88,13 @@ class JuegoModel
                 SELECT jp3.id_pregunta 
                 FROM juego_preguntas jp3 
                 WHERE jp3.id_juego = $id_juego AND jp3.id_respuesta_elegida IS NULL
-            )
-            ORDER BY RAND() LIMIT 1";
+            )";
+
+            if ($idCategoria !== null) {
+                $sql_fallback .= " AND p.id_categoria = $idCategoria ";
+            }
+
+            $sql_fallback .= " ORDER BY RAND() LIMIT 1";
 
             $resultado = $this->conexion->query($sql_fallback);
 
@@ -109,7 +124,7 @@ class JuegoModel
     }
 
 
-    public function girarRuleta(int $id_juego, int $id_usuario, string $nivel_usuario = 'facil')
+    public function girarRuleta(int $id_juego, int $id_usuario, string $nivel_usuario = 'facil', $categoriaRuleta = null)
     {
         $id_juego = intval($id_juego);
         $id_usuario = intval($id_usuario);
@@ -122,7 +137,23 @@ class JuegoModel
             return ['error' => 'No autorizado para jugar esta partida'];
         }
 
-        $pregunta = $this->obtenerPreguntaPorNivel($id_usuario, $nivel_usuario, $id_juego);
+        // Mapeo de índice de ruleta (0-4) a id_categoria real (1-5)
+        $catId = null;
+        if ($categoriaRuleta !== null) {
+            $categoriaRuleta = intval($categoriaRuleta);
+            $map = [
+                0 => 1, // Ingeniería e Investigaciones Tecnológicas
+                1 => 2, // Humanidades y Ciencias Sociales
+                2 => 3, // Ciencias Económicas
+                3 => 4, // Derecho y Ciencia Política
+                4 => 5  // Ciencias de la Salud
+            ];
+            if (array_key_exists($categoriaRuleta, $map)) {
+                $catId = $map[$categoriaRuleta];
+            }
+        }
+
+        $pregunta = $this->obtenerPreguntaPorNivel($id_usuario, $nivel_usuario, $id_juego, $catId);
 
         if (!$pregunta) {
             return ['error' => '🎉 ¡Felicitaciones! Has visto todas las preguntas disponibles para tu nivel.'];
