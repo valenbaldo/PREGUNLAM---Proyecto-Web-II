@@ -181,6 +181,7 @@ class JuegoController
 
         $user = $_SESSION['id_usuario'] ?? null;
         $idJuego = intval($_POST['id_juego'] ?? 0);
+        $categoriaRuleta = isset($_POST['categoria_ruleta']) ? intval($_POST['categoria_ruleta']) : null;
 
         if (!$user || !$idJuego) {
             http_response_code(401);
@@ -189,7 +190,7 @@ class JuegoController
         }
 
         $infoNivel = $this->usuarioModel->obtenerInfoCompleteNivel($user);
-        $data = $this->juegoModel->girarRuleta($idJuego, $user, $infoNivel['nivel']);
+        $data = $this->juegoModel->girarRuleta($idJuego, $user, $infoNivel['nivel'], $categoriaRuleta);
         if (isset($data['error'])) {
             echo json_encode(['success'=>false,'error'=>$data['error']]);
             exit;
@@ -251,7 +252,7 @@ class JuegoController
                 $cambioNivel = $this->determinarCambioNivel($nivelAnterior, $nivelNuevo);
 
                 $mensajeFinal = $esTimeout ? 'Se agotó el tiempo de respuesta (10 segundos)' : 'Respuesta incorrecta';
-                
+
                 $_SESSION['nivel_anterior'] = $nivelAnterior;
                 $_SESSION['nivel_nuevo'] = $nivelNuevo;
                 $_SESSION['cambio_nivel'] = $cambioNivel;
