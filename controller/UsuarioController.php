@@ -1,3 +1,4 @@
+
 <?php
 
 class UsuarioController
@@ -70,7 +71,7 @@ class UsuarioController
 
         $scheme = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') ? 'https' : 'http';
         $host   = $_SERVER['HTTP_HOST'] ?? 'localhost:8080';
-        $perfilUrl = $scheme . '://' . $host . '/home?controller=usuario&method=ver&id=' . $idUsuario;
+        $perfilUrl = $scheme . '://' . $host . '/usuario/ver/id=' . $idUsuario;
 
         $qrSrc = 'https://api.qrserver.com/v1/create-qr-code/?size=200x200&data='
             . urlencode($perfilUrl);

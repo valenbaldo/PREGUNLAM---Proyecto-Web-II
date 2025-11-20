@@ -21,26 +21,40 @@ document.addEventListener('DOMContentLoaded', function() {
     const form = document.getElementById('registroForm');
     const pass1 = document.getElementById('contraseña');
     const pass2 = document.getElementById('confirmarContraseña');
+    const mailInput = document.querySelector('input[name="mail"]')
     const mensajeError = document.getElementById('mensajeError');
 
     // 2. Escucha el evento 'submit' del formulario
     form.addEventListener('submit', function(event) {
 
-        // 3. Compara los valores de las contraseñas
+        event.preventDefault();
+        mensajeError.textContent = '';
+
+
         if (pass1.value !== pass2.value) {
 
-            // 4. Si no coinciden:
-            // Muestra el mensaje de error
             mensajeError.textContent = 'Las contraseñas no coinciden.';
-
-            // ¡IMPORTANTE! Evita que el formulario se envíe
-            event.preventDefault();
-
-        } else {
-            // Si sí coinciden, limpia cualquier mensaje de error anterior
-            mensajeError.textContent = '';
+            return;
         }
+        verificarMailExistente(mailInput.value).then(function(emailExiste) {
+            if (emailExiste){
+                mensajeError.textContent = 'El mail ya está registrado.';
+                return;
+            }
+            form.submit();
+        });
     });
+
+    function validarMailExistente(email, callback) {
+        fetch('/login/existeMail', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ email: email })
+        })
+            .then(response => responde.json())
+    }
 
     // Guardar inicialización del mapa si existe el contenedor
     const mapEl = document.getElementById('map'); // usa el id real que tengas
