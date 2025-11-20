@@ -252,20 +252,19 @@
     <div class="card">
         <h3 style="margin-bottom: 16px; color: #1e293b;">Lista de Categorías</h3>
 
-        {{#categorias}}
+
         <table class="cat-table">
             <thead>
                 <tr>
-                    <th>ID</th>
                     <th>Nombre de Categoría</th>
                     <th>Total Preguntas</th>
                     <th>Acciones</th>
                 </tr>
             </thead>
             <tbody>
+                {{#categorias}}
                 {{#.}}
                 <tr>
-                    <td>{{id_categoria}}</td>
                     <td class="cat-name">{{nombre}}</td>
                     <td class="cat-count">{{total_preguntas}} preguntas</td>
                     <td>
@@ -287,9 +286,10 @@
                     </td>
                 </tr>
                 {{/.}}
+                {{/categorias}}
             </tbody>
         </table>
-        {{/categorias}}
+
 
         {{^categorias}}
         <div class="empty-state">
