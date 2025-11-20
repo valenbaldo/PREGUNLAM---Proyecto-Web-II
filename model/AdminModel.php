@@ -185,7 +185,7 @@ class AdminModel
 
     public function partidasPorMesSinAño($categoria = null)
     {
-        // Consulta simplificada sin JOINs innecesarios para el filtro básico
+
         $sql = "
         SELECT 
             MONTH(iniciado_en) as mes,
@@ -198,7 +198,6 @@ class AdminModel
 
         $resultado = $this->conexion->query($sql) ?? [];
 
-        // Normalizar para mostrar todos los 12 meses
         $meses = [
             1 => 'Enero', 2 => 'Febrero', 3 => 'Marzo', 4 => 'Abril',
             5 => 'Mayo', 6 => 'Junio', 7 => 'Julio', 8 => 'Agosto',
@@ -238,7 +237,6 @@ class AdminModel
 
         $resultado = $this->conexion->query($sql) ?? [];
 
-        // Normalizar para mostrar todos los días del mes
         $diasEnMes = cal_days_in_month(CAL_GREGORIAN, $month, $year);
         
         $cantidadPorDia = [];

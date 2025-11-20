@@ -30,21 +30,20 @@ class AdminController
             'reportes_pendientes'   => $this->reporteModel->contarReportesPendientes(),
         ];
 
-        // Solo aplicar filtros si vienen explícitamente de la URL
+   
         if (isset($_GET['filtro']) || isset($_GET['month'])) {
             $filtro = $_GET['filtro'] ?? 'mes';
             $month = $_GET['month'] ?? date('m');
             $year = date('Y');
             $categoria = $_GET['categoria'] ?? null;
         } else {
-            // F5 o entrada directa - valores por defecto
+        
             $filtro = 'mes';
             $month = date('m');
             $year = date('Y');
             $categoria = null;
         }
 
-        // Determinar qué método usar según el filtro
         if ($filtro === 'dia') {
             $partidasData = $this->adminModel->partidasPorDia($month, $year, $categoria);
         } else {

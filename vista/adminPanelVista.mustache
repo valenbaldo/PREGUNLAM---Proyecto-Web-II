@@ -262,30 +262,35 @@ document.addEventListener('DOMContentLoaded', function() {
         const filtroActualPagina = '{{filtroSeleccionado}}' || 'mes';
         let labels, titulo;
         if (filtroActualPagina === 'dia') {
-            labels = partidasData.map(item => item.nombre_dia || `Día ${item.dia}`);
+            labels = partidasData.map(item => item.dia);
             titulo = 'Partidas por Día';
         } else {
-            labels = partidasData.map(item => item.nombre_mes || `Mes ${item.mes}`);
+            labels = partidasData.map(item => item.nombre_mes);
             titulo = 'Partidas por Mes';
         }
-        new Chart(ctxPartidas, {
-            type: 'bar',
+        const maxValue = Math.max(...partidasData.map(item => item.cantidad));
+        const chartType = filtroActualPagina === 'dia' ? 'line' : 'bar';
+        const aspectRatio = filtroActualPagina === 'dia' ? 1.5 : 2;
+        const maxY = filtroActualPagina === 'dia' ? Math.max(10, maxValue + 2) : 30;
+        
+        const chartConfig = {
+            type: chartType,
             data: {
                 labels: labels,
                 datasets: [{
                     label: titulo,
                     data: partidasData.map(item => item.cantidad),
                     borderColor: '#0f9d79',
-                    backgroundColor: 'rgba(15, 157, 121, 0.1)',
-                    borderWidth: 3,
+                    backgroundColor: filtroActualPagina === 'dia' ? 'rgba(15, 157, 121, 0.1)' : 'rgba(15, 157, 121, 0.1)',
+                    borderWidth: filtroActualPagina === 'dia' ? 4 : 3,
                     fill: true,
-                    tension: 0.4
+                    tension: filtroActualPagina === 'dia' ? 0.4 : 0.4
                 }]
             },
             options: {
                 responsive: true,
                 maintainAspectRatio: true,
-                aspectRatio: 2,
+                aspectRatio: aspectRatio,
                 plugins: {
                     legend: { display: false }
                 },
@@ -293,18 +298,39 @@ document.addEventListener('DOMContentLoaded', function() {
                     y: { 
                         beginAtZero: true,
                         min: 0,
-                        max: 30,
+                        max: maxY,
                         ticks: {
-                            stepSize: 2
+                            stepSize: filtroActualPagina === 'dia' ? 1 : 2
                         },
                         grid: { color: '#f3f4f6' }
                     },
                     x: {
-                        grid: { display: false }
+                        grid: { display: filtroActualPagina === 'dia' ? true : false },
+                        ticks: {
+                            maxRotation: filtroActualPagina === 'dia' ? 0 : 45,
+                            minRotation: filtroActualPagina === 'dia' ? 0 : 45,
+                            autoSkip: false,
+                            maxTicksLimit: false,
+                            font: {
+                                size: filtroActualPagina === 'dia' ? 10 : 12
+                            }
+                        }
                     }
                 }
             }
-        });
+        };
+        
+        if (filtroActualPagina === 'dia') {
+            chartConfig.data.datasets[0].pointBackgroundColor = '#0f9d79';
+            chartConfig.data.datasets[0].pointBorderColor = '#fff';
+            chartConfig.data.datasets[0].pointBorderWidth = 2;
+            chartConfig.data.datasets[0].pointRadius = 5;
+            chartConfig.data.datasets[0].pointHoverRadius = 7;
+        } else {
+            chartConfig.data.datasets[0].barThickness = 'flex';
+        }
+        
+        new Chart(ctxPartidas, chartConfig);
     }
 
     const preguntasCategoriaData = {{{preguntasCategoriaJson}}};
