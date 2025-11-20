@@ -24,8 +24,6 @@ class EditorController
         if(!empty($_SESSION['msg'])){
             $data['msg'] = $_SESSION['msg'];
             unset($_SESSION['msg']);
-        } else {
-            $data['msg'] = null;
         }
         if (!empty($_SESSION['error'])) {
             $data['error'] = $_SESSION['error'];
@@ -190,6 +188,140 @@ class EditorController
 
         $_SESSION['msg'] = $msg;
         header("Location: /editor/gestionarReportes");
+        exit;
+    }
+
+    public function gestionarCategorias()
+    {
+        $this->tienePermisoEditor();
+
+        $data = [
+            'categorias' => $this->model->obtenerTodasCategorias(),
+            'nombreUsuario' => $_SESSION['nombreUsuario'] ?? 'Editor'
+        ];
+
+        if (!empty($_SESSION['msg'])) {
+            $data['msg'] = $_SESSION['msg'];
+            unset($_SESSION['msg']);
+        }
+        if (!empty($_SESSION['error'])) {
+            $data['error'] = $_SESSION['error'];
+            unset($_SESSION['error']);
+        }
+
+        $this->renderer->render("editorCategorias", $data);
+    }
+
+    public function crearCategoria()
+    {
+        $this->tienePermisoEditor();
+        $this->renderer->render("editorCategoriaForm", [
+            'accion' => 'crear',
+            'titulo' => 'Crear Nueva Categoría',
+            'nombreUsuario' => $_SESSION['nombreUsuario'] ?? 'Editor'
+        ]);
+    }
+
+    public function guardarCategoria()
+    {
+        $this->tienePermisoEditor();
+
+        $nombre = trim($_POST['nombre'] ?? '');
+
+        if (empty($nombre)) {
+            $_SESSION['error'] = "El nombre de la categoría es obligatorio.";
+            header("Location: /editor/crearCategoria");
+            exit;
+        }
+
+        $resultado = $this->model->crearCategoria($nombre);
+
+        if ($resultado) {
+            $_SESSION['msg'] = "Categoría '$nombre' creada exitosamente.";
+        } else {
+            $_SESSION['error'] = "Error al crear la categoría. Puede que ya exista una categoría con ese nombre.";
+        }
+
+        header("Location: /editor/gestionarCategorias");
+        exit;
+    }
+
+    public function editarCategoria()
+    {
+        $this->tienePermisoEditor();
+
+        $id = intval($_GET['id'] ?? 0);
+
+        if ($id <= 0) {
+            $_SESSION['error'] = "ID de categoría inválido.";
+            header("Location: /editor/gestionarCategorias");
+            exit;
+        }
+
+        $categoria = $this->model->obtenerCategoriaPorId($id);
+
+        if (!$categoria) {
+            $_SESSION['error'] = "Categoría no encontrada.";
+            header("Location: /editor/gestionarCategorias");
+            exit;
+        }
+
+        $this->renderer->render("editorCategoriaForm", [
+            'accion' => 'editar',
+            'titulo' => 'Editar Categoría',
+            'categoria' => $categoria,
+            'nombreUsuario' => $_SESSION['nombreUsuario'] ?? 'Editor'
+        ]);
+    }
+
+    public function actualizarCategoria()
+    {
+        $this->tienePermisoEditor();
+
+        $id = intval($_POST['id_categoria'] ?? 0);
+        $nombre = trim($_POST['nombre'] ?? '');
+
+        if ($id <= 0 || empty($nombre)) {
+            $_SESSION['error'] = "Datos inválidos para actualizar la categoría.";
+            header("Location: /editor/gestionarCategorias");
+            exit;
+        }
+
+        $resultado = $this->model->actualizarCategoria($id, $nombre);
+
+        if ($resultado) {
+            $_SESSION['msg'] = "Categoría actualizada exitosamente.";
+        } else {
+            $_SESSION['error'] = "Error al actualizar la categoría. Puede que ya exista una categoría con ese nombre.";
+        }
+
+        header("Location: /editor/gestionarCategorias");
+        exit;
+    }
+
+    public function eliminarCategoria()
+    {
+        $this->tienePermisoEditor();
+
+        $id = intval($_GET['id'] ?? 0);
+
+        if ($id <= 0) {
+            $_SESSION['error'] = "ID de categoría inválido.";
+            header("Location: /editor/gestionarCategorias");
+            exit;
+        }
+
+        $resultado = $this->model->eliminarCategoria($id);
+
+        if ($resultado === true) {
+            $_SESSION['msg'] = "Categoría eliminada exitosamente.";
+        } else if ($resultado === 'restriccion') {
+            $_SESSION['error'] = "No se puede eliminar la categoría porque tiene preguntas asociadas.";
+        } else {
+            $_SESSION['error'] = "Error al eliminar la categoría.";
+        }
+
+        header("Location: /editor/gestionarCategorias");
         exit;
     }
 

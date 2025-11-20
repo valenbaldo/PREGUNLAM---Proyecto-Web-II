@@ -185,6 +185,70 @@ class EditorModel
         catch(Exception $e){
             return null;
         }
+    }
 
+    public function obtenerTodasCategorias()
+    {
+        $sql = "SELECT c.id_categoria, c.nombre, COUNT(p.id_pregunta) as total_preguntas 
+                FROM categorias c 
+                LEFT JOIN preguntas p ON c.id_categoria = p.id_categoria 
+                GROUP BY c.id_categoria, c.nombre 
+                ORDER BY c.nombre ASC";
+        return $this->conexion->query($sql) ?? [];
+    }
+
+    public function obtenerCategoriaPorId($id_categoria)
+    {
+        $id = intval($id_categoria);
+        $sql = "SELECT id_categoria, nombre FROM categorias WHERE id_categoria = $id LIMIT 1";
+        $resultado = $this->conexion->query($sql);
+        return $resultado ? $resultado[0] : null;
+    }
+
+    public function crearCategoria($nombre)
+    {
+        $nombre_escapado = addslashes($nombre);
+        
+        try {
+            $sql = "INSERT INTO categorias (nombre) VALUES ('$nombre_escapado')";
+            $this->conexion->execute($sql);
+            return true;
+        } catch (Exception $e) {
+            return false;
+        }
+    }
+
+    public function actualizarCategoria($id_categoria, $nombre)
+    {
+        $id = intval($id_categoria);
+        $nombre_escapado = addslashes($nombre);
+        
+        try {
+            $sql = "UPDATE categorias SET nombre = '$nombre_escapado' WHERE id_categoria = $id";
+            $this->conexion->execute($sql);
+            return true;
+        } catch (Exception $e) {
+            return false;
+        }
+    }
+
+    public function eliminarCategoria($id_categoria)
+    {
+        $id = intval($id_categoria);
+        
+        try {
+            $sql_check = "SELECT COUNT(*) as total FROM preguntas WHERE id_categoria = $id";
+            $resultado = $this->conexion->query($sql_check);
+            
+            if ($resultado && $resultado[0]['total'] > 0) {
+                return 'restriccion';
+            }
+            
+            $sql = "DELETE FROM categorias WHERE id_categoria = $id";
+            $this->conexion->execute($sql);
+            return true;
+        } catch (Exception $e) {
+            return false;
+        }
     }
 }
