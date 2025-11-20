@@ -67,6 +67,7 @@ class JuegoController
             "nivel_info"    => $infoNivel,
             "puntaje"       => $puntajeActual,
             "respondidas"   => $respondidas,
+            "id_rol"        => $_SESSION['id_rol'] ?? 1,
         ];
         $this->renderer->render("juego", $data);
     }
@@ -129,7 +130,8 @@ class JuegoController
             "nivel_anterior" => $_SESSION['nivel_anterior'] ?? null,
             "nivel_nuevo" => $_SESSION['nivel_nuevo'] ?? null,
             "cambio_nivel" => $_SESSION['cambio_nivel'] ?? null,
-            "mensaje_cambio_nivel" => $mensajeCambioNivel
+            "mensaje_cambio_nivel" => $mensajeCambioNivel,
+            "id_rol" => $_SESSION['id_rol'] ?? 1
         ];
         $this->renderer->render("resultadoJuego", $data);
     }

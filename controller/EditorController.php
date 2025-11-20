@@ -18,7 +18,8 @@ class EditorController
         $data = [
             'nombreUsuario' => $_SESSION['nombreUsuario'] ?? 'Editor',
             'preguntas' => $this->model->obtenerTodasLasPreguntas(),
-            'reportes_pendientes' => $this->model->contarReportesPendientes()
+            'reportes_pendientes' => $this->model->contarReportesPendientes(),
+            'id_rol' => $_SESSION['id_rol'] ?? 2
         ];
 
         if(!empty($_SESSION['msg'])){
@@ -46,7 +47,11 @@ class EditorController
 
         $categorias = $this->model->obtenerCategorias();
 
-        $this->renderer->render("editorCrear", ['categorias' => $categorias]);
+        $this->renderer->render("editorCrear", [
+            'categorias' => $categorias,
+            'id_rol' => $_SESSION['id_rol'] ?? 2,
+            'nombreUsuario' => $_SESSION['nombreUsuario'] ?? 'Editor'
+        ]);
     }
     public function guardarPregunta()
     {
@@ -57,6 +62,8 @@ class EditorController
 
         if (empty($datos['pregunta']) || empty($datos['respuesta_correcta'])) {
             $datos['error'] = "Todos los campos son obligatorios.";
+            $datos['id_rol'] = $_SESSION['id_rol'] ?? 2;
+            $datos['nombreUsuario'] = $_SESSION['nombreUsuario'] ?? 'Editor';
             $this->renderer->render("editorCrear", $datos);
             return;
         }
@@ -68,6 +75,8 @@ class EditorController
             header("Location: /editor/base");
         } else {
             $datos['error'] = "Error al guardar la pregunta en la base de datos.";
+            $datos['id_rol'] = $_SESSION['id_rol'] ?? 2;
+            $datos['nombreUsuario'] = $_SESSION['nombreUsuario'] ?? 'Editor';
             $this->renderer->render("editorCrear", $datos);
         }
         exit;
@@ -91,6 +100,8 @@ class EditorController
             exit;
         }
         $pregunta['categorias'] = $this->model->obtenerCategorias();
+        $pregunta['id_rol'] = $_SESSION['id_rol'] ?? 2;
+        $pregunta['nombreUsuario'] = $_SESSION['nombreUsuario'] ?? 'Editor';
 
         $this->renderer->render("editorEditar", $pregunta);
     }
@@ -143,7 +154,8 @@ class EditorController
         $data = [
             'reportes' => $reportes,
             'nombreUsuario' => $_SESSION['nombreUsuario'] ?? 'Editor',
-            'mensaje' => $_GET['msg'] ?? null
+            'mensaje' => $_GET['msg'] ?? null,
+            'id_rol' => $_SESSION['id_rol'] ?? 2
         ];
 
         $this->renderer->render("editorReportes", $data);
@@ -197,7 +209,8 @@ class EditorController
 
         $data = [
             'categorias' => $this->model->obtenerTodasCategorias(),
-            'nombreUsuario' => $_SESSION['nombreUsuario'] ?? 'Editor'
+            'nombreUsuario' => $_SESSION['nombreUsuario'] ?? 'Editor',
+            'id_rol' => $_SESSION['id_rol'] ?? 2
         ];
 
         if (!empty($_SESSION['msg'])) {
@@ -218,7 +231,8 @@ class EditorController
         $this->renderer->render("editorCategoriaForm", [
             'accion' => 'crear',
             'titulo' => 'Crear Nueva Categoría',
-            'nombreUsuario' => $_SESSION['nombreUsuario'] ?? 'Editor'
+            'nombreUsuario' => $_SESSION['nombreUsuario'] ?? 'Editor',
+            'id_rol' => $_SESSION['id_rol'] ?? 2
         ]);
     }
 
@@ -270,7 +284,8 @@ class EditorController
             'accion' => 'editar',
             'titulo' => 'Editar Categoría',
             'categoria' => $categoria,
-            'nombreUsuario' => $_SESSION['nombreUsuario'] ?? 'Editor'
+            'nombreUsuario' => $_SESSION['nombreUsuario'] ?? 'Editor',
+            'id_rol' => $_SESSION['id_rol'] ?? 2
         ]);
     }
 

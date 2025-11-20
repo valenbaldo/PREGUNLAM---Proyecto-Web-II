@@ -58,6 +58,7 @@ class AdminController
 
         $data = [
             'nombreUsuario'          => $_SESSION['nombreUsuario'] ?? 'Administrador',
+            'id_rol'                 => $_SESSION['id_rol'] ?? 3,
             'stats'                  => $stats,
             'aciertos'               => $this->adminModel->aciertoPorUsuario(),
             'porPais'                => $this->adminModel->usuariosPorPais(),
@@ -143,7 +144,9 @@ class AdminController
             'usuarios' => $usuarios,
             'roles' => $rolesDisponibles,
             'msg' => $_SESSION['msg'] ?? null,
-            'error_flag' => $_SESSION['error_flag'] ?? false
+            'error_flag' => $_SESSION['error_flag'] ?? false,
+            'nombreUsuario' => $_SESSION['nombreUsuario'] ?? 'Administrador',
+            'id_rol' => $_SESSION['id_rol'] ?? 3
         ];
 
         if (isset($_SESSION['msg'])) {
@@ -182,6 +185,7 @@ class AdminController
         $data = [
             'reportes' => $reportes,
             'nombreUsuario' => $_SESSION['nombreUsuario'] ?? 'Administrador',
+            'id_rol' => $_SESSION['id_rol'] ?? 3
         ];
 
         $this->renderer->render("adminReportes", $data);
