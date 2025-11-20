@@ -183,6 +183,80 @@ class AdminModel
         return $datos;
     }
 
+    public function partidasPorMesSinAño($categoria = null)
+    {
+        // Consulta simplificada sin JOINs innecesarios para el filtro básico
+        $sql = "
+        SELECT 
+            MONTH(iniciado_en) as mes,
+            MONTHNAME(iniciado_en) as nombre_mes,
+            COUNT(*) as cantidad
+        FROM juegos
+        GROUP BY MONTH(iniciado_en), MONTHNAME(iniciado_en)
+        ORDER BY MONTH(iniciado_en)
+        ";
+
+        $resultado = $this->conexion->query($sql) ?? [];
+
+        // Normalizar para mostrar todos los 12 meses
+        $meses = [
+            1 => 'Enero', 2 => 'Febrero', 3 => 'Marzo', 4 => 'Abril',
+            5 => 'Mayo', 6 => 'Junio', 7 => 'Julio', 8 => 'Agosto',
+            9 => 'Septiembre', 10 => 'Octubre', 11 => 'Noviembre', 12 => 'Diciembre'
+        ];
+        
+        $cantidadPorMes = [];
+        foreach ($resultado as $fila) {
+            $cantidadPorMes[$fila['mes']] = $fila['cantidad'];
+        }
+        
+        $datos = [];
+        for ($i = 1; $i <= 12; $i++) {
+            $datos[] = [
+                'mes' => $i,
+                'nombre_mes' => $meses[$i],
+                'cantidad' => $cantidadPorMes[$i] ?? 0
+            ];
+        }
+        return $datos;
+    }
+
+    public function partidasPorDia($month = null, $year = null, $categoria = null)
+    {
+        $month = $month ?? date('m');
+        $year = $year ?? date('Y');
+        
+        $sql = "
+        SELECT 
+            DAY(iniciado_en) as dia,
+            COUNT(*) as cantidad
+        FROM juegos
+        WHERE MONTH(iniciado_en) = $month AND YEAR(iniciado_en) = $year
+        GROUP BY DAY(iniciado_en)
+        ORDER BY DAY(iniciado_en)
+        ";
+
+        $resultado = $this->conexion->query($sql) ?? [];
+
+        // Normalizar para mostrar todos los días del mes
+        $diasEnMes = cal_days_in_month(CAL_GREGORIAN, $month, $year);
+        
+        $cantidadPorDia = [];
+        foreach ($resultado as $fila) {
+            $cantidadPorDia[$fila['dia']] = $fila['cantidad'];
+        }
+        
+        $datos = [];
+        for ($i = 1; $i <= $diasEnMes; $i++) {
+            $datos[] = [
+                'dia' => $i,
+                'nombre_dia' => "Día $i",
+                'cantidad' => $cantidadPorDia[$i] ?? 0
+            ];
+        }
+        return $datos;
+    }
+
     public function preguntasPorCategoria($desde = null, $hasta = null)
     {
         $whereClause = "";

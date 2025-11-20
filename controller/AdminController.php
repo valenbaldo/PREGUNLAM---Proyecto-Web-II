@@ -30,10 +30,26 @@ class AdminController
             'reportes_pendientes'   => $this->reporteModel->contarReportesPendientes(),
         ];
 
-        $year = $_GET['year'] ?? date('Y');
-        $categoria = $_GET['categoria'] ?? null;
+        // Solo aplicar filtros si vienen explícitamente de la URL
+        if (isset($_GET['filtro']) || isset($_GET['month'])) {
+            $filtro = $_GET['filtro'] ?? 'mes';
+            $month = $_GET['month'] ?? date('m');
+            $year = date('Y');
+            $categoria = $_GET['categoria'] ?? null;
+        } else {
+            // F5 o entrada directa - valores por defecto
+            $filtro = 'mes';
+            $month = date('m');
+            $year = date('Y');
+            $categoria = null;
+        }
 
-        $partidasPorMes = $this->adminModel->partidasPorMes($year, $categoria);
+        // Determinar qué método usar según el filtro
+        if ($filtro === 'dia') {
+            $partidasData = $this->adminModel->partidasPorDia($month, $year, $categoria);
+        } else {
+            $partidasData = $this->adminModel->partidasPorMesSinAño($categoria);
+        }
         $preguntasPorCategoria = $this->adminModel->preguntasPorCategoria($desde, $hasta);
         $categorias = $this->adminModel->obtenerCategorias();
 
@@ -48,15 +64,14 @@ class AdminController
             'porPais'                => $this->adminModel->usuariosPorPais(),
             'porSexo'                => $this->adminModel->usuariosPorSexo(),
             'porEdad'                => $this->adminModel->usuariosPorGrupoEdad(),
-            'partidasPorMes'         => $partidasPorMes,
+            'partidasData'           => $partidasData,
             'preguntasPorCategoria'  => $preguntasPorCategoria,
             'rendimientoPorCategoria'=> $this->adminModel->rendimientoPorCategoria(),
             'categorias'             => $categorias,
-            'yearSeleccionado'       => $year,
+            'filtroSeleccionado'     => $filtro,
+            'monthSeleccionado'      => $month,
             'categoriaSeleccionada'  => $categoria,
-            'year2024Selected'       => ($year == '2024'),
-            'year2025Selected'       => ($year == '2025'),
-            'partidasPorMesJson'     => json_encode($partidasPorMes),
+            'partidasDataJson'       => json_encode($partidasData),
             'preguntasCategoriaJson' => json_encode($preguntasPorCategoria)
         ];
 

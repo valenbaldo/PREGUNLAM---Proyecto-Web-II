@@ -134,14 +134,31 @@
     <div class="main-content">
         <div class="card chart-item">
             <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
-                <h3 style="margin:0; font-size:16px;">📊 Partidas por Mes</h3>
-                <select id="yearSelector" class="selector" onchange="aplicarFiltroPartidas()" style="padding:4px 6px; font-size:11px;">
-                    <option value="2024" {{#year2024Selected}}selected{{/year2024Selected}}>2024</option>
-                    <option value="2025" {{#year2025Selected}}selected{{/year2025Selected}}>2025</option>
-                </select>
+                <h3 style="margin:0; font-size:16px;">📊 Partidas</h3>
+                <div style="display:flex; gap:8px; align-items:center;">
+                    <select id="filtroSelector" onchange="cambiarFiltro()" style="padding:4px 6px; font-size:11px; border:1px solid #ddd; border-radius:3px;">
+                        <option value="mes">Por Mes</option>
+                        <option value="dia">Por Día</option>
+                    </select>
+                    <select id="monthSelector" onchange="aplicarFiltro()" style="padding:4px 6px; font-size:11px; border:1px solid #ddd; border-radius:3px; display:none;">
+                        <option value="1">Enero</option>
+                        <option value="2">Febrero</option>
+                        <option value="3">Marzo</option>
+                        <option value="4">Abril</option>
+                        <option value="5">Mayo</option>
+                        <option value="6">Junio</option>
+                        <option value="7">Julio</option>
+                        <option value="8">Agosto</option>
+                        <option value="9">Septiembre</option>
+                        <option value="10">Octubre</option>
+                        <option value="11">Noviembre</option>
+                        <option value="12">Diciembre</option>
+                    </select>
+                </div>
             </div>
+            
             <div class="chart-container">
-                <canvas id="partidasMesChart"></canvas>
+                <canvas id="partidasChart"></canvas>
             </div>
         </div>
 
@@ -187,27 +204,77 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 <script>
 
-function aplicarFiltroPartidas() {
-    const year = document.getElementById('yearSelector').value;
+function cambiarFiltro() {
+    const filtro = document.getElementById('filtroSelector').value;
+    const monthSelector = document.getElementById('monthSelector');
+    
+    if (filtro === 'dia') {
+        monthSelector.style.display = 'block';
+    } else {
+        monthSelector.style.display = 'none';
+    }
+    
+    aplicarFiltro();
+}
+
+function aplicarFiltro() {
+    sessionStorage.setItem('navegacionFiltro', 'true');
+    
+    const filtro = document.getElementById('filtroSelector').value;
+    const month = document.getElementById('monthSelector').value;
     
     let url = '?controller=admin&method=base';
-    if (year) url += `&year=${year}`;
+    if (filtro) url += `&filtro=${filtro}`;
+    if (month && filtro === 'dia') url += `&month=${month}`;
     
     window.location.href = url;
 }
 
 document.addEventListener('DOMContentLoaded', function() {
+    const esNavegacionFiltro = sessionStorage.getItem('navegacionFiltro');
+    
+    if (!esNavegacionFiltro) {
+        document.getElementById('filtroSelector').value = 'mes';
+        document.getElementById('monthSelector').value = new Date().getMonth() + 1;
+        document.getElementById('monthSelector').style.display = 'none';
+        const urlParams = new URLSearchParams(window.location.search);
+        if (urlParams.has('filtro') || urlParams.has('month')) {
+            window.location.href = '?controller=admin&method=base';
+            return;
+        }
+    } else {
+        const filtroActual = '{{filtroSeleccionado}}' || 'mes';
+        const monthActual = '{{monthSeleccionado}}' || new Date().getMonth() + 1;
+        
+        document.getElementById('filtroSelector').value = filtroActual;
+        document.getElementById('monthSelector').value = monthActual;
+        
+        if (filtroActual === 'dia') {
+            document.getElementById('monthSelector').style.display = 'block';
+        }
+        
+        sessionStorage.removeItem('navegacionFiltro');
+    }
 
-    const partidasMesData = {{{partidasPorMesJson}}};
-    if (partidasMesData && partidasMesData.length > 0) {
-        const ctxPartidas = document.getElementById('partidasMesChart').getContext('2d');
+    const partidasData = {{{partidasDataJson}}};
+    if (partidasData && partidasData.length > 0) {
+        const ctxPartidas = document.getElementById('partidasChart').getContext('2d');
+        const filtroActualPagina = '{{filtroSeleccionado}}' || 'mes';
+        let labels, titulo;
+        if (filtroActualPagina === 'dia') {
+            labels = partidasData.map(item => item.nombre_dia || `Día ${item.dia}`);
+            titulo = 'Partidas por Día';
+        } else {
+            labels = partidasData.map(item => item.nombre_mes || `Mes ${item.mes}`);
+            titulo = 'Partidas por Mes';
+        }
         new Chart(ctxPartidas, {
             type: 'bar',
             data: {
-                labels: partidasMesData.map(item => item.nombre_mes || `Mes ${item.mes}`),
+                labels: labels,
                 datasets: [{
-                    label: 'Partidas Jugadas',
-                    data: partidasMesData.map(item => item.cantidad),
+                    label: titulo,
+                    data: partidasData.map(item => item.cantidad),
                     borderColor: '#0f9d79',
                     backgroundColor: 'rgba(15, 157, 121, 0.1)',
                     borderWidth: 3,
