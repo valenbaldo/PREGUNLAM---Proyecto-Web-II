@@ -67,7 +67,7 @@ class ConfigFactory
 
         $this->objetos["PerfilController"] = new PerfilController(new PerfilModel($this->conexion), $this->renderer);
 
-        $this->objetos["EditorController"] = new EditorController(new EditorModel($this->conexion), $this->renderer);
+        $this->objetos["EditorController"] = new EditorController(new EditorModel($this->conexion), new ReporteModel($this->conexion), $this->renderer);
 
         $this->objetos["AdminController"] = new AdminController(new AdminModel($this->conexion), new ReporteModel($this->conexion), $this->renderer);
 

@@ -3,10 +3,13 @@
 class EditorController
 {
     private $model;
+
+    private $reporteModel;
     private $renderer;
 
-    public function __construct($model, $renderer)
+    public function __construct($model, $reporteModel, $renderer)
     {
+        $this->reporteModel = $reporteModel;
         $this->model = $model;
         $this->renderer = $renderer;
     }
@@ -149,7 +152,7 @@ class EditorController
     {
         $this->tienePermisoEditor();
 
-        $reportes = $this->model->obtenerReportesPendientes();
+        $reportes = $this->reporteModel->obtenerReportesPendientes();
 
         $data = [
             'reportes' => $reportes,
@@ -166,6 +169,7 @@ class EditorController
         $this->tienePermisoEditor();
 
         $id_reporte = $_POST['id_reporte'] ?? 0;
+        $id_pregunta = $_POST['id_pregunta'] ?? 0;
         $accion = $_POST['accion'] ?? '';
         $nuevo_estado = '';
 
@@ -179,6 +183,7 @@ class EditorController
         switch ($accion) {
             case 'validar':
                 $nuevo_estado = 'revisado';
+                $this->model->eliminar($id_pregunta);
                 break;
             case 'rechazar':
                 $nuevo_estado = 'rechazado';
