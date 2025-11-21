@@ -34,7 +34,7 @@ class UsuarioController
         $host   = $_SERVER['HTTP_HOST'] ?? 'localhost:8080';
 
 
-        $perfilUrl = $scheme . '://' . $host . '/home?controller=usuario&method=ver&id=' . $idUsuario;
+        $perfilUrl = $scheme . '://' . $host . '/usuario/ver/id=' . $idUsuario;
 
 
         $qrSrc = 'https://api.qrserver.com/v1/create-qr-code/?size=200x200&data='
@@ -134,6 +134,14 @@ class UsuarioController
     {
         if (!isset($_SESSION['id_usuario'])) {
             header("Location: /login");
+            exit;
+        }
+        if($_SESSION['id_rol'] == 2){
+            header("Location: /editor");
+            exit;
+        }
+        elseif ($_SESSION['id_rol'] == 3){
+            header("Location: /admin");
             exit;
         }
     }

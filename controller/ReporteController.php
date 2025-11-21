@@ -11,6 +11,12 @@ class ReporteController
         $this->renderer = $renderer;
     }
 
+    public function base(){
+
+        $this->estalogeado();
+
+    }
+
     public function ajaxReportar()
     {
         header('Content-Type: application/json; charset=utf-8');
@@ -51,5 +57,21 @@ class ReporteController
             echo json_encode(['success'=>false,'error'=>'Error interno del servidor. Verifique la tabla `reportes`.']);
         }
         exit;
+    }
+
+    public function estalogeado()
+    {
+        if (!isset($_SESSION['id_usuario'])) {
+            header("Location: /login");
+            exit;
+        }
+        if($_SESSION['id_rol'] == 2){
+            header("Location: /editor");
+            exit;
+        }
+        elseif ($_SESSION['id_rol'] == 3){
+            header("Location: /admin");
+            exit;
+        }
     }
 }

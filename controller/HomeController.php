@@ -28,9 +28,18 @@ class HomeController
         $this->renderer->render("home", $data);
     }
 
-    public function estalogeado(){
+    public function estalogeado()
+    {
         if (!isset($_SESSION['id_usuario'])) {
             header("Location: /login");
+            exit;
+        }
+        if($_SESSION['id_rol'] == 2){
+            header("Location: /editor");
+            exit;
+        }
+        elseif ($_SESSION['id_rol'] == 3){
+            header("Location: /admin");
             exit;
         }
     }
