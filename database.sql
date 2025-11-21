@@ -116,16 +116,20 @@ CREATE TABLE juego_preguntas (
                                  FOREIGN KEY (id_respuesta_elegida) REFERENCES respuestas(id_respuesta) ON DELETE SET NULL
 );
 DROP TABLE IF EXISTS reportes;
+
 CREATE TABLE reportes (
                           id_reporte INT AUTO_INCREMENT PRIMARY KEY,
-                          id_pregunta INT NOT NULL,
+                          id_pregunta INT NULL,  -- Debe permitir NULL para que funcione ON DELETE SET NULL
                           id_usuario_reporta INT NOT NULL,
                           descripcion TEXT NOT NULL,
                           estado ENUM('pendiente', 'revisado', 'rechazado') DEFAULT 'pendiente',
                           created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
                           resuelto_en TIMESTAMP NULL,
 
-                          FOREIGN KEY (id_pregunta) REFERENCES preguntas(id_pregunta) ON DELETE CASCADE,
+    -- Si se borra la pregunta, el reporte se mantiene y id_pregunta queda NULL
+                          FOREIGN KEY (id_pregunta) REFERENCES preguntas(id_pregunta) ON DELETE SET NULL,
+
+    -- Si se borra el usuario que reportó, también se borran sus reportes
                           FOREIGN KEY (id_usuario_reporta) REFERENCES usuarios(id_usuario) ON DELETE CASCADE
 );
 
