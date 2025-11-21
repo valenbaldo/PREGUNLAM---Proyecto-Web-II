@@ -10,6 +10,7 @@ class PerfilController
     }
 
     public function base() {
+        $this->estalogeado();
         $idUsuario = $_SESSION['id_usuario'] ?? null;
         if (!$idUsuario) {
             header("Location: /home");
@@ -25,5 +26,21 @@ class PerfilController
         ];
 
         $this->renderer->render("perfil", $data);
+    }
+
+    public function estalogeado()
+    {
+        if (!isset($_SESSION['id_usuario'])) {
+            header("Location: /login");
+            exit;
+        }
+        if($_SESSION['id_rol'] == 2){
+            header("Location: /editor");
+            exit;
+        }
+        elseif ($_SESSION['id_rol'] == 3){
+            header("Location: /admin");
+            exit;
+        }
     }
 }

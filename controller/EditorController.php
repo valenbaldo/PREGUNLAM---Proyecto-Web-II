@@ -153,11 +153,13 @@ class EditorController
         $this->tienePermisoEditor();
 
         $reportes = $this->reporteModel->obtenerReportesPendientes();
+        $mensaje = $_SESSION['msg'] ?? null;
+        unset($_SESSION['msg']);
 
         $data = [
             'reportes' => $reportes,
             'nombreUsuario' => $_SESSION['nombreUsuario'] ?? 'Editor',
-            'mensaje' => $_GET['msg'] ?? null,
+            'mensaje' => $mensaje,
             'id_rol' => $_SESSION['id_rol'] ?? 2
         ];
 
@@ -198,7 +200,8 @@ class EditorController
         $exito = $this->model->actualizarEstadoReporte($id_reporte, $nuevo_estado);
 
         if ($exito) {
-            $msg = "Reporte ID $id_reporte actualizado a '$nuevo_estado' correctamente.";
+            $msg = $nuevo_estado === 'revisado' ? "Pregunta eliminada de la base por reporte valido" :
+                                                  "Pregunta conservada en la base por reporte rechazado";
         } else {
             $msg = "Error al actualizar el reporte ID $id_reporte.";
         }

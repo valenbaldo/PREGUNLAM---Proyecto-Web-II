@@ -163,17 +163,6 @@ class JuegoController
         exit();
     }
 
-    public function estalogeado(){
-        if (!isset($_SESSION['id_usuario'])) {
-            header("Location: /login");
-            exit;
-        }
-        if (isset($_SESSION['id_rol']) && $_SESSION['id_rol'] == 2) {
-            header("Location: /editor");
-            exit;
-        }
-    }
-
     public function ajaxRuleta()
     {
         if (session_status() === PHP_SESSION_NONE) session_start();
@@ -406,5 +395,21 @@ class JuegoController
             echo json_encode(['success'=>false,'error'=>'Error interno: ' . $e->getMessage()]);
         }
         exit;
+    }
+
+    public function estalogeado()
+    {
+        if (!isset($_SESSION['id_usuario'])) {
+            header("Location: /login");
+            exit;
+        }
+        if($_SESSION['id_rol'] == 2){
+            header("Location: /editor");
+            exit;
+        }
+        elseif ($_SESSION['id_rol'] == 3){
+            header("Location: /admin");
+            exit;
+        }
     }
 }

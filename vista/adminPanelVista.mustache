@@ -271,7 +271,7 @@ document.addEventListener('DOMContentLoaded', function() {
         const maxValue = Math.max(...partidasData.map(item => item.cantidad));
         const chartType = filtroActualPagina === 'dia' ? 'line' : 'bar';
         const aspectRatio = filtroActualPagina === 'dia' ? 1.5 : 2;
-        const maxY = filtroActualPagina === 'dia' ? Math.max(10, maxValue + 2) : 30;
+        const maxY = filtroActualPagina === 'dia' ? Math.max(10, maxValue + 2) : 50;
         
         const chartConfig = {
             type: chartType,
