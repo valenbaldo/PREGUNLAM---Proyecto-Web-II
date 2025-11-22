@@ -28,16 +28,17 @@ class AdminController
             'preguntas_creadas'     => $this->adminModel->contarPreguntasCreadas($desde, $hasta),
             'usuarios_nuevos'       => $this->adminModel->contarUsuariosNuevos($desde, $hasta),
             'reportes_pendientes'   => $this->reporteModel->contarReportesPendientes(),
+            'sugerencias_pendientes' => $this->adminModel->contarSugerenciasPendientes(),
         ];
 
-   
+
         if (isset($_GET['filtro']) || isset($_GET['month'])) {
             $filtro = $_GET['filtro'] ?? 'mes';
             $month = $_GET['month'] ?? date('m');
             $year = date('Y');
             $categoria = $_GET['categoria'] ?? null;
         } else {
-        
+
             $filtro = 'mes';
             $month = date('m');
             $year = date('Y');
@@ -191,6 +192,28 @@ class AdminController
         $this->renderer->render("adminReportes", $data);
     }
 
+    public function gestionarSugerencias()
+    {
+        $this->tienePermisoAdmin();
+
+        $sugerencias = $this->adminModel->obtenerSugerenciasPendientes();
+        $reportes_pendientes = $this->reporteModel->contarReportesPendientes();
+
+        $data = [
+            'sugerencias' => $sugerencias,
+            'nombreUsuario' => $_SESSION['nombreUsuario'] ?? 'Administrador',
+            'id_rol' => $_SESSION['id_rol'] ?? 3,
+            'reportes_pendientes' => $reportes_pendientes,
+            'msg' => $_SESSION['msg'] ?? null,
+            'error_flag' => $_SESSION['error_flag'] ?? false,
+        ];
+        if (isset($_SESSION['msg'])) {
+            unset($_SESSION['msg']);
+            unset($_SESSION['error_flag']);
+        }
+        $this->renderer->render("adminSugerencias", $data);
+    }
+
     public function descargarPDF()
     {
         $this->tienePermisoAdmin();
@@ -242,4 +265,5 @@ class AdminController
             default: return 'Hoy';
         }
     }
+
 }

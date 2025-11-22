@@ -1,0 +1,209 @@
+<style>
+    :root{
+        --brand:#0b8f72;
+        --ink:#0b0b0b;
+        --muted:#6b7280;
+        --ring:#e5e7eb;
+        --bg:#f8fafc;
+        --danger:#dc3545;
+        --info:#0284c7;
+        --warning:#f59e0b;
+    }
+
+    body.layout {
+        background: var(--bg);
+    }
+
+    main {
+        flex: 1;
+        padding: 0;
+    }
+
+    .editor-wrap{
+        max-width: 1600px;
+        margin: 32px auto;
+        padding: 0;
+        background:#fff;
+        border:1px solid var(--ring);
+        border-radius:16px;
+        box-shadow: 0 10px 18px rgba(0,0,0,.06);
+        overflow:hidden;
+    }
+
+    .editor-top{
+        display:flex; align-items:center; justify-content:space-between;
+        gap:16px; padding:18px 20px;
+        border-bottom:1px solid var(--ring); background:#fff;
+        position: sticky; top:0; z-index:2;
+    }
+    .editor-title{
+        display:flex; align-items:center; gap:10px; font-size:20px; font-weight:900;
+    }
+    .editor-title .dot{ width:10px; height:10px; border-radius:999px; background:var(--warning); box-shadow:0 0 0 4px #f59e0b1f; }
+    .editor-actions{ display:flex; gap:10px; }
+
+    .btn{
+        display:inline-flex; align-items:center; gap:8px;
+        padding:10px 14px; border-radius:12px; font-weight:700; border:1px solid transparent;
+        text-decoration:none; cursor:pointer; transition: box-shadow .15s, transform .02s, background .15s, color .15s;
+    }
+    .btn:active{ transform: translateY(1px); }
+
+    .btn-back {
+        background: #f0f9ff; border-color: #bae6fd; color: var(--info);
+    }
+    .btn-back:hover { box-shadow: 0 0 0 3px #bae6fd30; }
+    .editor-table{ width:100%; border-collapse:separate; border-spacing:0; }
+    .editor-table thead th{
+        position: sticky; top:58px;
+        background:#fbfbfb; border-bottom:1px solid var(--ring);
+        color:#111; font-weight:800; font-size:13px; text-transform:uppercase; letter-spacing:.02em;
+    }
+    .editor-table th, .editor-table td{ padding:16px 14px; text-align:left; vertical-align:top; }
+
+    .editor-table tbody tr{ border-bottom:1.5px solid #e3e8ef; }
+    .editor-table tbody tr:first-child{ border-top:1.5px solid #e3e8ef; }
+
+    .editor-table tbody tr:nth-child(odd){ background:#fcfcfd; }
+    .editor-table tbody tr:hover{ background:#fff8e3; }
+
+    .col-id{ width:60px; color:#374151; font-variant-numeric: tabular-nums; }
+    .col-preg{ max-width:400px; }
+    .col-preg .preg-text{
+        display:-webkit-box; -webkit-line-clamp:4; -webkit-box-orient:vertical; overflow:hidden;
+    }
+
+    .col-opcion {
+        max-width: 180px;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        font-size: 14px;
+        line-height: 1.4;
+    }
+
+    .col-corr {
+        width: 70px;
+        text-align: center;
+        font-weight: 800;
+        font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+    }
+
+    .col-user{ width:120px; font-size: 14px; }
+    .col-date{ width:100px; color: var(--muted); font-size: 12px; }
+
+    .badge-cat{
+        display:inline-flex; align-items:center; gap:8px;
+        padding:4px 8px; margin-top: 8px;
+        border-radius:999px; background:#fffbe3; color:#a16207; border:1px solid #fce7b2;
+        max-width:100%; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
+        font-size: 12px;
+    }
+
+    .editor-table tbody tr[data-correct="A"] td:nth-child(3),
+    .editor-table tbody tr[data-correct="B"] td:nth-child(4),
+    .editor-table tbody tr[data-correct="C"] td:nth-child(5),
+    .editor-table tbody tr[data-correct="D"] td:nth-child(6) {
+        background: #dcfce7;
+        font-weight: 600;
+    }
+
+
+    .rk-empty{ padding:36px; text-align:center; color:var(--muted); }
+
+    .msg-box {
+        padding: 12px 16px;
+        border-radius: 10px;
+        margin: 16px 20px;
+        font-weight: 600;
+    }
+
+    .msg-success {
+        background: #e8f5e9;
+        color: #1b5e20;
+        border: 1px solid #c8e6c9;
+    }
+
+    .msg-error {
+        background: #fee8e8;
+        color: #990000;
+        border: 1px solid #ffcccc;
+    }
+
+    @media (max-width: 1200px) {
+        .col-opcion, .col-corr, .col-date { display: none; }
+        .col-user { width: 100px; }
+        .col-preg { max-width: none; }
+    }
+
+    @media (max-width: 860px){
+        .editor-top{ flex-direction: column; align-items: stretch; gap: 10px; }
+        .editor-actions{ justify-content: space-between; }
+        .editor-table thead th{ top: 120px; }
+    }
+</style>
+
+<div class="editor-wrap">
+    <div class="editor-top">
+        <div class="editor-title">
+            <span class="dot"></span>Sugerencias Pendientes
+        </div>
+        <div class="editor-actions">
+            <a class="btn btn-back" href="/admin/base">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                    <path d="M19 12H5m0 0l7 7m-7-7l7-7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+                Volver al Panel
+            </a>
+        </div>
+    </div>
+
+    {{#msg}}<div class="msg-box msg-success">{{msg}}</div>{{/msg}}
+    {{#error_flag}}<div class="msg-box msg-error">{{msg}}</div>{{/error_flag}}
+
+
+    <table class="editor-table">
+        <thead>
+        <tr>
+            <th class="col-id">ID</th>
+            <th class="col-preg">Pregunta y Categoría</th>
+            <th class="col-opcion">Opción A</th>
+            <th class="col-opcion">Opción B</th>
+            <th class="col-opcion">Opción C</th>
+            <th class="col-opcion">Opción D</th>
+            <th class="col-corr">Correcta</th>
+            <th class="col-user">Sugerida por</th>
+            <th class="col-date">Fecha</th>
+        </tr>
+        </thead>
+        <tbody>
+        {{#sugerencias}}
+            <tr data-correct="{{respuesta_correcta}}">
+                <td class="col-id">{{id_sugerencia}}</td>
+                <td class="col-preg">
+                    <div class="preg-text">
+                        {{pregunta}}
+                        <span class="badge-cat">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                                <path d="M3 7h5l2 2h11v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V7z" stroke="currentColor" stroke-width="1.5"/>
+                            </svg>
+                            {{categoria}}
+                        </span>
+                    </div>
+                </td>
+
+                <td class="col-opcion">{{opcion_a}}</td>
+                <td class="col-opcion">{{opcion_b}}</td>
+                <td class="col-opcion">{{opcion_c}}</td>
+                <td class="col-opcion">{{opcion_d}}</td>
+                <td class="col-corr">{{respuesta_correcta}}</td>
+                <td class="col-user">{{sugerida_por}}</td>
+                <td class="col-date">{{fecha_sugerencia}}</td>
+            </tr>
+        {{/sugerencias}}
+        </tbody>
+    </table>
+
+    {{^sugerencias}}
+        <div class="rk-empty">No hay preguntas sugeridas pendientes de revisión.</div>
+    {{/sugerencias}}
+</div>

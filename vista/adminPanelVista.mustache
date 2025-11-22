@@ -36,13 +36,14 @@
     .kpi .kpi-label{ font-size:11px; color:var(--muted); margin-bottom:1px; }
     .kpi .kpi-value{ font-weight:900; font-size:20px; line-height:1; }
     .kpi.reporte i { background: #fee2e2; color: #dc2626; }
+    .kpi.sugerencia i { background: #e0f2fe; color: #0077c2; }
 
     .main-content{ display:grid; grid-template-columns:1fr 1fr 1fr; gap:6px; flex:1; min-height:0; }
     @media (max-width:1200px){ .main-content{ grid-template-columns:1fr; } }
-    
+
     .chart-container{ position:relative; height:180px; width:100%; margin:3px 0; }
     .chart-container canvas{ max-height:100% !important; }
-    
+
     .chart-item{ height:100%; display:flex; flex-direction:column; }
     .chart-item .card{ height:100%; display:flex; flex-direction:column; }
     .chart-item .chart-container{ flex:1; height:auto; min-height:150px; }
@@ -50,7 +51,7 @@
     .tables-section{ display:flex; flex-direction:column; gap:12px; }
     .tables-section .card{ min-height:200px; }
     .tables-section .tbl{ font-size:13px; }
-    
+
     .adm-grid{ display:grid; grid-template-columns:2fr 1fr; gap:14px; }
     @media (max-width:1000px){ .adm-grid{ grid-template-columns:1fr; } }
 
@@ -81,10 +82,12 @@
         </div>
 
         <div class="adm-actions">
+
             <a class="btn brand small" href="/admin/gestionarReportes" title="Revisar Reportes Pendientes">🔔 Reportes ({{stats.reportes_pendientes}})</a>
+
+            <a class="btn brand small" href="/admin/gestionarSugerencias" title="Revisar Sugerencias Pendientes">💡 Sugerencias ({{stats.sugerencias_pendientes}})</a>
+
             <a class="btn brand small" href="/admin/gestionarUsuarios">👥 Gestión de Usuarios</a>
-
-
 
             <button class="btn outline small" onclick="descargarPDF()">📋 Descargar PDF</button>
         </div>
@@ -115,7 +118,13 @@
                 <div class="kpi-value">{{stats.reportes_pendientes}}</div>
             </div>
         </div>
-
+        <div class="card kpi sugerencia">
+            <i>💡</i>
+            <div>
+                <div class="kpi-label">Sugerencias Pendientes</div>
+                <div class="kpi-value">{{stats.sugerencias_pendientes}}</div>
+            </div>
+        </div>
         <div class="card kpi">
             <i>❓</i>
             <div>
@@ -156,7 +165,7 @@
                     </select>
                 </div>
             </div>
-            
+
             <div class="chart-container">
                 <canvas id="partidasChart"></canvas>
             </div>
@@ -204,230 +213,230 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 <script>
 
-function cambiarFiltro() {
-    const filtro = document.getElementById('filtroSelector').value;
-    const monthSelector = document.getElementById('monthSelector');
-    
-    if (filtro === 'dia') {
-        monthSelector.style.display = 'block';
-    } else {
-        monthSelector.style.display = 'none';
-    }
-    
-    aplicarFiltro();
-}
+    function cambiarFiltro() {
+        const filtro = document.getElementById('filtroSelector').value;
+        const monthSelector = document.getElementById('monthSelector');
 
-function aplicarFiltro() {
-    sessionStorage.setItem('navegacionFiltro', 'true');
-    
-    const filtro = document.getElementById('filtroSelector').value;
-    const month = document.getElementById('monthSelector').value;
-    
-    let url = '?controller=admin&method=base';
-    if (filtro) url += `&filtro=${filtro}`;
-    if (month && filtro === 'dia') url += `&month=${month}`;
-    
-    window.location.href = url;
-}
-
-document.addEventListener('DOMContentLoaded', function() {
-    const esNavegacionFiltro = sessionStorage.getItem('navegacionFiltro');
-    
-    if (!esNavegacionFiltro) {
-        document.getElementById('filtroSelector').value = 'mes';
-        document.getElementById('monthSelector').value = new Date().getMonth() + 1;
-        document.getElementById('monthSelector').style.display = 'none';
-        const urlParams = new URLSearchParams(window.location.search);
-        if (urlParams.has('filtro') || urlParams.has('month')) {
-            window.location.href = '?controller=admin&method=base';
-            return;
-        }
-    } else {
-        const filtroActual = '{{filtroSeleccionado}}' || 'mes';
-        const monthActual = '{{monthSeleccionado}}' || new Date().getMonth() + 1;
-        
-        document.getElementById('filtroSelector').value = filtroActual;
-        document.getElementById('monthSelector').value = monthActual;
-        
-        if (filtroActual === 'dia') {
-            document.getElementById('monthSelector').style.display = 'block';
-        }
-        
-        sessionStorage.removeItem('navegacionFiltro');
-    }
-
-    const partidasData = {{{partidasDataJson}}};
-    if (partidasData && partidasData.length > 0) {
-        const ctxPartidas = document.getElementById('partidasChart').getContext('2d');
-        const filtroActualPagina = '{{filtroSeleccionado}}' || 'mes';
-        let labels, titulo;
-        if (filtroActualPagina === 'dia') {
-            labels = partidasData.map(item => item.dia);
-            titulo = 'Partidas por Día';
+        if (filtro === 'dia') {
+            monthSelector.style.display = 'block';
         } else {
-            labels = partidasData.map(item => item.nombre_mes);
-            titulo = 'Partidas por Mes';
+            monthSelector.style.display = 'none';
         }
-        const maxValue = Math.max(...partidasData.map(item => item.cantidad));
-        const chartType = filtroActualPagina === 'dia' ? 'line' : 'bar';
-        const aspectRatio = filtroActualPagina === 'dia' ? 1.5 : 2;
-        const maxY = filtroActualPagina === 'dia' ? Math.max(10, maxValue + 2) : 50;
-        
-        const chartConfig = {
-            type: chartType,
-            data: {
-                labels: labels,
-                datasets: [{
-                    label: titulo,
-                    data: partidasData.map(item => item.cantidad),
-                    borderColor: '#0f9d79',
-                    backgroundColor: filtroActualPagina === 'dia' ? 'rgba(15, 157, 121, 0.1)' : 'rgba(15, 157, 121, 0.1)',
-                    borderWidth: filtroActualPagina === 'dia' ? 4 : 3,
-                    fill: true,
-                    tension: filtroActualPagina === 'dia' ? 0.4 : 0.4
-                }]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: true,
-                aspectRatio: aspectRatio,
-                plugins: {
-                    legend: { display: false }
+
+        aplicarFiltro();
+    }
+
+    function aplicarFiltro() {
+        sessionStorage.setItem('navegacionFiltro', 'true');
+
+        const filtro = document.getElementById('filtroSelector').value;
+        const month = document.getElementById('monthSelector').value;
+
+        let url = '?controller=admin&method=base';
+        if (filtro) url += `&filtro=${filtro}`;
+        if (month && filtro === 'dia') url += `&month=${month}`;
+
+        window.location.href = url;
+    }
+
+    document.addEventListener('DOMContentLoaded', function() {
+        const esNavegacionFiltro = sessionStorage.getItem('navegacionFiltro');
+
+        if (!esNavegacionFiltro) {
+            document.getElementById('filtroSelector').value = 'mes';
+            document.getElementById('monthSelector').value = new Date().getMonth() + 1;
+            document.getElementById('monthSelector').style.display = 'none';
+            const urlParams = new URLSearchParams(window.location.search);
+            if (urlParams.has('filtro') || urlParams.has('month')) {
+                window.location.href = '?controller=admin&method=base';
+                return;
+            }
+        } else {
+            const filtroActual = '{{filtroSeleccionado}}' || 'mes';
+            const monthActual = '{{monthSeleccionado}}' || new Date().getMonth() + 1;
+
+            document.getElementById('filtroSelector').value = filtroActual;
+            document.getElementById('monthSelector').value = monthActual;
+
+            if (filtroActual === 'dia') {
+                document.getElementById('monthSelector').style.display = 'block';
+            }
+
+            sessionStorage.removeItem('navegacionFiltro');
+        }
+
+        const partidasData = {{{partidasDataJson}}};
+        if (partidasData && partidasData.length > 0) {
+            const ctxPartidas = document.getElementById('partidasChart').getContext('2d');
+            const filtroActualPagina = '{{filtroSeleccionado}}' || 'mes';
+            let labels, titulo;
+            if (filtroActualPagina === 'dia') {
+                labels = partidasData.map(item => item.dia);
+                titulo = 'Partidas por Día';
+            } else {
+                labels = partidasData.map(item => item.nombre_mes);
+                titulo = 'Partidas por Mes';
+            }
+            const maxValue = Math.max(...partidasData.map(item => item.cantidad));
+            const chartType = filtroActualPagina === 'dia' ? 'line' : 'bar';
+            const aspectRatio = filtroActualPagina === 'dia' ? 1.5 : 2;
+            const maxY = filtroActualPagina === 'dia' ? Math.max(10, maxValue + 2) : 50;
+
+            const chartConfig = {
+                type: chartType,
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: titulo,
+                        data: partidasData.map(item => item.cantidad),
+                        borderColor: '#0f9d79',
+                        backgroundColor: filtroActualPagina === 'dia' ? 'rgba(15, 157, 121, 0.1)' : 'rgba(15, 157, 121, 0.1)',
+                        borderWidth: filtroActualPagina === 'dia' ? 4 : 3,
+                        fill: true,
+                        tension: filtroActualPagina === 'dia' ? 0.4 : 0.4
+                    }]
                 },
-                scales: {
-                    y: { 
-                        beginAtZero: true,
-                        min: 0,
-                        max: maxY,
-                        ticks: {
-                            stepSize: filtroActualPagina === 'dia' ? 1 : 2
-                        },
-                        grid: { color: '#f3f4f6' }
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: true,
+                    aspectRatio: aspectRatio,
+                    plugins: {
+                        legend: { display: false }
                     },
-                    x: {
-                        grid: { display: filtroActualPagina === 'dia' ? true : false },
-                        ticks: {
-                            maxRotation: filtroActualPagina === 'dia' ? 0 : 45,
-                            minRotation: filtroActualPagina === 'dia' ? 0 : 45,
-                            autoSkip: false,
-                            maxTicksLimit: false,
-                            font: {
-                                size: filtroActualPagina === 'dia' ? 10 : 12
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            min: 0,
+                            max: maxY,
+                            ticks: {
+                                stepSize: filtroActualPagina === 'dia' ? 1 : 2
+                            },
+                            grid: { color: '#f3f4f6' }
+                        },
+                        x: {
+                            grid: { display: filtroActualPagina === 'dia' ? true : false },
+                            ticks: {
+                                maxRotation: filtroActualPagina === 'dia' ? 0 : 45,
+                                minRotation: filtroActualPagina === 'dia' ? 0 : 45,
+                                autoSkip: false,
+                                maxTicksLimit: false,
+                                font: {
+                                    size: filtroActualPagina === 'dia' ? 10 : 12
+                                }
                             }
                         }
                     }
                 }
-            }
-        };
-        
-        if (filtroActualPagina === 'dia') {
-            chartConfig.data.datasets[0].pointBackgroundColor = '#0f9d79';
-            chartConfig.data.datasets[0].pointBorderColor = '#fff';
-            chartConfig.data.datasets[0].pointBorderWidth = 2;
-            chartConfig.data.datasets[0].pointRadius = 5;
-            chartConfig.data.datasets[0].pointHoverRadius = 7;
-        } else {
-            chartConfig.data.datasets[0].barThickness = 'flex';
-        }
-        
-        new Chart(ctxPartidas, chartConfig);
-    }
+            };
 
-    const preguntasCategoriaData = {{{preguntasCategoriaJson}}};
-    if (preguntasCategoriaData && preguntasCategoriaData.length > 0) {
-        const ctxCategorias = document.getElementById('preguntasCategoriaChart').getContext('2d');
-        const colores = ['#0f9d79', '#3b82f6', '#8b5cf6', '#ef4444', '#f59e0b', '#10b981', '#f97316', '#6366f1'];
-        
-        new Chart(ctxCategorias, {
-            type: 'doughnut',
-            data: {
-                labels: preguntasCategoriaData.map(item => item.categoria),
-                datasets: [{
-                    data: preguntasCategoriaData.map(item => item.cantidad),
-                    backgroundColor: colores.slice(0, preguntasCategoriaData.length),
-                    borderWidth: 2,
-                    borderColor: '#fff'
-                }]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: true,
-                aspectRatio: 1,
-                plugins: {
-                    legend: { 
-                        position: 'bottom',
-                        labels: { padding: 10, usePointStyle: true, boxWidth: 12 }
+            if (filtroActualPagina === 'dia') {
+                chartConfig.data.datasets[0].pointBackgroundColor = '#0f9d79';
+                chartConfig.data.datasets[0].pointBorderColor = '#fff';
+                chartConfig.data.datasets[0].pointBorderWidth = 2;
+                chartConfig.data.datasets[0].pointRadius = 5;
+                chartConfig.data.datasets[0].pointHoverRadius = 7;
+            } else {
+                chartConfig.data.datasets[0].barThickness = 'flex';
+            }
+
+            new Chart(ctxPartidas, chartConfig);
+        }
+
+        const preguntasCategoriaData = {{{preguntasCategoriaJson}}};
+        if (preguntasCategoriaData && preguntasCategoriaData.length > 0) {
+            const ctxCategorias = document.getElementById('preguntasCategoriaChart').getContext('2d');
+            const colores = ['#0f9d79', '#3b82f6', '#8b5cf6', '#ef4444', '#f59e0b', '#10b981', '#f97316', '#6366f1'];
+
+            new Chart(ctxCategorias, {
+                type: 'doughnut',
+                data: {
+                    labels: preguntasCategoriaData.map(item => item.categoria),
+                    datasets: [{
+                        data: preguntasCategoriaData.map(item => item.cantidad),
+                        backgroundColor: colores.slice(0, preguntasCategoriaData.length),
+                        borderWidth: 2,
+                        borderColor: '#fff'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: true,
+                    aspectRatio: 1,
+                    plugins: {
+                        legend: {
+                            position: 'bottom',
+                            labels: { padding: 10, usePointStyle: true, boxWidth: 12 }
+                        }
                     }
                 }
-            }
-        });
-    }
-});
+            });
+        }
+    });
 
-function descargarPDF() {
-    const boton = event.target;
-    const textoOriginal = boton.innerHTML;
-    boton.innerHTML = '⏳ Generando PDF...';
-    boton.disabled = true;
+    function descargarPDF() {
+        const boton = event.target;
+        const textoOriginal = boton.innerHTML;
+        boton.innerHTML = '⏳ Generando PDF...';
+        boton.disabled = true;
 
-    try {
-        const mainContent = document.querySelector('.adm-wrap');
+        try {
+            const mainContent = document.querySelector('.adm-wrap');
 
-        html2canvas(mainContent, {
-            scale: 1.2,
-            useCORS: true,
-            allowTaint: true,
-            backgroundColor: '#f3f4f6',
-            width: mainContent.offsetWidth,
-            height: mainContent.offsetHeight,
-            scrollX: 0,
-            scrollY: 0
-        }).then(canvas => {
-            
-            const imgData = canvas.toDataURL('image/png');
-            const { jsPDF } = window.jspdf;
-            
-            const pdf = new jsPDF('p', 'mm', 'a4');
-            const pdfWidth = pdf.internal.pageSize.getWidth();
-            const pdfHeight = pdf.internal.pageSize.getHeight();
-            
-            const imgWidth = pdfWidth - 20;
-            const imgHeight = (canvas.height * imgWidth) / canvas.width;
+            html2canvas(mainContent, {
+                scale: 1.2,
+                useCORS: true,
+                allowTaint: true,
+                backgroundColor: '#f3f4f6',
+                width: mainContent.offsetWidth,
+                height: mainContent.offsetHeight,
+                scrollX: 0,
+                scrollY: 0
+            }).then(canvas => {
 
-            let yPosition = 0;
-            const pageHeight = pdfHeight - 20;
-            
-            while (yPosition < imgHeight) {
-                pdf.addImage(imgData, 'PNG', 10, 10 - yPosition, imgWidth, imgHeight);
-                yPosition += pageHeight;
-                
-                if (yPosition < imgHeight) {
-                    pdf.addPage();
+                const imgData = canvas.toDataURL('image/png');
+                const { jsPDF } = window.jspdf;
+
+                const pdf = new jsPDF('p', 'mm', 'a4');
+                const pdfWidth = pdf.internal.pageSize.getWidth();
+                const pdfHeight = pdf.internal.pageSize.getHeight();
+
+                const imgWidth = pdfWidth - 20;
+                const imgHeight = (canvas.height * imgWidth) / canvas.width;
+
+                let yPosition = 0;
+                const pageHeight = pdfHeight - 20;
+
+                while (yPosition < imgHeight) {
+                    pdf.addImage(imgData, 'PNG', 10, 10 - yPosition, imgWidth, imgHeight);
+                    yPosition += pageHeight;
+
+                    if (yPosition < imgHeight) {
+                        pdf.addPage();
+                    }
                 }
-            }
 
-            const fecha = new Date().toISOString().split('T')[0];
-            const year = document.getElementById('yearSelector').value || 'todos';
-            pdf.save(`reporte-admin-${year}-${fecha}.pdf`);
+                const fecha = new Date().toISOString().split('T')[0];
+                const year = document.getElementById('yearSelector').value || 'todos';
+                pdf.save(`reporte-admin-${year}-${fecha}.pdf`);
 
-            boton.innerHTML = '✅ PDF Descargado';
-            setTimeout(() => {
+                boton.innerHTML = '✅ PDF Descargado';
+                setTimeout(() => {
+                    boton.innerHTML = textoOriginal;
+                    boton.disabled = false;
+                }, 2000);
+
+            }).catch(error => {
+                console.error('Error al generar PDF:', error);
+                alert('Error al generar el PDF. Intente nuevamente.');
                 boton.innerHTML = textoOriginal;
                 boton.disabled = false;
-            }, 2000);
-            
-        }).catch(error => {
-            console.error('Error al generar PDF:', error);
-            alert('Error al generar el PDF. Intente nuevamente.');
+            });
+
+        } catch (error) {
+            console.error('Error:', error);
+            alert('Error al procesar la descarga del PDF.');
             boton.innerHTML = textoOriginal;
             boton.disabled = false;
-        });
-        
-    } catch (error) {
-        console.error('Error:', error);
-        alert('Error al procesar la descarga del PDF.');
-        boton.innerHTML = textoOriginal;
-        boton.disabled = false;
+        }
     }
-}
 </script>
