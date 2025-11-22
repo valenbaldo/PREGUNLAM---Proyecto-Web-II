@@ -21,7 +21,9 @@ class EditorController
         $data = [
             'nombreUsuario' => $_SESSION['nombreUsuario'] ?? 'Editor',
             'preguntas' => $this->model->obtenerTodasLasPreguntas(),
+            // Se añaden los contadores de sugerencias y reportes
             'reportes_pendientes' => $this->model->contarReportesPendientes(),
+            'sugerencias_pendientes' => $this->model->contarSugerenciasPendientes(),
             'id_rol' => $_SESSION['id_rol'] ?? 2
         ];
 
@@ -152,7 +154,10 @@ class EditorController
     {
         $this->tienePermisoEditor();
 
+
         $reportes = $this->reporteModel->obtenerReportesPendientes();
+        $sugerencias_pendientes = $this->model->contarSugerenciasPendientes();
+
         $mensaje = $_SESSION['msg'] ?? null;
         unset($_SESSION['msg']);
 
@@ -160,6 +165,7 @@ class EditorController
             'reportes' => $reportes,
             'nombreUsuario' => $_SESSION['nombreUsuario'] ?? 'Editor',
             'mensaje' => $mensaje,
+            'sugerencias_pendientes' => $sugerencias_pendientes,
             'id_rol' => $_SESSION['id_rol'] ?? 2
         ];
 
@@ -201,7 +207,7 @@ class EditorController
 
         if ($exito) {
             $msg = $nuevo_estado === 'revisado' ? "Pregunta eliminada de la base por reporte valido" :
-                                                  "Pregunta conservada en la base por reporte rechazado";
+                "Pregunta conservada en la base por reporte rechazado";
         } else {
             $msg = "Error al actualizar el reporte ID $id_reporte.";
         }
@@ -215,10 +221,15 @@ class EditorController
     {
         $this->tienePermisoEditor();
 
+        $sugerencias_pendientes = $this->model->contarSugerenciasPendientes();
+        $reportes_pendientes = $this->model->contarReportesPendientes();
+
         $data = [
             'categorias' => $this->model->obtenerTodasCategorias(),
             'nombreUsuario' => $_SESSION['nombreUsuario'] ?? 'Editor',
-            'id_rol' => $_SESSION['id_rol'] ?? 2
+            'id_rol' => $_SESSION['id_rol'] ?? 2,
+            'sugerencias_pendientes' => $sugerencias_pendientes,
+            'reportes_pendientes' => $reportes_pendientes
         ];
 
         if (!empty($_SESSION['msg'])) {
@@ -236,10 +247,15 @@ class EditorController
     public function crearCategoria()
     {
         $this->tienePermisoEditor();
+        $sugerencias_pendientes = $this->model->contarSugerenciasPendientes();
+        $reportes_pendientes = $this->model->contarReportesPendientes();
+
         $this->renderer->render("editorCategoriaForm", [
             'accion' => 'crear',
             'titulo' => 'Crear Nueva Categoría',
             'nombreUsuario' => $_SESSION['nombreUsuario'] ?? 'Editor',
+            'sugerencias_pendientes' => $sugerencias_pendientes,
+            'reportes_pendientes' => $reportes_pendientes,
             'id_rol' => $_SESSION['id_rol'] ?? 2
         ]);
     }
@@ -288,11 +304,17 @@ class EditorController
             exit;
         }
 
+        $sugerencias_pendientes = $this->model->contarSugerenciasPendientes();
+        $reportes_pendientes = $this->model->contarReportesPendientes();
+
+
         $this->renderer->render("editorCategoriaForm", [
             'accion' => 'editar',
             'titulo' => 'Editar Categoría',
             'categoria' => $categoria,
             'nombreUsuario' => $_SESSION['nombreUsuario'] ?? 'Editor',
+            'sugerencias_pendientes' => $sugerencias_pendientes,
+            'reportes_pendientes' => $reportes_pendientes,
             'id_rol' => $_SESSION['id_rol'] ?? 2
         ]);
     }
@@ -354,13 +376,14 @@ class EditorController
         $this->tienePermisoEditor();
 
         $sugerencias = $this->model->obtenerSugerenciasPendientes();
+        $reportes_pendientes = $this->model->contarReportesPendientes();
 
         $data = [
             'sugerencias' => $sugerencias,
             'nombreUsuario' => $_SESSION['nombreUsuario'] ?? 'Editor',
+            'reportes_pendientes' => $reportes_pendientes,
             'id_rol' => $_SESSION['id_rol'] ?? 2
         ];
-
         if(!empty($_SESSION['msg'])){
             $data['msg'] = $_SESSION['msg'];
             unset($_SESSION['msg']);

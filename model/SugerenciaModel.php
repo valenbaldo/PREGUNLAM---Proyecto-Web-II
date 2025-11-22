@@ -23,8 +23,8 @@ class SugerenciaModel
         $pregunta = str_replace("'", "''", $pregunta);
         $opcionA = str_replace("'", "''", $opcionA);
         $opcionB = str_replace("'", "''", $opcionB);
-        $opcionC = str_replace("'", "''", $opcionD);
-        $opcionD = str_replace("'", "''", $opcionC);
+        $opcionC = str_replace("'", "''", $opcionC);
+        $opcionD = str_replace("'", "''", $opcionD);
 
         $sql = "INSERT INTO sugerencias_preguntas (
                     pregunta, opcion_a, opcion_b, opcion_c, opcion_d,

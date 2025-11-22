@@ -208,7 +208,7 @@ class EditorModel
     public function crearCategoria($nombre)
     {
         $nombre_escapado = addslashes($nombre);
-        
+
         try {
             $sql = "INSERT INTO categorias (nombre) VALUES ('$nombre_escapado')";
             $this->conexion->execute($sql);
@@ -222,7 +222,7 @@ class EditorModel
     {
         $id = intval($id_categoria);
         $nombre_escapado = addslashes($nombre);
-        
+
         try {
             $sql = "UPDATE categorias SET nombre = '$nombre_escapado' WHERE id_categoria = $id";
             $this->conexion->execute($sql);
@@ -235,19 +235,146 @@ class EditorModel
     public function eliminarCategoria($id_categoria)
     {
         $id = intval($id_categoria);
-        
+
         try {
             $sql_check = "SELECT COUNT(*) as total FROM preguntas WHERE id_categoria = $id";
             $resultado = $this->conexion->query($sql_check);
-            
+
             if ($resultado && $resultado[0]['total'] > 0) {
                 return 'restriccion';
             }
-            
+
             $sql = "DELETE FROM categorias WHERE id_categoria = $id";
             $this->conexion->execute($sql);
             return true;
         } catch (Exception $e) {
+            return false;
+        }
+    }
+    public function obtenerSugerenciasPendientes()
+    {
+        $sql = "
+            SELECT
+                sp.id_sugerencia,
+                sp.pregunta,
+                sp.opcion_a,
+                sp.opcion_b,
+                sp.opcion_c,
+                sp.opcion_d,
+                sp.respuesta_correcta,
+                sp.fecha_sugerencia,
+                u.usuario AS sugerida_por,
+                COALESCE(c.nombre, 'Sin Categoría') AS categoria,
+                sp.id_categoria
+            FROM
+                sugerencias_preguntas sp
+            JOIN
+                usuarios u ON sp.id_usuario_sugiere = u.id_usuario
+            LEFT JOIN
+                categorias c ON sp.id_categoria = c.id_categoria
+            WHERE
+                sp.estado = 'pendiente'
+            ORDER BY
+                sp.fecha_sugerencia DESC
+        ";
+
+        return $this->conexion->query($sql) ?? [];
+    }
+
+    public function contarSugerenciasPendientes()
+    {
+        try{
+            $sql = "SELECT COUNT(*) AS total FROM sugerencias_preguntas WHERE estado = 'pendiente'";
+            $resultado = $this->conexion->query($sql);
+
+            return $resultado[0]['total'] ?? 0;
+        }
+        catch(Exception $e){
+            error_log("Error al contar sugerencias pendientes: " . $e->getMessage());
+            return 0;
+        }
+    }
+
+    public function rechazarSugerencia(int $id_sugerencia): bool
+    {
+        $id = intval($id_sugerencia);
+        $estado = 'rechazada';
+
+        try{
+            $sql = "UPDATE sugerencias_preguntas SET estado = '$estado' WHERE id_sugerencia = $id";
+            $this->conexion->execute($sql);
+            return true;
+        }
+        catch(Exception $e){
+            error_log("Error al rechazar sugerencia: " . $e->getMessage());
+            return false;
+        }
+    }
+
+    public function aceptarSugerencia(int $id_sugerencia, int $id_usuario_editor): bool
+    {
+        $id = intval($id_sugerencia);
+        $id_pregunta_insertada = null;
+
+        try {
+            $sql_fetch = "
+                SELECT pregunta, opcion_a, opcion_b, opcion_c, opcion_d, respuesta_correcta, id_categoria
+                FROM sugerencias_preguntas
+                WHERE id_sugerencia = $id AND estado = 'pendiente'
+                LIMIT 1
+            ";
+            $sugerencia = $this->conexion->query($sql_fetch);
+
+            if (empty($sugerencia)) {
+                throw new Exception("Sugerencia no encontrada o ya procesada.");
+            }
+
+            $datos = $sugerencia[0];
+            $pregunta = addslashes($datos['pregunta']);
+            $id_categoria = (int)($datos['id_categoria'] ?? 0);
+            $correcta = strtoupper(substr($datos['respuesta_correcta'], 0, 1));
+
+            $sql_pregunta = "
+                INSERT INTO preguntas (pregunta, id_usuario, id_categoria, veces_respondida, veces_acertada)
+                VALUES ('$pregunta', $id_usuario_editor, $id_categoria, 0, 0)
+            ";
+            $this->conexion->execute($sql_pregunta);
+
+            $id_pregunta_query = $this->conexion->query("SELECT LAST_INSERT_ID() as id");
+            $id_pregunta_insertada = $id_pregunta_query[0]['id'] ?? null;
+
+            if (!$id_pregunta_insertada) {
+                throw new Exception("Falló la obtención del ID después de insertar la pregunta.");
+            }
+
+            $sql_respuestas = "
+                INSERT INTO respuestas (id_pregunta, a, b, c, d, es_correcta)
+                VALUES (
+                    $id_pregunta_insertada,
+                    '" . addslashes($datos['opcion_a']) . "',
+                    '" . addslashes($datos['opcion_b']) . "',
+                    '" . addslashes($datos['opcion_c']) . "',
+                    '" . addslashes($datos['opcion_d']) . "',
+                    '$correcta'
+                )
+            ";
+            $this->conexion->execute($sql_respuestas);
+
+            $sql_update_sugerencia = "
+                UPDATE sugerencias_preguntas
+                SET estado = 'aceptada', id_pregunta_asociada = $id_pregunta_insertada
+                WHERE id_sugerencia = $id
+            ";
+            $this->conexion->execute($sql_update_sugerencia);
+
+            return true;
+
+        } catch (Exception $e) {
+            if ($id_pregunta_insertada) {
+                $this->eliminar($id_pregunta_insertada);
+            }
+
+            error_log("Error al aceptar sugerencia (FALLO DE SQL/LIMPIEZA): " . $e->getMessage());
             return false;
         }
     }
