@@ -1,0 +1,214 @@
+
+<script src="https://cdn.tailwindcss.com"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@100..900&display=swap" rel="stylesheet">
+
+<style>
+    :root {
+        --primary: linear-gradient(135deg, #48bb78 0%, #38a169 100%);
+        --primary-hover: linear-gradient(135deg, #38a169 0%, #2f855a 100%);
+        --success: linear-gradient(135deg, #48bb78 0%, #38a169 100%);
+        --warning: linear-gradient(135deg, #ed8936 0%, #dd6b20 100%);
+        --danger: linear-gradient(135deg, #f56565 0%, #e53e3e 100%);
+        --surface: rgba(255, 255, 255, 0.95);
+        --surface-hover: rgba(255, 255, 255, 0.98);
+        --glass: rgba(255, 255, 255, 0.25);
+        --text-primary: #1a202c;
+        --text-secondary: #4a5568;
+        --text-muted: #718096;
+        --border: rgba(255, 255, 255, 0.2);
+        --shadow-sm: 0 4px 6px rgba(0, 0, 0, 0.05);
+        --shadow-md: 0 8px 25px rgba(0, 0, 0, 0.1);
+        --shadow-lg: 0 20px 40px rgba(0, 0, 0, 0.15);
+        --shadow-colored: 0 8px 32px rgba(72, 187, 120, 0.3);
+        --radius-xl: 20px;
+        --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    body {
+        font-family: 'Inter', sans-serif;
+        background-color: #f3f4f6;
+    }
+    .card-container {
+        max-width: 768px;
+        margin: 3rem auto;
+        padding: 1.5rem;
+    }
+
+    .glass-card {
+        background: var(--surface);
+        backdrop-filter: blur(10px);
+        -webkit-backdrop-filter: blur(10px);
+        box-shadow: var(--shadow-colored);
+        border: 1px solid var(--border);
+        transition: var(--transition);
+        border-radius: var(--radius-xl);
+    }
+
+    .btn-primary-grad {
+        background: var(--primary);
+        box-shadow: var(--shadow-colored);
+        transition: var(--transition);
+    }
+    .btn-primary-grad:hover {
+        background: var(--primary-hover);
+        box-shadow: 0 10px 36px rgba(72, 187, 120, 0.45);
+    }
+
+    .alert-success {
+        background: rgba(72, 187, 120, 0.1);
+        border-color: #48bb78;
+        color: #2f855a;
+    }
+
+    .alert-danger {
+        background: rgba(245, 101, 101, 0.1);
+        border-color: #f56565;
+        color: #e53e3e;
+    }
+
+    .form-input {
+        border-color: rgba(113, 128, 150, 0.2);
+        color: var(--text-primary);
+    }
+    .form-input:focus {
+        border-color: #48bb78;
+        box-shadow: 0 0 0 3px rgba(72, 187, 120, 0.4);
+    }
+
+    select {
+        -webkit-appearance: none;
+        -moz-appearance: none;
+        appearance: none;
+        background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20' fill='none'%3e%3cpath d='M7 7l3-3 3 3m0 6l-3 3-3-3' stroke='%234A5568' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/%3e%3c/svg%3e");
+        background-position: right 1rem center;
+        background-size: 1.2em;
+        background-repeat: no-repeat;
+        padding-right: 3rem;
+    }
+</style>
+
+<div class="card-container">
+    <div class="glass-card p-6 md:p-10 rounded-[var(--radius-xl)] shadow-xl">
+
+        <h1 class="text-3xl font-extrabold text-[--text-primary] mb-2 border-b pb-4">
+            💡 Sugerir una nueva pregunta
+        </h1>
+        <p class="text-[--text-secondary] mb-8">
+            ¡Ayudanos a hacer PregUnLaM más grande! Completá todos los campos para enviar tu pregunta a revisión.
+        </p>
+
+        {{#error}}
+            <div class="alert-danger border px-4 py-3 rounded-xl mb-6 shadow-sm" role="alert">
+                <p class="font-bold">Error al enviar:</p>
+                <p class="text-sm">{{error}}</p>
+            </div>
+        {{/error}}
+
+        {{#success}}
+            <div class="alert-success border px-4 py-3 rounded-xl mb-6 shadow-sm" role="alert">
+                <p class="font-bold">Sugerencia enviada:</p>
+                <p class="text-sm">{{success}}</p>
+                <a href="/?controller=home" class="mt-2 inline-block text-[--text-primary] underline font-semibold text-sm hover:text-green-700">Volver a la página principal</a>
+            </div>
+        {{/success}}
+
+        <form action="/?controller=sugerencia&method=guardar" method="POST">
+
+            <div class="mb-6">
+                <label for="pregunta" class="block text-sm font-bold text-[--text-primary] mb-2">
+                    Texto de la Pregunta
+                </label>
+                <textarea
+                        id="pregunta"
+                        name="pregunta"
+                        rows="3"
+                        placeholder="Ej: ¿Cuál es el año de fundación de la UNLaM?"
+                        required
+                        class="form-input w-full px-4 py-3 border rounded-xl focus:ring transition duration-150"
+                ></textarea>
+            </div>
+
+            <h2 class="text-xl font-bold text-[--text-primary] mb-4 border-t pt-4">Opciones de Respuesta</h2>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+
+                <div>
+                    <label for="opcion_a" class="block text-sm font-medium text-[--text-secondary] mb-1">A) Opción Incorrecta/Correcta</label>
+                    <input type="text" id="opcion_a" name="opcion_a" required
+                           placeholder="Ej: 1989"
+                           class="form-input w-full px-4 py-3 border rounded-xl focus:ring">
+                </div>
+
+                <div>
+                    <label for="opcion_b" class="block text-sm font-medium text-[--text-secondary] mb-1">B) Opción Incorrecta/Correcta</label>
+                    <input type="text" id="opcion_b" name="opcion_b" required
+                           placeholder="Ej: 1980"
+                           class="form-input w-full px-4 py-3 border rounded-xl focus:ring">
+                </div>
+
+                <div>
+                    <label for="opcion_c" class="block text-sm font-medium text-[--text-secondary] mb-1">C) Opción Incorrecta/Correcta</label>
+                    <input type="text" id="opcion_c" name="opcion_c" required
+                           placeholder="Ej: 1993"
+                           class="form-input w-full px-4 py-3 border rounded-xl focus:ring">
+                </div>
+
+                <div>
+                    <label for="opcion_d" class="block text-sm font-medium text-[--text-secondary] mb-1">D) Opción Incorrecta/Correcta</label>
+                    <input type="text" id="opcion_d" name="opcion_d" required
+                           placeholder="Ej: 1999"
+                           class="form-input w-full px-4 py-3 border rounded-xl focus:ring">
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+
+                <div>
+                    <label for="opcion_correcta" class="block text-sm font-bold text-[--text-primary] mb-2">
+                        Respuesta Correcta
+                    </label>
+                    <select
+                            id="opcion_correcta"
+                            name="opcion_correcta"
+                            required
+                            class="form-input w-full px-4 py-3 border rounded-xl bg-white focus:ring transition duration-150"
+                    >
+                        <option value="" disabled selected>Seleccioná la letra correcta</option>
+                        <option value="A">A</option>
+                        <option value="B">B</option>
+                        <option value="C">C</option>
+                        <option value="D">D</option>
+                    </select>
+                </div>
+                <div>
+                    <label for="id_categoria" class="block text-sm font-bold text-[--text-primary] mb-2">
+                        Categoría (Opcional)
+                    </label>
+                    <select
+                            id="id_categoria"
+                            name="id_categoria"
+                            class="form-input w-full px-4 py-3 border rounded-xl bg-white focus:ring transition duration-150"
+                    >
+                        <option value="0" selected>-- Sin Categoría Específica --</option>
+                        <option value="1">Ingeniería e Investigaciones Tecnológicas</option>
+                        <option value="2">Humanidades y Ciencias Sociales</option>
+                        <option value="3">Ciencias Económicas</option>
+                        <option value="4">Derecho y Ciencia Política</option>
+                        <option value="5">Ciencias de la Salud</option>
+                    </select>
+                    <p class="text-xs text-[--text-muted] mt-1">Si no seleccionas, se asignará por defecto.</p>
+                </div>
+            </div>
+
+            <div class="flex flex-col sm:flex-row justify-end gap-3 pt-4 border-t border-gray-200">
+                <a href="/?controller=home" class="w-full sm:w-auto text-center px-6 py-3 border border-gray-300 text-[--text-secondary] font-bold rounded-xl hover:bg-gray-50 transition duration-150">
+                    Cancelar
+                </a>
+                <button type="submit" class="btn-primary-grad w-full sm:w-auto px-6 py-3 text-white font-bold rounded-xl hover:bg-green-700 transition duration-150">
+                    Enviar Sugerencia
+                </button>
+            </div>
+
+        </form>
+    </div>
+</div>

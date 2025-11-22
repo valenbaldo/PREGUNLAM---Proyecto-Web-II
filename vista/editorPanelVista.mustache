@@ -49,6 +49,16 @@
     .btn-create{ background:var(--brand); color:#fff; }
     .btn-create:hover{ box-shadow:0 0 0 3px #0b8f7230; }
 
+    /* Estilo para el botón de Sugerencias */
+    .btn-suggestions {
+        background: #fefce8; /* Amarillo claro */
+        border-color: #fde68a; /* Borde amarillo medio */
+        color: #b45309; /* Texto marrón/naranja */
+    }
+    .btn-suggestions:hover {
+        box-shadow: 0 0 0 3px #fde0a5;
+    }
+
     .editor-table{ width:100%; border-collapse:separate; border-spacing:0; }
     .editor-table thead th{
         position: sticky; top:58px; /* debajo del topbar */
@@ -143,6 +153,14 @@
                 </svg>
                 Categorías
             </a>
+            <a class="btn btn-suggestions"
+               href="/editor/gestionarSugerencias">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                    <path d="M12 21a2 2 0 0 0 2-2H10a2 2 0 0 0 2 2ZM19 15.5V9a7 7 0 0 0-14 0v6.5l-2 2h18l-2-2Z" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+                Sugerencias ({{sugerencias_pendientes}})
+            </a>
+
             <a class="btn btn-del"
                href="/editor/gestionarReportes"
                style="background: #fff5f6; border-color: #f1c3c6; color: var(--danger);">
@@ -151,6 +169,7 @@
                 </svg>
                 Reportes ({{reportes_pendientes}})
             </a>
+
             <a class="btn btn-create" href="/editor/crearPregunta">
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true">
                     <path d="M12 5v14M5 12h14" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
@@ -164,59 +183,59 @@
     {{#error}}<div class="msg-box msg-error">{{error}}</div>{{/error}}
 
 
-        <table class="editor-table">
-            <thead>
+    <table class="editor-table">
+        <thead>
+        <tr>
+            <th class="col-id">ID</th>
+            <th class="col-preg">Pregunta</th>
+            <th class="col-cat">Categoría</th>
+            <th class="col-corr">Correcta</th>
+            <th class="col-acc">Acciones</th>
+        </tr>
+        </thead>
+        <tbody>
+        {{#preguntas}}
             <tr>
-                <th class="col-id">ID</th>
-                <th class="col-preg">Pregunta</th>
-                <th class="col-cat">Categoría</th>
-                <th class="col-corr">Correcta</th>
-                <th class="col-acc">Acciones</th>
-            </tr>
-            </thead>
-            <tbody>
-            {{#preguntas}}
-                <tr>
-                    <td class="col-id">{{id_pregunta}}</td>
-                    <td class="col-preg"><div class="preg-text">{{pregunta}}</div></td>
-                    <td class="col-cat">
+                <td class="col-id">{{id_pregunta}}</td>
+                <td class="col-preg"><div class="preg-text">{{pregunta}}</div></td>
+                <td class="col-cat">
           <span class="badge-cat">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden="true">
               <path d="M3 7h5l2 2h11v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V7z" stroke="currentColor" stroke-width="1.5"/>
             </svg>
               {{categoria}}
           </span>
-                    </td>
-                    <td class="col-corr">
+                </td>
+                <td class="col-corr">
           <span class="chip">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden="true">
               <path d="m5 13 4 4L19 7" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
             </svg>
             <span class="k">{{es_correcta}}</span>
           </span>
-                    </td>
-                    <td class="col-acc">
-                        <div class="btn-row">
-                            <a class="btn btn-edit" href="/editor/editarPregunta?id={{id_pregunta}}">
-                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-                                <path d="M4 20h4l10-10a2.828 2.828 0 1 0-4-4L4 16v4Z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/>
-                            </svg>
-                            Editar
-                            </a>
-                            <a class="btn btn-del"
-                               href="/editor/eliminarPregunta?id={{id_pregunta}}"
-                            onclick="return confirm('¿Eliminar la pregunta #{{id_pregunta}}? Esta acción afecta historiales de juego.');">
-                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-                                <path d="M19 6H5m3 0V4a1 1 0 0 1 1-1h6a1 1 0 0 1 1 1v2m-1 0v14a2 2 0 0 1-2 2H9a2 2 0 0 1-2-2V6h10Z" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>
-                            </svg>
-                            Eliminar
-                            </a>
-                        </div>
-                    </td>
-                </tr>
-            {{/preguntas}}
-            </tbody>
-        </table>
+                </td>
+                <td class="col-acc">
+                    <div class="btn-row">
+                        <a class="btn btn-edit" href="/editor/editarPregunta?id={{id_pregunta}}">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                            <path d="M4 20h4l10-10a2.828 2.828 0 1 0-4-4L4 16v4Z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/>
+                        </svg>
+                        Editar
+                        </a>
+                        <a class="btn btn-del"
+                           href="/editor/eliminarPregunta?id={{id_pregunta}}"
+                        onclick="return confirm('¿Eliminar la pregunta #{{id_pregunta}}? Esta acción afecta historiales de juego.');">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                            <path d="M19 6H5m3 0V4a1 1 0 0 1 1-1h6a1 1 0 0 1 1 1v2m-1 0v14a2 2 0 0 1-2 2H9a2 2 0 0 1-2-2V6h10Z" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>
+                        </svg>
+                        Eliminar
+                        </a>
+                    </div>
+                </td>
+            </tr>
+        {{/preguntas}}
+        </tbody>
+    </table>
 
 
     {{^preguntas}}

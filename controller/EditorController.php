@@ -348,4 +348,76 @@ class EditorController
         exit;
     }
 
+
+    public function gestionarSugerencias()
+    {
+        $this->tienePermisoEditor();
+
+        $sugerencias = $this->model->obtenerSugerenciasPendientes();
+
+        $data = [
+            'sugerencias' => $sugerencias,
+            'nombreUsuario' => $_SESSION['nombreUsuario'] ?? 'Editor',
+            'id_rol' => $_SESSION['id_rol'] ?? 2
+        ];
+
+        if(!empty($_SESSION['msg'])){
+            $data['msg'] = $_SESSION['msg'];
+            unset($_SESSION['msg']);
+        }
+        if (!empty($_SESSION['error'])) {
+            $data['error'] = $_SESSION['error'];
+            unset($_SESSION['error']);
+        }
+
+        $this->renderer->render("editorSugerencias", $data);
+    }
+
+    public function procesarSugerencia()
+    {
+        $this->tienePermisoEditor();
+
+        $id_sugerencia = $_POST['id_sugerencia'] ?? 0;
+        $accion = $_POST['accion'] ?? '';
+        $id_usuario_editor = $_SESSION['id_usuario'];
+
+        if ($id_sugerencia <= 0 || empty($accion)) {
+            $_SESSION['error'] = "Error: Datos de sugerencia inválidos.";
+            header("Location: /editor/gestionarSugerencias");
+            exit;
+        }
+
+        $exito = false;
+        $mensaje_error = '';
+
+        switch ($accion) {
+            case 'validar':
+                $exito = $this->model->aceptarSugerencia($id_sugerencia, $id_usuario_editor);
+                if (!$exito) {
+                    $mensaje_error = "Error al aceptar y crear la pregunta (revisa logs para detalles de SQL).";
+                }
+                break;
+            case 'rechazar':
+                $exito = $this->model->rechazarSugerencia($id_sugerencia);
+                if (!$exito) {
+                    $mensaje_error = "Error al rechazar la sugerencia.";
+                }
+                break;
+            default:
+                $_SESSION['error'] = "Error: Acción no reconocida.";
+                header("Location: /editor/gestionarSugerencias");
+                exit;
+        }
+
+        if ($exito) {
+            $_SESSION['msg'] = "Sugerencia ID $id_sugerencia procesada como '$accion' correctamente.";
+        } else {
+            $_SESSION['error'] = $mensaje_error;
+        }
+
+        header("Location: /editor/gestionarSugerencias");
+        exit;
+    }
+
+
 }
