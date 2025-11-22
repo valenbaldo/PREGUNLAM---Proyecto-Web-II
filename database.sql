@@ -133,6 +133,27 @@ CREATE TABLE reportes (
                           FOREIGN KEY (id_usuario_reporta) REFERENCES usuarios(id_usuario) ON DELETE CASCADE
 );
 
+DROP TABLE IF EXISTS sugerencias_preguntas;
+CREATE TABLE sugerencias_preguntas (
+                                       id_sugerencia INT AUTO_INCREMENT PRIMARY KEY,
+                                       pregunta VARCHAR(150) NOT NULL,
+                                       opcion_a VARCHAR(150) NOT NULL,
+                                       opcion_b VARCHAR(150) NOT NULL,
+                                       opcion_c VARCHAR(150) NOT NULL,
+                                       opcion_d VARCHAR(150) NOT NULL,
+                                       respuesta_correcta CHAR(1) NOT NULL,
+                                       id_usuario_sugiere INT NOT NULL,
+                                       id_categoria INT NULL,
+                                       estado ENUM('pendiente', 'aceptada', 'rechazada') DEFAULT 'pendiente',
+                                       fecha_sugerencia TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                                       id_pregunta_asociada INT NULL,
+
+                                       FOREIGN KEY (id_usuario_sugiere) REFERENCES usuarios(id_usuario) ON DELETE CASCADE,
+                                       FOREIGN KEY (id_categoria) REFERENCES categorias(id_categoria) ON DELETE SET NULL,
+                                       FOREIGN KEY (id_pregunta_asociada) REFERENCES preguntas(id_pregunta) ON DELETE SET NULL
+);
+
+
 ------INSERTS------
 
 INSERT INTO roles (id_rol, nombre) VALUES

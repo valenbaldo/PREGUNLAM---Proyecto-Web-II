@@ -22,6 +22,8 @@
     .btn:hover { transform: translateY(-1px); box-shadow: 0 10px 18px rgba(0,0,0,.12); }
     .btn-primary { background: #2cb66f; }
     .btn-outline { background:#111; color:#fff; }
+    .btn-suggest { background: #f59e0b; }
+
 
     .grid { display:grid; grid-template-columns: 1fr; gap:18px; }
     @media (min-width: 960px) { .grid { grid-template-columns: 1fr 1fr; } }
@@ -46,16 +48,18 @@
 <div class="home-wrap">
     <div class="hero">
         <div class="hero-text">
-            <div class="hero-title">Bienvenido a <strong>PregUnLaM</strong>, {{nombreUsuario}}!</div>
+            <div class="hero-title">Bienvenido a <strong>PregUnLaM</strong>, {{nombre_usuario}}!</div>
             <div class="hero-sub">Seleccioná una de las opciones para empezar</div>
         </div>
         <img class="avatar" src="{{imagen}}" alt="Imagen de perfil">
     </div>
     <div class="actions">
-        <a href="/juego" class="btn btn-primary">🎮 Jugar ahora</a>
-        <a href="/usuario/ranking" class="btn btn-outline">🏆 Ver ranking</a>
-        <a href="/usuario" class="btn btn-outline">👤 Mi perfil</a>
+        <a href="/?controller=juego" class="btn btn-primary">🎮 Jugar ahora</a>
+        <a href="/?controller=sugerencia&method=base" class="btn btn-suggest">✍️ Sugerir pregunta</a>
+        <a href="/?controller=usuario&method=ranking" class="btn btn-outline">🏆 Ver ranking</a>
+        <a href="/?controller=perfil" class="btn btn-outline">👤 Mi perfil</a>
     </div>
+
     <div class="grid">
         <div class="card">
             <div class="card-title">
@@ -96,7 +100,7 @@
             {{/ranking}}
 
             <div class="spacer"></div>
-            <a href="/usuario/ranking" class="btn btn-outline">🔎 Ver todos</a>
+            <a href="/?controller=usuario&method=ranking" class="btn btn-outline">🔎 Ver todos</a>
         </div>
         <div class="card">
             <div class="card-title">
@@ -111,4 +115,3 @@
         </div>
     </div>
 </div>
-

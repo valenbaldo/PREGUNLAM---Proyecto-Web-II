@@ -27,6 +27,12 @@ class AdminModel
         return $this->conexion->query($sql)[0]['total'] ?? 0;
     }
 
+    public function contarSugerenciasPendientes()
+    {
+        $sql = "SELECT COUNT(*) AS total FROM sugerencias_preguntas WHERE estado = 'Pendiente'";
+        return $this->conexion->query($sql)[0]['total'] ?? 0;
+    }
+
     public function contarPreguntasCreadas($desde, $hasta)
     {
         $sql = "SELECT COUNT(*) AS total FROM preguntas WHERE DATE(created_at) BETWEEN '$desde' AND '$hasta'";
@@ -203,12 +209,12 @@ class AdminModel
             5 => 'Mayo', 6 => 'Junio', 7 => 'Julio', 8 => 'Agosto',
             9 => 'Septiembre', 10 => 'Octubre', 11 => 'Noviembre', 12 => 'Diciembre'
         ];
-        
+
         $cantidadPorMes = [];
         foreach ($resultado as $fila) {
             $cantidadPorMes[$fila['mes']] = $fila['cantidad'];
         }
-        
+
         $datos = [];
         for ($i = 1; $i <= 12; $i++) {
             $datos[] = [
@@ -224,7 +230,7 @@ class AdminModel
     {
         $month = $month ?? date('m');
         $year = $year ?? date('Y');
-        
+
         $sql = "
         SELECT 
             DAY(iniciado_en) as dia,
@@ -238,12 +244,12 @@ class AdminModel
         $resultado = $this->conexion->query($sql) ?? [];
 
         $diasEnMes = cal_days_in_month(CAL_GREGORIAN, $month, $year);
-        
+
         $cantidadPorDia = [];
         foreach ($resultado as $fila) {
             $cantidadPorDia[$fila['dia']] = $fila['cantidad'];
         }
-        
+
         $datos = [];
         for ($i = 1; $i <= $diasEnMes; $i++) {
             $datos[] = [
@@ -298,6 +304,28 @@ class AdminModel
     public function obtenerCategorias()
     {
         $sql = "SELECT nombre as categoria FROM categorias ORDER BY nombre";
+        return $this->conexion->query($sql) ?? [];
+    }
+    public function obtenerSugerenciasPendientes()
+    {
+        $sql = "
+            SELECT 
+                sp.id_sugerencia,
+                sp.pregunta,
+                sp.opcion_a,
+                sp.opcion_b,
+                sp.opcion_c,
+                sp.opcion_d,
+                sp.respuesta_correcta,
+                c.nombre AS categoria,
+                u.usuario AS sugerida_por,
+                DATE_FORMAT(sp.fecha_sugerencia, '%d/%m/%Y') AS fecha_sugerencia
+            FROM sugerencias_preguntas sp
+            JOIN usuarios u ON sp.id_usuario_sugiere = u.id_usuario
+            JOIN categorias c ON sp.id_categoria = c.id_categoria
+            WHERE sp.estado = 'Pendiente'
+            ORDER BY sp.fecha_sugerencia DESC
+        ";
         return $this->conexion->query($sql) ?? [];
     }
 }
