@@ -21,7 +21,6 @@ class EditorController
         $data = [
             'nombreUsuario' => $_SESSION['nombreUsuario'] ?? 'Editor',
             'preguntas' => $this->model->obtenerTodasLasPreguntas(),
-            // Se añaden los contadores de sugerencias y reportes
             'reportes_pendientes' => $this->model->contarReportesPendientes(),
             'sugerencias_pendientes' => $this->model->contarSugerenciasPendientes(),
             'id_rol' => $_SESSION['id_rol'] ?? 2
@@ -156,7 +155,6 @@ class EditorController
 
 
         $reportes = $this->reporteModel->obtenerReportesPendientes();
-        $sugerencias_pendientes = $this->model->contarSugerenciasPendientes();
 
         $mensaje = $_SESSION['msg'] ?? null;
         unset($_SESSION['msg']);
@@ -165,7 +163,6 @@ class EditorController
             'reportes' => $reportes,
             'nombreUsuario' => $_SESSION['nombreUsuario'] ?? 'Editor',
             'mensaje' => $mensaje,
-            'sugerencias_pendientes' => $sugerencias_pendientes,
             'id_rol' => $_SESSION['id_rol'] ?? 2
         ];
 
@@ -221,15 +218,10 @@ class EditorController
     {
         $this->tienePermisoEditor();
 
-        $sugerencias_pendientes = $this->model->contarSugerenciasPendientes();
-        $reportes_pendientes = $this->model->contarReportesPendientes();
-
         $data = [
             'categorias' => $this->model->obtenerTodasCategorias(),
             'nombreUsuario' => $_SESSION['nombreUsuario'] ?? 'Editor',
             'id_rol' => $_SESSION['id_rol'] ?? 2,
-            'sugerencias_pendientes' => $sugerencias_pendientes,
-            'reportes_pendientes' => $reportes_pendientes
         ];
 
         if (!empty($_SESSION['msg'])) {
@@ -247,15 +239,11 @@ class EditorController
     public function crearCategoria()
     {
         $this->tienePermisoEditor();
-        $sugerencias_pendientes = $this->model->contarSugerenciasPendientes();
-        $reportes_pendientes = $this->model->contarReportesPendientes();
 
         $this->renderer->render("editorCategoriaForm", [
             'accion' => 'crear',
             'titulo' => 'Crear Nueva Categoría',
             'nombreUsuario' => $_SESSION['nombreUsuario'] ?? 'Editor',
-            'sugerencias_pendientes' => $sugerencias_pendientes,
-            'reportes_pendientes' => $reportes_pendientes,
             'id_rol' => $_SESSION['id_rol'] ?? 2
         ]);
     }
@@ -304,17 +292,12 @@ class EditorController
             exit;
         }
 
-        $sugerencias_pendientes = $this->model->contarSugerenciasPendientes();
-        $reportes_pendientes = $this->model->contarReportesPendientes();
-
 
         $this->renderer->render("editorCategoriaForm", [
             'accion' => 'editar',
             'titulo' => 'Editar Categoría',
             'categoria' => $categoria,
             'nombreUsuario' => $_SESSION['nombreUsuario'] ?? 'Editor',
-            'sugerencias_pendientes' => $sugerencias_pendientes,
-            'reportes_pendientes' => $reportes_pendientes,
             'id_rol' => $_SESSION['id_rol'] ?? 2
         ]);
     }
@@ -376,12 +359,11 @@ class EditorController
         $this->tienePermisoEditor();
 
         $sugerencias = $this->model->obtenerSugerenciasPendientes();
-        $reportes_pendientes = $this->model->contarReportesPendientes();
 
         $data = [
             'sugerencias' => $sugerencias,
             'nombreUsuario' => $_SESSION['nombreUsuario'] ?? 'Editor',
-            'reportes_pendientes' => $reportes_pendientes,
+            'sugerencias_pendientes' => $sugerencias,
             'id_rol' => $_SESSION['id_rol'] ?? 2
         ];
         if(!empty($_SESSION['msg'])){
