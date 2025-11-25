@@ -197,13 +197,11 @@ class AdminController
         $this->tienePermisoAdmin();
 
         $sugerencias = $this->adminModel->obtenerSugerenciasPendientes();
-        $reportes_pendientes = $this->reporteModel->contarReportesPendientes();
 
         $data = [
             'sugerencias' => $sugerencias,
             'nombreUsuario' => $_SESSION['nombreUsuario'] ?? 'Administrador',
             'id_rol' => $_SESSION['id_rol'] ?? 3,
-            'reportes_pendientes' => $reportes_pendientes,
             'msg' => $_SESSION['msg'] ?? null,
             'error_flag' => $_SESSION['error_flag'] ?? false,
         ];
@@ -234,7 +232,6 @@ class AdminController
         $year = $_GET['year'] ?? date('Y');
         $categoria = $_GET['categoria'] ?? null;
 
-        // Obtener datos según el filtro
         if ($filtro === 'dia' && $month) {
             $partidasData = $this->adminModel->partidasPorDia($year, $month, $categoria);
         } else {
@@ -249,14 +246,10 @@ class AdminController
             'rendimientoPorCategoria' => $this->adminModel->rendimientoPorCategoria(),
             'fecha_reporte'           => date('Y-m-d H:i:s'),
             'periodo'                 => $this->obtenerNombrePeriodo(),
-
-            // Variables para el template
             'filtroSeleccionado'      => $filtro,
             'monthSeleccionado'       => $month,
             'yearSeleccionado'        => $year,
             'categoriaSeleccionada'   => $categoria,
-
-            // JSON para los gráficos - NOMBRES CORRECTOS
             'partidasDataJson'        => json_encode($partidasData),
             'preguntasCategoriaJson'  => json_encode($preguntasPorCategoria)
         ];
